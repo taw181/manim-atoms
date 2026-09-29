@@ -18,7 +18,7 @@ plot -- for when the fringes have already been shown and the point is where
 each one goes on the ellipse.
 
 LaserNoiseLissajous is the two runs as one figure, after Fig. 4 itself: the
-quiet run lights up across a full-size fringe plot, then shrinks to the top
+quiet run is up in full, fringes and ellipse, then shrinks to the top
 panel to make room for the noisy one, whose shots land on the same Lissajous
 plot -- on top of the quiet ellipse, and on the same curve.
 
@@ -309,15 +309,17 @@ class LaserNoiseLissajous(Scene):
         )).arrange(DOWN, buff=0.15, aligned_edge=LEFT)
         runs_key.next_to(liss_axes.c2p(0, 100), DR, buff=0.25)
 
-        count = ValueTracker(0)
-        clouds, rings, dimmed = arriving_shots(
-            quiet, big_axes, liss_axes, LLN_COLOR, count, dim=True
+        # All its shots are up from the start, at full brightness: the
+        # quiet ellipse is the reference the noisy run lands on.
+        clouds, _, _ = arriving_shots(
+            quiet, big_axes, liss_axes, LLN_COLOR, ValueTracker(N_SHOTS)
         )
+        clouds.update()
+        for cloud in clouds:
+            cloud.clear_updaters()
         self.play(FadeIn(quiet_title), FadeIn(key), FadeIn(big_frame),
-                  FadeIn(dimmed), FadeIn(liss_frame), FadeIn(runs_key[0]),
+                  FadeIn(clouds), FadeIn(liss_frame), FadeIn(runs_key[0]),
                   run_time=1.0)
-        self.beat()
-        build(self, count, clouds, rings)
         self.wait(1.0)
         self.beat()
 
@@ -328,12 +330,10 @@ class LaserNoiseLissajous(Scene):
         lit = fringe_series(top_axes, quiet)
         moves = [Transform(big_frame[:3], top_frame[:3]),
                  FadeOut(big_frame[3])]
-        for layer, opacity in ((clouds, FRINGE_DOT_OPACITY),
-                               (dimmed, FRINGE_DIM_OPACITY)):
-            moves += [
-                Transform(mob, static_cloud(points, color, opacity))
-                for mob, (points, _, color) in zip(layer[:2], lit)
-            ]
+        moves += [
+            Transform(mob, static_cloud(points, color, FRINGE_DOT_OPACITY))
+            for mob, (points, _, color) in zip(clouds[:2], lit)
+        ]
         for mob in (quiet_title, key):
             mob.generate_target()
         over_panel(quiet_title.target, key.target, top_axes)
