@@ -2,12 +2,12 @@
 
 The chamber is the paper's own renders (Walker et al., AVS Quantum Sci. 8,
 033201 (2026), Fig. 1(c) top view and (d) side view), shipped without their
-labels as aionanim/data/images/hifais_chamber_{top,side}.png; the labels,
-beams and atoms are drawn over them here, on points given in the render's own
+labels as aionanim/data/images/hifais_chamber_{top,side}.png; the labels
+and dimensions are drawn over them here, on points given in the render's own
 pixels so they stay put whatever size the image is drawn at.
 
-The plot is Fig. 5's inset, the whole of each loading run, drawn point by
-point so it can fill in against a lab clock in ms.
+The plot is Fig. 5's inset: the whole of each loading run, with the fit to
+its first part carried on over the rest.
 """
 
 import numpy as np
@@ -23,16 +23,28 @@ CHAMBER_SIDE = data_path("images", "hifais_chamber_side.png")  # 1326 x 1105 px
 
 # --- where things are in the renders, in px from the upper left -----------
 # Top view: the source chamber's cross is on the left, the oven on its lower
-# arm and the Zeeman slowing beam coming down the upper one; the 2D MOT is
-# where the arms cross, and the push beam sends its atoms right, through the
-# differential pumping tube, to the 3D MOT in the middle of the science
-# chamber's octagon.
+# arm and the heated window for the Zeeman slowing beam on the upper one; the
+# 2D MOT is where the arms cross, and the push beam sends its atoms right,
+# through the differential pumping tube, to the 3D MOT in the middle of the
+# science chamber's octagon.
 TOP_2D_MOT = (314, 660)
 TOP_3D_MOT = (686, 660)
-TOP_OVEN = (314, 1085)  # the oven's flange, which the atoms leave upward from
-TOP_ARM_END = (314, 0)  # the heated window the slowing beam comes in through
-TOP_LEFT_EDGE = (0, 660)  # where the push beam comes in
+TOP_OVEN = (314, 1085)  # the oven's flange
 TOP_SCIENCE_RIM = (840, 845)  # on the octagon, clear of the 3D MOT
+
+# --- the system's dimensions, from the paper ------------------------------
+# 2D MOT to 3D MOT: the 16 cm the push-beam time-of-flight is measured over
+# (the probe crosses the science chamber's centre, Fig. 1d). Oven nozzle to
+# 2D MOT: the Zeeman slower model's starting point, -0.1 m, with the last
+# magnet ring "100 mm from the 2D MOT centre, just in front of the oven
+# nozzle". The support frame: Fig. 1(a)'s caption.
+MOT_TO_MOT_MM = 160
+NOZZLE_TO_MOT_MM = 100
+FRAME_MM = (670, 600, 545)  # width, depth, height
+# The render's scale, from the one distance on it that runs between two points
+# we can see: the two MOTs.
+TOP_PX_PER_MM = (TOP_3D_MOT[0] - TOP_2D_MOT[0]) / MOT_TO_MOT_MM
+TOP_NOZZLE = (TOP_2D_MOT[0], TOP_2D_MOT[1] + NOZZLE_TO_MOT_MM * TOP_PX_PER_MM)
 # Side view: the source chamber left, the science chamber (three of the
 # octagon's windows) in the middle, and the ion pump on the tee at the right.
 SIDE_SOURCE = (250, 400)
@@ -106,10 +118,9 @@ def loading_cutoff(axes):
     return VGroup(line, tag)
 
 
-def loading_points(axes, run, color, clock):
-    """One run's points with their error bars, each shown once ``clock`` (lab
-    time, ms) has reached it."""
-    points = VGroup(*(
+def loading_points(axes, run, color):
+    """One run's points with their error bars."""
+    return VGroup(*(
         VGroup(
             Line(axes.c2p(t, n - s), axes.c2p(t, n + s), color=color,
                  stroke_width=LOADING_ERROR_WIDTH),
@@ -117,16 +128,6 @@ def loading_points(axes, run, color, clock):
         )
         for t, n, s in zip(run["t_ms"], run["n"], run["sem"])
     ))
-    times = run["t_ms"]
-
-    def reveal(group):
-        now = clock.get_value()
-        for point, t in zip(group, times):
-            point.set_opacity(1.0 if t <= now + 1e-9 else 0.0)
-
-    points.add_updater(reveal)
-    reveal(points)
-    return points
 
 
 def _path(axes, fit, t0, t1):
@@ -136,27 +137,42 @@ def _path(axes, fit, t0, t1):
     )
 
 
-def loading_fit(axes, fit, color, clock):
-    """The fitted model, drawn out as far as ``clock``: solid over the points
-    it was fitted to, dashed where it is carried on past them."""
+def loading_fit(axes, fit, color):
+    """The fitted model: solid over the points it was fitted to, dashed where
+    it is carried on past them to the end of the run."""
     end = fit["fit_max_ms"]
+    solid = _path(axes, fit, 0, end).set_stroke(color, LOADING_FIT_WIDTH)
+    if end >= LOAD_T_MAX:
+        return VGroup(solid)
+    path = _path(axes, fit, end, LOAD_T_MAX)
+    pts = path.get_anchors()
+    length = np.sum(np.linalg.norm(np.diff(pts, axis=0), axis=1))
+    dashes = max(1, int(length / (2 * LOADING_EXTRAPOLATION_DASH)))
+    dashed = DashedVMobject(path.set_stroke(color, LOADING_FIT_WIDTH), num_dashes=dashes)
+    return VGroup(solid, dashed)
 
-    def solid():
-        return _path(axes, fit, 0, max(min(clock.get_value(), end), 1e-3)).set_stroke(
-            color, LOADING_FIT_WIDTH)
 
-    def dashed():
-        now = clock.get_value()
-        if now <= end + 0.5:
-            return VMobject()
-        path = _path(axes, fit, end, now)
-        pts = path.get_anchors()
-        length = np.sum(np.linalg.norm(np.diff(pts, axis=0), axis=1))
-        dashes = max(1, int(length / (2 * LOADING_EXTRAPOLATION_DASH)))
-        return DashedVMobject(path.set_stroke(color, LOADING_FIT_WIDTH),
-                              num_dashes=dashes)
-
-    return VGroup(always_redraw(solid), always_redraw(dashed))
+def dimension(start, end, text, side):
+    """A dimension: a double arrow from ``start`` to ``end`` with its length
+    beside the middle, on ``side``. Drawn in the photo-label yellow with a dark
+    outline, since it lies across the render."""
+    arrow = DoubleArrow(start, end, buff=0, color=DIMENSION_COLOR,
+                        stroke_width=DIMENSION_STROKE_WIDTH,
+                        tip_length=DIMENSION_TIP_LENGTH,
+                        max_tip_length_to_length_ratio=0.5)
+    ticks = VGroup(*(
+        Line(p - DIMENSION_TICK * normalize(rotate_vector(end - start, PI / 2)),
+             p + DIMENSION_TICK * normalize(rotate_vector(end - start, PI / 2)),
+             color=DIMENSION_COLOR, stroke_width=DIMENSION_STROKE_WIDTH)
+        for p in (start, end)
+    ))
+    label = Tex(text, font_size=FONT_DIMENSION, color=DIMENSION_COLOR)
+    label.next_to((np.asarray(start) + np.asarray(end)) / 2, side, buff=0.12)
+    # outlined behind the lines and text, not the arrowheads (solid enough)
+    arrow.set_stroke(**DIMENSION_OUTLINE, background=True, family=False)
+    for mob in (ticks, label):
+        mob.set_stroke(**DIMENSION_OUTLINE, background=True)
+    return VGroup(arrow, ticks, label)
 
 
 def loading_rate_line(axes, fit, color, top=1.2):

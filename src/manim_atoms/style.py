@@ -588,3 +588,11 @@ LOADING_FIT_WIDTH = 2.5
 LOADING_EXTRAPOLATION_DASH = 0.09
 # The atom number the fits stop at: a reference, not data, like a band edge.
 LOADING_CUTOFF_STYLE = GW_BAND_EDGE_STYLE
+# A dimension drawn across a render: in the photo labels' yellow, which holds
+# up against the CAD's greys and blues, outlined dark behind its line and text.
+DIMENSION_COLOR = PHOTO_LABEL_COLOR
+DIMENSION_STROKE_WIDTH = 3
+DIMENSION_TIP_LENGTH = 0.16
+DIMENSION_TICK = 0.12  # half the length of the bar across each end
+DIMENSION_OUTLINE = dict(color=PLOT_BACKGROUND, width=6, opacity=0.85)
+FONT_DIMENSION = FONT_CHAMBER_LABEL
