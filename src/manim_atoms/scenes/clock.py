@@ -228,8 +228,7 @@ class ClockPhase(Scene):
         # Phi_propagation: something acting on the atoms between the pulses.
         # Not replayed -- the box says where and when, and the hand of the arm
         # that was excited there (the lower one, on the second leg) sweeps on
-        # by what it picked up, in step with a line crossing the box, which
-        # widens the sector the laser left. The equation gains the term and
+        # by what it picked up, which widens the sector the laser left. The equation gains the term and
         # loses its "= phi_1 - 2 phi_2 + phi_3", which is no longer all of it.
         start, end = (b[0] + f * CP_T for f in CP_EFFECT_SPAN)
         box = Rectangle(
@@ -258,15 +257,11 @@ class ClockPhase(Scene):
         # and the ports re-split with it
         live_ports(self, ports, c, CP_OUT,
                    lambda: ground_share(kicked_first, kicked_last))
-        cursor = Line(box.get_corner(DL), box.get_corner(UL),
-                      color=PERTURBATION_COLOR, stroke_width=3)
         self.play(
             kicked_last.animate.increment_value(CP_EFFECT_PHASE),
-            cursor.animate.align_to(box, RIGHT),
             rate_func=linear, run_time=CP_EFFECT_TIME,
         )
-        self.play(FadeOut(cursor), run_time=0.3)
-        self.wait(1.0)
+        self.wait(1.3)
         self.phase_budget(budget)
 
     def laser_jump(self, jumps):
