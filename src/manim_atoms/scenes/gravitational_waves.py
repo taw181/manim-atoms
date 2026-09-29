@@ -497,11 +497,19 @@ LIGO_DATA_CENTER = np.array([SIDE_SHEET_X, -0.75, 0.0])
 LIGO_DATA_BEFORE_MERGER = 0.17
 
 # The first run of the merger plays beside LIGO: the interferometer of
-# aionanim.scenes.ligo, which is drawn for the whole frame, shrunk into the
-# right half where the plot will go. It is up, already lit, from the first
-# frame, and runs off the merger's clock, with the merger's own h(t) as its
-# wave, scaled so the peak takes the detector from dark to fully bright.
-LIGO_PANEL = Panel(scale=0.47, shift=[3.65, -0.25, 0.0])
+# aionanim.scenes.ligo in the right half, where the plot will go. It is up,
+# already lit, from the first frame, and runs off the merger's clock, with the
+# merger's own h(t) as its wave, scaled so the peak takes the detector from
+# dark to fully bright. ligo.py draws for the whole frame, the readout in a
+# column on the right; here the interferometer fills the top of the half and
+# the readout goes in a band under it, clear of the citation line: h(t) and
+# the equations on the left, the returning beams on the right. Each panel
+# puts a point of ligo.py's drawing (a block's top or centre, measured off
+# it) on a point of this frame.
+LIGO_APPARATUS = Panel.at(0.68, [-2.635, 2.70], [3.65, 2.95])  # its top centre
+LIGO_TRACE = Panel.at(0.5, [4.39, 2.85], [2.15, -2.0])
+LIGO_EQUATION = Panel.at(0.5, [4.725, -2.71], [2.15, -2.84])  # and scale line
+LIGO_RETURNS = Panel.at(0.5, [4.725, 0.23], [5.75, -2.65])
 LIGO_TRACE_SPAN = (-0.3, T_END + 0.3)  # the stretch of the clock its h(t) spans
 _PEAK_STRAIN = np.max(np.abs(observed_strain(np.linspace(0.0, T_END, 20001))))
 
@@ -619,20 +627,21 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
 
     def entrance(self, clock):
         """LIGO on the right, lit, standing still until the clock runs."""
-        labels, optics, arm_tags = make_apparatus(clock, ligo_strain, LIGO_PANEL)
+        labels, optics, arm_tags = make_apparatus(clock, ligo_strain, LIGO_APPARATUS)
+        labels.remove(labels[0])  # its title: the scene's own says enough
         on = ValueTracker(1.0)  # the beams are lit all the way from the start
-        glow, lights = make_light(clock, on, on, ligo_strain, LIGO_PANEL)
+        glow, lights = make_light(clock, on, on, ligo_strain, LIGO_APPARATUS)
         return_axes, return_waves, sum_axes, sum_wave = returning_waves(
-            clock, ligo_strain, LIGO_PANEL
+            clock, ligo_strain, LIGO_RETURNS
         )
         trace_axes, trace = make_strain_trace(
-            clock, ligo_strain, LIGO_TRACE_SPAN, LIGO_PANEL
+            clock, ligo_strain, LIGO_TRACE_SPAN, LIGO_TRACE
         )
         # light under the optics, the glow under the detector
         self.ligo = VGroup(
             labels, glow, lights, optics, arm_tags,
             return_axes, return_waves, sum_axes, sum_wave,
-            trace_axes, trace, *make_equation(LIGO_PANEL),
+            trace_axes, trace, *make_equation(LIGO_EQUATION),
         )
         self.add_fixed_in_frame_mobjects(self.ligo)
         return [FadeIn(self.ligo, run_time=1.5)]

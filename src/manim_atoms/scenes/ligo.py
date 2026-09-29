@@ -13,7 +13,8 @@ every beat of the scene. Everything visual comes from aionanim.style.
 
 The builders take the wave as `h` and a `panel` to draw into, so another
 scene can set the interferometer, already lit, in part of its own frame and
-drive it with a wave of its own (MergerOnSensitivityPlot does both).
+drive it with a wave of its own; each readout block takes its own panel, so
+they can be laid out afresh (MergerOnSensitivityPlot does all of this).
 """
 
 import numpy as np
@@ -108,6 +109,14 @@ class Panel:
     def __init__(self, scale=1.0, shift=ORIGIN):
         self.scale = scale
         self.shift = np.asarray(shift, dtype=float)
+
+    @classmethod
+    def at(cls, scale, source, target):
+        """The panel of `scale` that puts the drawing's point `source` on
+        `target`."""
+        source, target = (np.append(np.asarray(v, dtype=float), 0.0)[:3]
+                          for v in (source, target))
+        return cls(scale, target - scale * source)
 
     def point(self, p):
         return self.scale * np.asarray(p, dtype=float) + self.shift
