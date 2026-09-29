@@ -113,7 +113,7 @@ class VelocitySlicing(Scene):
         step, swap = recaption(step, r"A long $\pi$ pulse on the clock line excites "
                                      r"only the slowest atoms", heading)
         self.play(swap, FadeIn(clock_beam), FadeIn(clock_label), *levels.drive("698"),
-                  Create(plot.line_shape), FadeIn(plot.line_label),
+                  Create(plot.line_shape),
                   run_time=VS_SWITCH_TIME)
         self.play(plot.excite.animate.set_value(1), cloud.excite.animate.set_value(1),
                   run_time=VS_PULSE_TIME)
@@ -136,7 +136,7 @@ class VelocitySlicing(Scene):
         step, swap = recaption(step, r"Left: a narrow slice of slow atoms in ${}^3P_0$",
                                heading)
         after = readout("After slicing", VS_AFTER, lighten(SLICE_COLD_COLOR), plot)
-        self.play(swap, FadeOut(plot.line_shape), FadeOut(plot.line_label),
+        self.play(swap, FadeOut(plot.line_shape),
                   Create(plot.outline),
                   Succession(FadeOut(before, shift=UP * 0.15), FadeIn(after, shift=UP * 0.15)),
                   run_time=VS_SWITCH_TIME)

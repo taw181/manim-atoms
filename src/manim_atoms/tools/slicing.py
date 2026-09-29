@@ -41,14 +41,13 @@ def excitation(u):
 
 def thermal(u, sigma=SLICE_THERMAL_SIGMA):
     """The velocity distribution before the pulse, peak normalised to one."""
-    return np.exp(-np.asarray(u, dtype=float) ** 2 / (2 * sigma**2))
+    return np.exp(-(np.asarray(u, dtype=float) ** 2) / (2 * sigma**2))
 
 
 # --- the plot -------------------------------------------------------------
 PLOT_WIDTH = 7.0  # wide, so the slice's sidelobes still show against a 3 uK cloud
 PLOT_HEIGHT = 3.3
 PLOT_Y_MAX = 1.12  # a little headroom over the peak
-LINE_LABEL_AT = (5.5, 1.02)  # (u, height): clear of the thermal curve's shoulder
 
 
 class VelocityPlot(VGroup):
@@ -69,17 +68,25 @@ class VelocityPlot(VGroup):
         # the y axis at zero velocity, through the middle of the distribution;
         # c2p shifts u onto it.
         self.axes = Axes(
-            x_range=[0, SLICE_U_RANGE[1] - SLICE_U_RANGE[0], 1], y_range=[0, PLOT_Y_MAX, 1],
-            x_length=PLOT_WIDTH, y_length=PLOT_HEIGHT, tips=False,
-            axis_config=dict(color=PLOT_FOREGROUND, stroke_width=2, include_ticks=False),
+            x_range=[0, SLICE_U_RANGE[1] - SLICE_U_RANGE[0], 1],
+            y_range=[0, PLOT_Y_MAX, 1],
+            x_length=PLOT_WIDTH,
+            y_length=PLOT_HEIGHT,
+            tips=False,
+            axis_config=dict(
+                color=PLOT_FOREGROUND, stroke_width=2, include_ticks=False
+            ),
         ).move_to(center)
         zero = self.c2p(0, 0)
         tick = Line(zero, zero + DOWN * 0.12, color=PLOT_FOREGROUND, stroke_width=2)
         zero_label = MathTex("0", font_size=FONT_TICK, color=PLOT_FOREGROUND)
         zero_label.next_to(tick, DOWN, buff=0.08)
-        x_label = Tex("velocity along the clock beam", font_size=FONT_AXIS,
-                      color=PLOT_FOREGROUND).next_to(self.axes.x_axis, DOWN, buff=0.45)
-        y_label = Tex("atoms", font_size=FONT_AXIS, color=PLOT_FOREGROUND)
+        x_label = Tex(
+            "velocity along the clock beam", font_size=FONT_AXIS, color=PLOT_FOREGROUND
+        ).next_to(self.axes.x_axis, DOWN, buff=0.45)
+        y_label = Tex(
+            "Excitation probability", font_size=FONT_AXIS, color=PLOT_FOREGROUND
+        )
         y_label.rotate(PI / 2).next_to(self.axes.y_axis, LEFT, buff=0.2)
         self.frame = VGroup(self.axes, tick, zero_label, x_label, y_label)
 
@@ -89,26 +96,29 @@ class VelocityPlot(VGroup):
         self.excite = ValueTracker(0.0)
         self.push = ValueTracker(0.0)
 
-        self.excited_band = VMobject(stroke_width=0, fill_color=SLICE_COLD_COLOR,
-                                     fill_opacity=SLICE_FILL_OPACITY)
-        self.ground_band = VMobject(stroke_width=0, fill_color=SLICE_HOT_COLOR,
-                                    fill_opacity=SLICE_FILL_OPACITY)
+        self.excited_band = VMobject(
+            stroke_width=0, fill_color=SLICE_COLD_COLOR, fill_opacity=SLICE_FILL_OPACITY
+        )
+        self.ground_band = VMobject(
+            stroke_width=0, fill_color=SLICE_HOT_COLOR, fill_opacity=SLICE_FILL_OPACITY
+        )
         self.top_edge = VMobject(stroke_color=lighten(SLICE_HOT_COLOR), stroke_width=3)
-        self.slice_edge = VMobject(stroke_color=lighten(SLICE_COLD_COLOR), stroke_width=3)
-        self.bands = VGroup(self.excited_band, self.ground_band, self.top_edge,
-                            self.slice_edge)
+        self.slice_edge = VMobject(
+            stroke_color=lighten(SLICE_COLD_COLOR), stroke_width=3
+        )
+        self.bands = VGroup(
+            self.excited_band, self.ground_band, self.top_edge, self.slice_edge
+        )
         self.bands.add_updater(lambda m: self._fill())
         self._fill()
 
-        self.line_shape = self._curve(self.p, stroke_color=TRANSITION_698_COLOR,
-                                      stroke_width=SLICE_PROFILE_WIDTH)
-        # just "excitation": the scene's own readout of pi-pulse fidelity is about
-        # the interferometer's pulse, not this one
-        self.line_label = Tex(r"excitation\\probability", font_size=FONT_AXIS,
-                              color=TRANSITION_698_COLOR)
-        self.line_label.next_to(self.c2p(*LINE_LABEL_AT), RIGHT, buff=0.1)
+        self.line_shape = self._curve(
+            self.p, stroke_color=TRANSITION_698_COLOR, stroke_width=SLICE_PROFILE_WIDTH
+        )
         self.outline = DashedVMobject(
-            self._curve(self.g, stroke_color=lighten(SLICE_HOT_COLOR), stroke_width=2.5),
+            self._curve(
+                self.g, stroke_color=lighten(SLICE_HOT_COLOR), stroke_width=2.5
+            ),
             num_dashes=70,
         )
         self.add(self.bands, self.frame)
@@ -128,8 +138,9 @@ class VelocityPlot(VGroup):
         return VMobject(**style).set_points_smoothly(self._points(self.u, y))
 
     def _band(self, band, lower, upper):
-        pts = np.concatenate([self._points(self.u, upper),
-                              self._points(self.u[::-1], lower[::-1])])
+        pts = np.concatenate(
+            [self._points(self.u, upper), self._points(self.u[::-1], lower[::-1])]
+        )
         band.set_points_as_corners(np.concatenate([pts, pts[:1]]))
 
     def _fill(self):
@@ -162,28 +173,47 @@ class SlicingCloud(VGroup):
         super().__init__(**kwargs)
         rng = np.random.default_rng(seed)
         self.center = np.array(center[:2], dtype=float)
-        self.home = np.column_stack([
-            rng.uniform(-CLOUD_WIDTH / 2, CLOUD_WIDTH / 2, CLOUD_N),
-            rng.normal(scale=CLOUD_HEIGHT / 4, size=CLOUD_N),
-        ])
+        self.home = np.column_stack(
+            [
+                rng.uniform(-CLOUD_WIDTH / 2, CLOUD_WIDTH / 2, CLOUD_N),
+                rng.normal(scale=CLOUD_HEIGHT / 4, size=CLOUD_N),
+            ]
+        )
         self.v = rng.normal(scale=SLICE_THERMAL_SIGMA, size=CLOUD_N)
         self.is_slow = rng.random(CLOUD_N) < excitation(self.v)
-        self.push_rate = rng.uniform(0.8, 1.2, CLOUD_N)  # so they don't leave as a block
+        self.push_rate = rng.uniform(
+            0.8, 1.2, CLOUD_N
+        )  # so they don't leave as a block
         self.excite = ValueTracker(0.0)
         self.push = ValueTracker(0.0)
         self.t = 0.0
-        self.add(*[Dot(radius=CLOUD_DOT_RADIUS * 1.3, stroke_width=0) for _ in range(CLOUD_N)])
+        self.add(
+            *[
+                Dot(radius=CLOUD_DOT_RADIUS * 1.3, stroke_width=0)
+                for _ in range(CLOUD_N)
+            ]
+        )
         self.add_updater(self._move)
         self._move(self, 0)
 
     def _move(self, m, dt):
         self.t += dt
         push = self.push.get_value()
-        xy = self.center + self.home + np.column_stack([
-            np.where(self.is_slow, 0.0, PUSH_DISTANCE * push**2 * self.push_rate),
-            CLOUD_DRIFT * self.v * self.t,
-        ])
-        excited = interpolate_color(SLICE_HOT_COLOR, SLICE_COLD_COLOR, self.excite.get_value())
+        xy = (
+            self.center
+            + self.home
+            + np.column_stack(
+                [
+                    np.where(
+                        self.is_slow, 0.0, PUSH_DISTANCE * push**2 * self.push_rate
+                    ),
+                    CLOUD_DRIFT * self.v * self.t,
+                ]
+            )
+        )
+        excited = interpolate_color(
+            SLICE_HOT_COLOR, SLICE_COLD_COLOR, self.excite.get_value()
+        )
         gone = 1 - np.clip(push * 1.4 - 0.2, 0, 1)  # a pushed atom fades as it goes
         for dot, p, slow in zip(self.submobjects, xy, self.is_slow):
             dot.move_to([p[0], p[1], 0])

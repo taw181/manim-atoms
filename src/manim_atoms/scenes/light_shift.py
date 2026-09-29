@@ -133,27 +133,26 @@ class LightShiftSignal(GradiometerGW):
     """
 
     def construct(self):
-        gradiometer_frame(
-            self, r"A light shift on one interferometer mimics a signal"
-        )
+        gradiometer_frame(self, r"A light shift on one interferometer mimics a signal")
 
         low = vertices(GR_LOWER_Z, 0.0)
         up = vertices(GR_UPPER_Z, GR_LAG)
 
         rate = clock_rate(GR_T)
         phase = {
-            cloud: (ValueTracker(0.0), ValueTracker(0.0))
-            for cloud in ("low", "up")
+            cloud: (ValueTracker(0.0), ValueTracker(0.0)) for cloud in ("low", "up")
         }
         self.add(*[t for pair in phase.values() for t in pair])
 
-        dials = VGroup(*[
-            make_dial(GR_DIALS[c], cap, GR_DIAL_RADIUS)
-            for c, cap in (
-                ("low", r"$\Phi_{\text{lower}}$"),
-                ("up", r"$\Phi_{\text{upper}}$"),
-            )
-        ])
+        dials = VGroup(
+            *[
+                make_dial(GR_DIALS[c], cap, GR_DIAL_RADIUS)
+                for c, cap in (
+                    ("low", r"$\Phi_{\text{lower}}$"),
+                    ("up", r"$\Phi_{\text{upper}}$"),
+                )
+            ]
+        )
         self.play(FadeIn(dials), run_time=0.6)
 
         # --- the two clouds ----------------------------------------------
@@ -182,19 +181,29 @@ class LightShiftSignal(GradiometerGW):
             width=self.off_x - self.on_x,
             height=GR_ARM + 2 * LS_PAD,
             **LIGHT_SHIFT_STYLE,
-        ).move_to([
-            0.5 * (self.on_x + self.off_x), GR_UPPER_Z + GR_ARM / 2, 0,
-        ])
-        self.beam_label = VGroup(
-            Tex(
-                r"off-resonant beam, upper cloud only",
-                font_size=FONT_LEGEND, color=LIGHT_SHIFT_COLOR,
-            ),
-            MathTex(
-                r"\omega_A \to \omega_A + \delta_{\text{LS}}",
-                font_size=FONT_LEGEND, color=LIGHT_SHIFT_COLOR,
-            ),
-        ).arrange(DOWN, buff=0.14).next_to(self.beam, UP, buff=0.25)
+        ).move_to(
+            [
+                0.5 * (self.on_x + self.off_x),
+                GR_UPPER_Z + GR_ARM / 2,
+                0,
+            ]
+        )
+        self.beam_label = (
+            VGroup(
+                Tex(
+                    r"off-resonant beam, upper cloud only",
+                    font_size=FONT_LEGEND,
+                    color=LIGHT_SHIFT_COLOR,
+                ),
+                MathTex(
+                    r"\omega_A \to \omega_A + \delta_{\text{LS}}",
+                    font_size=FONT_LEGEND,
+                    color=LIGHT_SHIFT_COLOR,
+                ),
+            )
+            .arrange(DOWN, buff=0.14)
+            .next_to(self.beam, UP, buff=0.25)
+        )
 
         self.low, self.up = low, up
         self.rate, self.phase = rate, phase
@@ -221,22 +230,30 @@ class LightShiftSignal(GradiometerGW):
         # supplies it, the package scene has none and keeps the dials.
         image = self.readout_image()
         if image is not None:
-            self.play(FadeOut(dials), *[FadeOut(m) for m in self.big],
-                      *[FadeOut(m) for m in sweeps], run_time=0.6)
+            self.play(
+                FadeOut(dials),
+                *[FadeOut(m) for m in self.big],
+                *[FadeOut(m) for m in sweeps],
+                run_time=0.6,
+            )
             self.play(FadeIn(image), run_time=0.8)
             self.beat()
 
-        signal = VGroup(
-            Tex(
-                r"applied to one interferometer, so it survives the difference",
-                font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
-            ),
-            MathTex(
-                r"\Delta\Phi = \Phi_{\text{upper}} - \Phi_{\text{lower}}"
-                r" = \delta_{\text{LS}}\,\tau",
-                font_size=FONT_ANNOTATION,
-            ),
-        ).arrange(DOWN, buff=0.22).move_to(GR_SIGNAL)
+        signal = (
+            VGroup(
+                # Tex(
+                #     r"applied to one interferometer, so it survives the difference",
+                #     font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
+                # ),
+                MathTex(
+                    r"\Delta\Phi = \Phi_{\text{upper}} - \Phi_{\text{lower}}"
+                    r" = \delta_{\text{LS}}\,\tau",
+                    font_size=FONT_ANNOTATION,
+                ),
+            )
+            .arrange(DOWN, buff=0.22)
+            .move_to(GR_SIGNAL)
+        )
         if signal.width > GR_TERMS_WIDTH:
             signal.scale(GR_TERMS_WIDTH / signal.width)
         self.play(FadeIn(signal), run_time=1.0)
@@ -263,11 +280,19 @@ class LightShiftSignal(GradiometerGW):
         def fly_to(x, which):
             if not which:
                 return
-            draw_legs(self, [
-                (atom, along_port(origin, rise, max(origin[0], atom.get_x())),
-                 along_port(origin, rise, x), color)
-                for atom, origin, rise, color in which
-            ], extra=self.port_extra())
+            draw_legs(
+                self,
+                [
+                    (
+                        atom,
+                        along_port(origin, rise, max(origin[0], atom.get_x())),
+                        along_port(origin, rise, x),
+                        color,
+                    )
+                    for atom, origin, rise, color in which
+                ],
+                extra=self.port_extra(),
+            )
 
         up_x = self.up[3][0]
         fly_to(up_x, [port for port in ports if port[1][0] < up_x])
@@ -291,9 +316,14 @@ class LightShiftSignal(GradiometerGW):
         v = self.vertices(cloud)
         p_ground = ground_share(self.phase[cloud][1], self.phase[cloud][0])
         return [
-            (make_atom(color, radius=CLOCK_ATOM_RADIUS,
-                       opacity=max(p, LS_PORT_FLOOR)).move_to(v[3]),
-             v[3], rise, color)
+            (
+                make_atom(
+                    color, radius=CLOCK_ATOM_RADIUS, opacity=max(p, LS_PORT_FLOOR)
+                ).move_to(v[3]),
+                v[3],
+                rise,
+                color,
+            )
             for p, color, rise in (
                 (p_ground, ATOM_COLOR, 0.0),
                 (1.0 - p_ground, KICKED_COLOR, self.port_slope(cloud)),
@@ -305,8 +335,12 @@ class LightShiftSignal(GradiometerGW):
         images. It stops just past the topmost atom it lights, as the clock's
         pulses do, rather than running on up the frame."""
         top = max(a.get_top()[1] for a in atoms) + 0.25
-        pulse = Line([x, GR_LASER_Z, 0], [x, top, 0],
-                     color=IMAGING_COLOR, stroke_width=PULSE_STROKE_WIDTH)
+        pulse = Line(
+            [x, GR_LASER_Z, 0],
+            [x, top, 0],
+            color=IMAGING_COLOR,
+            stroke_width=PULSE_STROKE_WIDTH,
+        )
         caption = Tex(name, font_size=FONT_STATE, color=lighten(color))
         caption.next_to([x, GR_LASER_Z, 0], UR, buff=0.12)
         return VGroup(pulse, caption)
@@ -344,10 +378,14 @@ class LightShiftSignal(GradiometerGW):
         ]
 
         def stretch(f_from, f_to, extra=()):
-            draw_legs(self, [
-                (atom, along(a, b, f_from), along(a, b, f_to), color)
-                for atom, a, b, color in legs
-            ], extra=extra)
+            draw_legs(
+                self,
+                [
+                    (atom, along(a, b, f_from), along(a, b, f_to), color)
+                    for atom, a, b, color in legs
+                ],
+                extra=extra,
+            )
 
         def wound_to(f, shifted):
             """Where each hand has got to a fraction f into the first leg."""
@@ -378,22 +416,29 @@ class LightShiftSignal(GradiometerGW):
         )
         # The beam is off, so the second leg is the quiet one in both clouds:
         # whatever the shift put in stays in, because nothing takes it out.
-        draw_legs(self, [
-            (atoms["low"][0], low[1], low[3], KICKED_COLOR),
-            (atoms["low"][1], low[2], low[3], ATOM_COLOR),
-            (atoms["up"][0], up[1], up[3], KICKED_COLOR),
-            (atoms["up"][1], up[2], up[3], ATOM_COLOR),
-        ], extra=[
-            phase[c][0].animate.set_value(rate * GR_T) for c in ("low", "up")
-        ])
+        draw_legs(
+            self,
+            [
+                (atoms["low"][0], low[1], low[3], KICKED_COLOR),
+                (atoms["low"][1], low[2], low[3], ATOM_COLOR),
+                (atoms["up"][0], up[1], up[3], KICKED_COLOR),
+                (atoms["up"][1], up[2], up[3], ATOM_COLOR),
+            ],
+            extra=[phase[c][0].animate.set_value(rate * GR_T) for c in ("low", "up")],
+        )
         self.beat()
 
         # --- pulse 3: recombine -------------------------------------------
         # Anchored on the two recombination points, which sit an arm above
         # the clouds' starting heights: a pulse anchored on those heights
         # crosses one arm's light travel time late and misses the atoms.
-        fire_pulse(self, low[3][0], flash=[atoms["low"][0], atoms["up"][0]],
-                   z_near=low[3][1], z_far=up[3][1])
+        fire_pulse(
+            self,
+            low[3][0],
+            flash=[atoms["low"][0], atoms["up"][0]],
+            z_near=low[3][1],
+            z_far=up[3][1],
+        )
 
 
 class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
@@ -423,23 +468,26 @@ class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
             # both clouds and sees nothing; the arm kicked at the beamsplitter
             # is excited over the first, which is when the beam is on -- so
             # only the upper one of those four hands knows about it.
-            phase[cloud][0].add_updater(
-                wound(clock, self.rate, v[1][0], v[3][0])
+            phase[cloud][0].add_updater(wound(clock, self.rate, v[1][0], v[3][0]))
+        phase["low"][1].add_updater(wound(clock, self.rate, low[0][0], low[1][0]))
+        phase["up"][1].add_updater(
+            wound_with_shift(
+                clock,
+                self.rate,
+                up[0][0],
+                up[1][0],
+                self.on_x,
+                self.off_x,
+                LS_PHASE,
             )
-        phase["low"][1].add_updater(
-            wound(clock, self.rate, low[0][0], low[1][0])
         )
-        phase["up"][1].add_updater(wound_with_shift(
-            clock, self.rate, up[0][0], up[1][0],
-            self.on_x, self.off_x, LS_PHASE,
-        ))
 
         # The band grows from the moment the shutter opens and stops at the
         # moment it shuts, and is then left where it is: the window it covers
         # is what the readout at the end is about.
-        self.add(growing_band(
-            self.beam, self.on_x, self.off_x, clock, LIGHT_SHIFT_STYLE
-        ))
+        self.add(
+            growing_band(self.beam, self.on_x, self.off_x, clock, LIGHT_SHIFT_STYLE)
+        )
 
         # Each pulse goes out in the stretch of flight after it rather than
         # lingering into the next, which is what the wave scenes need and this
@@ -449,20 +497,32 @@ class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
         def clear(drawn, to):
             run_to(self, clock, to, *[FadeOut(m) for m in drawn])
 
-        drawn = self.shoot(0, near=[low[0]], far=[up[0]],
-                           on_near=lambda: self.open_arms("low"),
-                           on_far=lambda: self.open_arms("up"))
+        drawn = self.shoot(
+            0,
+            near=[low[0]],
+            far=[up[0]],
+            on_near=lambda: self.open_arms("low"),
+            on_far=lambda: self.open_arms("up"),
+        )
         # The label arrives with the beam, not before it, so the run up to the
         # shutter is its own stretch.
         clear(drawn, self.on_x)
         run_to(self, clock, self.off_x, FadeIn(self.beam_label))
-        drawn = self.shoot(1, near=[low[1], low[2]], far=[up[1], up[2]],
-                           on_near=lambda: self.mirror("low"),
-                           on_far=lambda: self.mirror("up"))
+        drawn = self.shoot(
+            1,
+            near=[low[1], low[2]],
+            far=[up[1], up[2]],
+            on_near=lambda: self.mirror("low"),
+            on_far=lambda: self.mirror("up"),
+        )
         clear(drawn, GR_T0 + 1.5 * GR_T)
-        drawn = self.shoot(2, near=[low[3]], far=[up[3]],
-                           on_near=lambda: self.recombine("low"),
-                           on_far=lambda: self.recombine("up"))
+        drawn = self.shoot(
+            2,
+            near=[low[3]],
+            far=[up[3]],
+            on_near=lambda: self.recombine("low"),
+            on_far=lambda: self.recombine("up"),
+        )
         clear(drawn, clock.get_value() + PULSE_LINGER)
 
     def recombine(self, cloud):
@@ -478,7 +538,7 @@ class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
         k = 0 if cloud == "low" else 2
         for atom in pair:
             atom.clear_updaters()
-        self.remove(*pair, *self.hands[k:k + 2])
+        self.remove(*pair, *self.hands[k : k + 2])
         ports = self.port_atoms(cloud)
         for atom, origin, rise, color in ports:
             end = along_port(
@@ -518,7 +578,14 @@ class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
     def shoot(self, k, near, far, fade=(), on_near=None, on_far=None):
         """One pulse. No wave here, so every one of them is the quiet one."""
         return sweep_pulse(
-            self, self.clock, GR_T0 + k * GR_T, near=near, far=far,
-            lag=GR_LAG, reference=False, fade=fade,
-            on_near=on_near, on_far=on_far,
+            self,
+            self.clock,
+            GR_T0 + k * GR_T,
+            near=near,
+            far=far,
+            lag=GR_LAG,
+            reference=False,
+            fade=fade,
+            on_near=on_near,
+            on_far=on_far,
         )

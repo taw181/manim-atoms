@@ -87,7 +87,7 @@ class DarkMatterPhase(Scene):
 
     def construct(self):
         title = Tex(
-            r"Ultralight dark matter: the phase does not cancel",
+            r"Detecting ultralight dark matter",
             font_size=FONT_TITLE,
         ).to_corner(UL)
         self.play(FadeIn(title), run_time=0.9)
@@ -103,7 +103,8 @@ class DarkMatterPhase(Scene):
         law = MathTex(
             r"\omega_A \to \omega_A\left[1 + \varepsilon\cos"
             r"(\omega_\phi t + \theta)\right]",
-            font_size=FONT_ANNOTATION, color=FIELD_COLOR,
+            font_size=FONT_ANNOTATION,
+            color=FIELD_COLOR,
         ).move_to(DM_LAW)
         self.play(FadeIn(trace[0]), Create(trace[1]), FadeIn(trace[2]), run_time=1.2)
         self.play(Write(law), run_time=1.2)
@@ -166,17 +167,22 @@ class DarkMatterPhase(Scene):
         draw_ports(self, c, CP_OUT, 0.5 * (1 + np.cos(gap)), extra=self.port_extra())
         self.play(Write(readout_equation()), run_time=1.0)
 
-        result = VGroup(
-            MathTex(r"\Phi \neq 0", font_size=FONT_STATE),
-            Tex(
-                # As short as ClockPhase's, and for the same reason: it has to
-                # stay under the dial and clear of the port labels to its left.
-                r"different $\omega_A$ per leg",
-                font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
-            ),
-        ).arrange(DOWN, buff=0.2).next_to(dial, DOWN, buff=0.5)
-        self.play(FadeIn(result), run_time=1.0)
-        self.beat()
+        # result = (
+        #     VGroup(
+        #         MathTex(r"\Phi \neq 0", font_size=FONT_STATE),
+        #         Tex(
+        #             # As short as ClockPhase's, and for the same reason: it has to
+        #             # stay under the dial and clear of the port labels to its left.
+        #             r"different $\omega_A$ per leg",
+        #             font_size=FONT_LEGEND,
+        #             color=lighten(GUIDE_COLOR),
+        #         ),
+        #     )
+        #     .arrange(DOWN, buff=0.2)
+        #     .next_to(dial, DOWN, buff=0.5)
+        # )
+        # self.play(FadeIn(result), run_time=1.0)
+        # self.beat()
 
         # What the instrument gets out of what the figure has drawn. One
         # interferometer has no L in it -- this one is a single clock, and its
@@ -185,17 +191,22 @@ class DarkMatterPhase(Scene):
         # of step, and the length scale appears exactly as it does in the
         # wave's own signal: same form, epsilon where h was. That is the point
         # of putting it here rather than only on the gradiometer scenes.
-        scaling = VGroup(
-            MathTex(
-                r"\Delta\Phi \propto n\,L\,\varepsilon\,"
-                r"\sin^2(\omega_\phi T/2)",
-                font_size=FONT_ANNOTATION,
-            ),
-            Tex(
-                r"measured differentially: the wave's form, with $\varepsilon$ for $h$",
-                font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
-            ),
-        ).arrange(DOWN, buff=0.18).move_to(CP_SCALING)
+        scaling = (
+            VGroup(
+                MathTex(
+                    r"\Delta\Phi \propto n\,L\,\varepsilon\,"
+                    r"\sin^2(\omega_\phi T/2)",
+                    font_size=FONT_ANNOTATION,
+                ),
+                # Tex(
+                #     r"measured differentially: the wave's form, with $\varepsilon$ for $h$",
+                #     font_size=FONT_LEGEND,
+                #     color=lighten(GUIDE_COLOR),
+                # ),
+            )
+            .arrange(DOWN, buff=0.18)
+            .move_to(CP_SCALING)
+        )
         if scaling.width > CP_SCALING_WIDTH:
             scaling.scale(CP_SCALING_WIDTH / scaling.width)
         self.play(FadeIn(scaling), run_time=1.0)
@@ -242,13 +253,17 @@ class DarkMatterPhase(Scene):
 
         # --- leg 1: arm 1 is excited, over one stretch of the oscillation ---
         self.play(FadeIn(bands[0]), run_time=0.5)
-        draw_legs(self, [
-            (arm_lo, a, b, ATOM_COLOR),
-            (arm_hi, a, b_up, KICKED_COLOR),
-        ], extra=[
-            self.kicked_first.animate.set_value(leg_one),
-            now.animate.set_value(b[0]),
-        ])
+        draw_legs(
+            self,
+            [
+                (arm_lo, a, b, ATOM_COLOR),
+                (arm_hi, a, b_up, KICKED_COLOR),
+            ],
+            extra=[
+                self.kicked_first.animate.set_value(leg_one),
+                now.animate.set_value(b[0]),
+            ],
+        )
         self.beat()
 
         # --- the mirror: the arms swap, and so does the window ---------------
@@ -267,13 +282,17 @@ class DarkMatterPhase(Scene):
 
         # --- leg 2: arm 2 is excited, over the next, which differs ---------
         self.play(FadeIn(bands[1]), run_time=0.5)
-        draw_legs(self, [
-            (arm_lo, b, c, KICKED_COLOR),
-            (arm_hi, b_up, c, ATOM_COLOR),
-        ], extra=[
-            self.kicked_last.animate.set_value(leg_two),
-            now.animate.set_value(c[0]),
-        ])
+        draw_legs(
+            self,
+            [
+                (arm_lo, b, c, KICKED_COLOR),
+                (arm_hi, b_up, c, ATOM_COLOR),
+            ],
+            extra=[
+                self.kicked_last.animate.set_value(leg_two),
+                now.animate.set_value(c[0]),
+            ],
+        )
         self.beat()
 
         # --- recombine -------------------------------------------------------
@@ -319,7 +338,10 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
         mechanism.
         """
         draw_ports(
-            self, c, CP_OUT, 0.5 * (1 + np.cos(gap)),
+            self,
+            c,
+            CP_OUT,
+            0.5 * (1 + np.cos(gap)),
             extra=[
                 *self.port_extra(),
                 Flash(dial[0], **{**FLASH_STYLE, "color": AREA_COLOR}),
@@ -338,9 +360,11 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
             growing_band(bands[1], b[0], c[0], now),
         )
         for k, dot in enumerate(dots):
-            dot.add_updater(lambda m, k=k: m.set_opacity(
-                1.0 if now.get_value() >= a[0] + k * CP_T else 0.0
-            ))
+            dot.add_updater(
+                lambda m, k=k: m.set_opacity(
+                    1.0 if now.get_value() >= a[0] + k * CP_T else 0.0
+                )
+            )
         self.add(dots)
 
         # Each hand turns at the modulated frequency while its own arm is
@@ -348,12 +372,16 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
         # updater rather than draw_legs' extra, which is what lets them keep
         # turning through the pulses as well as along the legs.
         rate = self.rate
-        self.kicked_first.add_updater(lambda m: m.set_value(
-            dm_phase(rate, a[0], float(np.clip(now.get_value(), a[0], b[0])))
-        ))
-        self.kicked_last.add_updater(lambda m: m.set_value(
-            dm_phase(rate, b[0], float(np.clip(now.get_value(), b[0], c[0])))
-        ))
+        self.kicked_first.add_updater(
+            lambda m: m.set_value(
+                dm_phase(rate, a[0], float(np.clip(now.get_value(), a[0], b[0])))
+            )
+        )
+        self.kicked_last.add_updater(
+            lambda m: m.set_value(
+                dm_phase(rate, b[0], float(np.clip(now.get_value(), b[0], c[0])))
+            )
+        )
 
         # --- the beamsplitter ----------------------------------------------
         # On the instant, not after it: the arms are put on their worldlines
@@ -381,9 +409,7 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
             self.big_lo.set_color(lighten(KICKED_COLOR))
             self.big_hi.set_color(lighten(ATOM_COLOR))
 
-        strobe_pulse(
-            self, now, b[0], top=b_up[1], flash_at=[b, b_up], on_arrival=swap
-        )
+        strobe_pulse(self, now, b[0], top=b_up[1], flash_at=[b, b_up], on_arrival=swap)
 
         # --- recombine -------------------------------------------------------
         strobe_pulse(self, now, c[0], top=c[1], flash_at=[c])
@@ -450,7 +476,8 @@ class DarkMatterField(Scene):
             return [x, DF_TRACE_Z + DF_TRACE_AMPLITUDE * dm_field(t), 0]
 
         zero = DashedLine(
-            [DF_TRACE_X[0], DF_TRACE_Z, 0], [DF_TRACE_X[1], DF_TRACE_Z, 0],
+            [DF_TRACE_X[0], DF_TRACE_Z, 0],
+            [DF_TRACE_X[1], DF_TRACE_Z, 0],
             **GUIDE_STYLE,
         )
         tag = MathTex(r"\phi(t)", font_size=FONT_LEGEND, color=FIELD_COLOR)
@@ -459,8 +486,10 @@ class DarkMatterField(Scene):
         def trace():
             t = now.get_value()
             return ParametricFunction(
-                at, t_range=[t - span, t, 0.02],
-                color=FIELD_COLOR, stroke_width=FIELD_STROKE_WIDTH,
+                at,
+                t_range=[t - span, t, 0.02],
+                color=FIELD_COLOR,
+                stroke_width=FIELD_STROKE_WIDTH,
             )
 
         def marker():
@@ -468,11 +497,13 @@ class DarkMatterField(Scene):
 
         field = MathTex(
             r"\phi(t) = \phi_0 \cos\!\left(m_\phi c^2 t/\hbar\right)",
-            font_size=FONT_ANNOTATION, color=FIELD_COLOR,
+            font_size=FONT_ANNOTATION,
+            color=FIELD_COLOR,
         )
         wave_note = Tex(
             r"light enough to act as one classical wave",
-            font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
+            font_size=FONT_LEGEND,
+            color=lighten(GUIDE_COLOR),
         )
         wave_text = VGroup(field, wave_note).arrange(DOWN, buff=0.3, aligned_edge=LEFT)
         wave_text.move_to(DF_TEXT, aligned_edge=UL)
@@ -480,7 +511,9 @@ class DarkMatterField(Scene):
         # Faded in as a still and swapped for the live trace, as the level
         # diagram is in DarkMatterPhase: an always_redraw cannot be faded.
         self.play(
-            FadeIn(title), FadeIn(zero), FadeIn(tag),
+            FadeIn(title),
+            FadeIn(zero),
+            FadeIn(tag),
             FadeIn(VGroup(trace(), marker())),
             run_time=1.0,
         )
@@ -489,7 +522,8 @@ class DarkMatterField(Scene):
         self.play(
             FadeIn(wave_text, shift=UP * 0.15),
             now.animate.increment_value(1.0 * V),
-            rate_func=linear, run_time=1.0,
+            rate_func=linear,
+            run_time=1.0,
         )
         self.hold()
 
@@ -501,20 +535,26 @@ class DarkMatterField(Scene):
         law = MathTex(
             r"\omega_A \to \omega_A\left[1 + \varepsilon\cos"
             r"(\omega_\phi t + \theta)\right]",
-            font_size=FONT_ANNOTATION, color=FIELD_COLOR,
+            font_size=FONT_ANNOTATION,
+            color=FIELD_COLOR,
         )
         clock_text = VGroup(couplings, law).arrange(DOWN, buff=0.3, aligned_edge=LEFT)
         clock_text.next_to(wave_text, DOWN, buff=0.45, aligned_edge=LEFT)
 
         levels, moving, detuning = make_modulated_levels(
-            now, DF_LEVELS, scale=DF_LEVEL_SCALE, text_scale=DF_LEVEL_TEXT_SCALE,
+            now,
+            DF_LEVELS,
+            scale=DF_LEVEL_SCALE,
+            text_scale=DF_LEVEL_TEXT_SCALE,
         )
         # Swapped for the live version after the fade, for the same reason
         # as the trace -- which is why the field holds still for the fade: a
         # still of a moving level would be out of date by the time it landed.
         still = VGroup(moving(), detuning())
         self.play(
-            FadeIn(clock_text, shift=UP * 0.15), FadeIn(levels), FadeIn(still),
+            FadeIn(clock_text, shift=UP * 0.15),
+            FadeIn(levels),
+            FadeIn(still),
             run_time=1.0,
         )
         self.remove(still)
@@ -529,6 +569,7 @@ class DarkMatterField(Scene):
         self.play(
             FadeIn(verdict, shift=UP * 0.15),
             now.animate.increment_value(1.0 * V),
-            rate_func=linear, run_time=1.0,
+            rate_func=linear,
+            run_time=1.0,
         )
         self.hold()
