@@ -257,9 +257,6 @@ OPTIC_COLOR = lighten(GUIDE_COLOR)  # test masses, beam splitter, detector
 BEAM_STROKE_WIDTH = 3
 BEAM_GLOW_WIDTH = 10  # the faint band a beam's wave rides on
 BEAM_GLOW_OPACITY = 0.18
-# The ring of free test masses beside the apparatus: small, because it is a
-# key to how the wave deforms space rather than a thing the light touches.
-TEST_MASS_DOT_RADIUS = 0.06
 
 
 # --- data plots (matplotlib) ----------------------------------------------

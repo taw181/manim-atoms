@@ -77,14 +77,6 @@ INSET_WAVELENGTH = 1.3
 K_INSET = TAU / INSET_WAVELENGTH
 OMEGA_INSET = K_INSET * LIGHT_SPEED
 
-# the ring of free masses: a key to what the wave does to space
-RING_CENTER = np.array([-5.1, 1.55, 0.0])
-RING_RADIUS = 0.72
-RING_DOTS = 16
-# The ring is exaggerated further than the arms: at the arms' own fraction,
-# under a tenth, an ellipse is too close to a circle to read at a glance.
-RING_SWING = 0.3  # fractional stretch at the peak of the wave
-
 # --- lab-time beats ---------------------------------------------------------
 T_INPUT = 1.1  # the laser beam reaches the splitter
 T_ARMS = 2.6  # the arms are lit
@@ -257,40 +249,6 @@ def make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME):
         )
 
     return panel(VGroup(zero, tag)), VGroup(panel.redraw(curve), panel.redraw(marker))
-
-
-def make_ring(now):
-    """Free masses in a circle, squeezed into an ellipse by the wave.
-
-    Stretched along x and squeezed along y in step with the arms, so the ring
-    is a key to what the mirrors are doing.
-    """
-    rest = DashedVMobject(
-        Circle(radius=RING_RADIUS, color=GUIDE_COLOR, stroke_width=2,
-               stroke_opacity=0.3),
-        num_dashes=40,
-    ).move_to(RING_CENTER)
-    angles = np.linspace(0, TAU, RING_DOTS, endpoint=False)
-
-    def dots():
-        f = RING_SWING * strain(now.get_value())
-        return VGroup(*[
-            Dot(
-                RING_CENTER + RING_RADIUS * np.array(
-                    [(1 + f) * np.cos(a), (1 - f) * np.sin(a), 0]
-                ),
-                radius=TEST_MASS_DOT_RADIUS, color=OPTIC_COLOR,
-            ) for a in angles
-        ])
-
-    caption = VGroup(
-        Tex("free masses, as a wave", font_size=FONT_LEGEND - 4),
-        Tex("passes into the screen", font_size=FONT_LEGEND - 4),
-        Tex(r"(motion drawn $\sim 10^{20}\times$ larger)", font_size=FONT_LEGEND - 6),
-    ).set_color(lighten(GUIDE_COLOR)).arrange(DOWN, buff=0.08).next_to(
-        rest, DOWN, buff=0.25
-    )
-    return VGroup(rest, caption), always_redraw(dots)
 
 
 def returning_waves(now, h=strain, panel=FULL_FRAME):
@@ -515,11 +473,10 @@ class LIGOMichelson(Scene):
         self.beat()
 
         # --- a wave passes ---
-        ring_axes, ring_dots = make_ring(now)
         trace_axes, trace = make_strain_trace(now)
         run(
             self, now, GW_ON, FadeOut(dark_note),
-            FadeIn(ring_axes), FadeIn(ring_dots), FadeIn(trace_axes), FadeIn(trace),
+            FadeIn(trace_axes), FadeIn(trace),
         )
 
         readout, in_h, scale = make_equation()
