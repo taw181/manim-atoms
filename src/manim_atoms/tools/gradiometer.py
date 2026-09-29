@@ -87,8 +87,6 @@ def gradiometer_frame(scene, title_tex):
     t_axis = Tex("time $\\rightarrow$", font_size=FONT_LEGEND,
                  color=lighten(GUIDE_COLOR))
     t_axis.next_to(laser, UP, buff=0.12).align_to(laser, RIGHT)
-    z_axis = Tex("baseline", font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR))
-    z_axis.rotate(90 * DEGREES).to_edge(LEFT, buff=0.18).set_y(0.3)
 
     baseline = DoubleArrow(
         [GR_T0 - 0.75, GR_LOWER_Z, 0],
@@ -104,7 +102,7 @@ def gradiometer_frame(scene, title_tex):
 
     scene.play(
         FadeIn(title), FadeIn(laser), FadeIn(laser_tag),
-        FadeIn(t_axis), FadeIn(z_axis), run_time=1.0,
+        FadeIn(t_axis), run_time=1.0,
     )
     scene.play(GrowFromCenter(baseline), FadeIn(baseline_label), run_time=0.7)
     return baseline, baseline_label
