@@ -180,6 +180,23 @@ def wound_with_shift(clock, rate, t_from, t_to, on, off, shift):
     return turn
 
 
+def wound_with_jumps(clock, rate, t_from, t_to, jumps):
+    """wound(), plus a step `delta` at each (t, delta) in `jumps` once lab time
+    has passed t.
+
+    What the laser does to a hand: each pulse writes its phase onto the arm it
+    drives, on the instant it arrives, whether or not that arm is turning.
+    """
+    def turn(tracker):
+        now = clock.get_value()
+        t = float(np.clip(now, t_from, t_to))
+        tracker.set_value(
+            rate * (t - t_from) + sum(d for at, d in jumps if now >= at)
+        )
+
+    return turn
+
+
 def carry(atom, path, clock):
     """Pin an atom to its worldline for as long as lab time is running.
 
