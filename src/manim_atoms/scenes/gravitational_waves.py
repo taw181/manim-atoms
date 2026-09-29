@@ -9,13 +9,14 @@ The field is evaluated at retarded time, so at any instant the rim of the sheet
 is still showing the slow, weak waves emitted seconds earlier while the centre
 shows the fast, strong ones -- that contrast across the sheet *is* the chirp.
 
-MergerOnSensitivityPlot runs the merger twice. First beside LIGO itself (the
-interferometer of aionanim.scenes.ligo, drawn into the right half, already
-lit, its test masses swinging to this merger's own chirp); then, with the sheet flattened and
-the holes back in, beside LIGO's sensitivity curve, with a dot riding the source's characteristic-strain track in step with the
+MergerOnSensitivityPlot runs the merger beside LIGO's sensitivity curve, with a dot riding the source's characteristic-strain track in step with the
 sheet. The track is real (a 60 Msun binary at z = 0.1, from aionanim.physics.gw_signals);
 the dot's timing is not -- ten years of inspiral are squeezed into the
 sheet's fourteen seconds, with a readout saying how long is really left.
+With WITH_LIGO it first runs the merger beside LIGO itself (the
+interferometer of aionanim.scenes.ligo, drawn into the right half, already
+lit, its test masses swinging to this merger's own chirp), then flattens the
+sheet and runs it again beside the plot.
 
 Everything visual comes from aionanim.style.
 """
@@ -589,7 +590,12 @@ class SideCamera(ThreeDCamera):
 
 
 class MergerOnSensitivityPlot(BlackHoleMerger):
-    """The merger on the left; on the right, its signal crossing LIGO's band."""
+    """The merger on the left; on the right, its signal crossing LIGO's band.
+
+    WITH_LIGO runs it beside the LIGO interferometer first.
+    """
+
+    WITH_LIGO = False
 
     CAMERA = dict(
         BlackHoleMerger.CAMERA,
@@ -607,6 +613,8 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
     def merge(self, sheet, clock, gain):
         """Once beside LIGO, then, the sheet let go flat and the clock wound
         back, again beside the plot."""
+        if not self.WITH_LIGO:
+            return super().merge(sheet, clock, gain)
         self.beside_ligo = True
         remnant = super().merge(sheet, clock, gain)
         self.beside_ligo = False
@@ -627,6 +635,8 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
 
     def entrance(self, clock):
         """LIGO on the right, lit, standing still until the clock runs."""
+        if not self.WITH_LIGO:
+            return []
         labels, optics, arm_tags = make_apparatus(clock, ligo_strain, LIGO_APPARATUS)
         labels.remove(labels[0])  # its title: the scene's own says enough
         on = ValueTracker(1.0)  # the beams are lit all the way from the start

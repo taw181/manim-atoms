@@ -477,6 +477,10 @@ def make_equation(panel=FULL_FRAME):
 class LIGOMichelson(Scene):
     """A Michelson interferometer on a dark fringe, lit up by a passing wave."""
 
+    def beat(self):
+        """The pause on the dark port, before the wave: nothing here, a click
+        on the slide version."""
+
     def construct(self):
         now = ValueTracker(0.0)
         lit_in = ValueTracker(0.0)  # how far light has got down each beam
@@ -508,6 +512,7 @@ class LIGOMichelson(Scene):
             FadeIn(sum_axes), FadeIn(sum_wave),
         )
         run(self, now, T_DARK, FadeIn(dark_note))
+        self.beat()
 
         # --- a wave passes ---
         ring_axes, ring_dots = make_ring(now)
