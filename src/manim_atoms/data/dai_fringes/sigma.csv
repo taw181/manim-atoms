@@ -1,0 +1,8 @@
+# Fig. 4c inset: scatter of the mean differential phase over each whole run, sigma_<dphi>, against the standard quantum limit
+# From Baynham et al., arXiv:2504.09158, doi:10.5281/zenodo.19592552 (CC BY 4.0)
+# Computed as 'data_analysis/figures/Figure 4.ipynb' does: data_analysis/data/intermediate_data/sigma_delta_phi_nonrandomised.npy, data_analysis/data/intermediate_data/sigma_delta_phi_randomised.npy, over sqrt(shots per run / 141 shots per block); SQL 43.5(1.6) mrad per shot over sqrt(56623 / 2)
+# Columns: label; sigma_urad and err_urad, the value and its error bar
+label,sigma_urad,err_urad
+HLN,274.55800991712704,13.975874565366555
+LLN,260.2812931058346,13.098788790314815
+SQL,258.5281372843033,9.509080911606558

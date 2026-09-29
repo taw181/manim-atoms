@@ -1,0 +1,38 @@
+# AION-10 (initial) projected sensitivity to scalar ULDM coupled to photons: |d_e| at SNR 1 after 1e8 s, the SOLID curve (f_phi >= 0.3 Hz)
+# Source: Badurina et al., JCAP 05 (2020) 011 (arXiv:1911.11755), Fig. 3 middle panel (photon coupling |d_e| vs scalar DM mass m_phi); vector paths of the journal PDF, page 13; stroke colour rgb(237, 51, 119), drawings [102] (solid paths, joined in order of mass).
+# Left out: the dotted continuation down to 0.1 Hz. Endpoints where the curve meets the frame (d_e = 10) are the frame, not the curve's end.
+# Calibration (PDF points, y down; frame 256.73..367.96 x 171.36..90.47, from the tick marks):
+#   log10(m_phi/eV) = -19 + (x - 256.73)/12.3589 ;  log10|d_e| = -16 - (y - 171.36)/4.7582
+# Points: the PDF polyline's own vertices, exact (no resampling or fitting); linear in log-log between them. Accuracy ~0.01 dex (the vector coordinates are to 0.01 pt).
+m_eV,d_e
+1.239926e-15,1.256139e-02
+1.243909e-15,1.261997e-02
+1.248280e-15,1.267633e-02
+1.257062e-15,1.278245e-02
+1.274724e-15,1.300734e-02
+1.310507e-15,1.346912e-02
+1.385215e-15,1.442841e-02
+1.547414e-15,1.657299e-02
+1.968123e-15,2.238449e-02
+2.463355e-15,2.964220e-02
+3.069680e-15,3.901786e-02
+3.897253e-15,5.257765e-02
+4.869233e-15,6.947646e-02
+6.200437e-15,9.396671e-02
+7.857961e-15,1.263528e-01
+9.803747e-15,1.665436e-01
+1.245798e-14,2.247696e-01
+1.558353e-14,2.974730e-01
+1.940907e-14,3.912584e-01
+2.462696e-14,5.268230e-01
+3.075269e-14,6.954718e-01
+3.912215e-14,9.400786e-01
+4.955478e-14,1.262860e+00
+6.177035e-14,1.663584e+00
+7.847019e-14,2.243456e+00
+9.806977e-14,2.964529e+00
+1.249181e-13,4.012627e+00
+1.584062e-13,5.399785e+00
+1.976318e-13,7.117342e+00
+2.512879e-13,9.613150e+00
+2.593263e-13,9.998887e+00

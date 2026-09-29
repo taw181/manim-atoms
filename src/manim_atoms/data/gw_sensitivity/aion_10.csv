@@ -1,0 +1,80 @@
+# AION-10 characteristic-strain sensitivity curve (solid green #47b66d)
+# Source: GW_exclusion_plot.svg, top-left panel, stroke path id 'path529-4' (fill companion 'path528-2').
+#   Identified as AION-10 from its label (outlined glyphs path544-3/545-6/546-7, #47b66d, read 'AION-10', sitting on
+#   this line). The SVG has no GGN variant for AION-10.
+# Scenario: the SVG does not say; most likely the 'goal' AION-10 of Badurina et al., JCAP 05 (2020) 011, table 1
+#   (L = 10 m, T = 1.4 s, dphi = 1e-4 /sqrt(Hz), n = 1000): the SVG has one AION-10 curve and its ratio to the AION-100 curve
+#   (3.84 dex, flat over the shared band) fits goal/goal (~3.6 dex from dphi/(n L)), not any pairing with an
+#   initial scenario (1.0, 3.0 or 4.6 dex).
+# Caveats: the curve is clipped by the plot frame (h_c = 10^-14.5) at both ends, so only its bottom
+#   (0.075 - 6.9 Hz, minimum h_c = 7.0e-16 near 0.3 Hz) exists here.
+# Calibration (svgelements page units, y down): log10(f/Hz) = -6 + (x-102.2)/28.065 ; log10(h_c) = -15 - (y-50.24)/18.258
+# Sampling: the source is a polyline of 83 vertices; resampled to 61 points uniform in log f (aion_km.csv's spacing) by linear
+#   interpolation in log-log (max deviation 1.3e-03 dex). Written by data_scripts/digitise_aion_gw.py.
+# Cross-check against the paper: Badurina et al. (2020) fig. 6 (PDF page 17, vector paths read with pymupdf) plots
+#   the same quantity, characteristic strain, in the same colours, but only above 0.1 Hz. Its AION-km and
+#   AION-100 curves have the SVG's slope and sit 0.45-0.50 dex (a factor ~sqrt(10)) BELOW the SVG's over
+#   0.1-1 Hz, and its AION-10 (#00cc00) 1.6 dex below; so the SVG is not a redraw of that figure but a later
+#   figure of the same programme. These values are the SVG's, on the same footing as every other curve here.
+f_Hz,h_c
+7.485606e-02,3.163574e-15
+8.072081e-02,2.846291e-15
+8.704505e-02,2.560830e-15
+9.386477e-02,2.303998e-15
+1.012188e-01,2.072924e-15
+1.091490e-01,1.865025e-15
+1.177005e-01,1.687365e-15
+1.269220e-01,1.530006e-15
+1.368659e-01,1.391163e-15
+1.475890e-01,1.265835e-15
+1.591521e-01,1.157690e-15
+1.716212e-01,1.063977e-15
+1.850672e-01,9.811992e-16
+1.995667e-01,9.085128e-16
+2.152022e-01,8.485664e-16
+2.320626e-01,7.981695e-16
+2.502440e-01,7.579499e-16
+2.698499e-01,7.275466e-16
+2.909919e-01,7.076558e-16
+3.137902e-01,6.997037e-16
+3.383747e-01,7.051461e-16
+3.648854e-01,7.268091e-16
+3.934731e-01,7.549832e-16
+4.243005e-01,7.836893e-16
+4.575432e-01,8.140265e-16
+4.933904e-01,8.451446e-16
+5.320461e-01,8.775019e-16
+5.737303e-01,9.112540e-16
+6.186804e-01,9.463043e-16
+6.671521e-01,9.827028e-16
+7.194215e-01,1.020501e-15
+7.757861e-01,1.059754e-15
+8.365666e-01,1.100516e-15
+9.021091e-01,1.142844e-15
+9.727867e-01,1.186777e-15
+1.049002e+00,1.232398e-15
+1.131188e+00,1.279773e-15
+1.219813e+00,1.328970e-15
+1.315382e+00,1.380057e-15
+1.418438e+00,1.433109e-15
+1.529568e+00,1.488301e-15
+1.649406e+00,1.545758e-15
+1.778632e+00,1.605432e-15
+1.917982e+00,1.667410e-15
+2.068250e+00,1.731781e-15
+2.230292e+00,1.798637e-15
+2.405028e+00,1.868074e-15
+2.593455e+00,1.939806e-15
+2.796645e+00,2.014263e-15
+3.015753e+00,2.091577e-15
+3.252029e+00,2.171858e-15
+3.506816e+00,2.255222e-15
+3.781564e+00,2.341785e-15
+4.077839e+00,2.431670e-15
+4.397325e+00,2.524743e-15
+4.741842e+00,2.621339e-15
+5.113352e+00,2.721631e-15
+5.513968e+00,2.825760e-15
+5.945971e+00,2.933874e-15
+6.411820e+00,3.046123e-15
+6.914167e+00,3.163574e-15
