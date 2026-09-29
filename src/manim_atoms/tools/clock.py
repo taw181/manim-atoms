@@ -241,12 +241,13 @@ def budget_equation(lhs, term_prefix="", font_size=FONT_STATE):
 
     One MathTex with the terms as separate substrings: LaTeX still sets it as
     one expression, so the relation lines up, but each term is a submobject
-    that can be circled or struck through on its own. The thin spaces keep a
-    mark clear of the + in front of its term. Whatever the left-hand side is,
+    that can be circled or struck through on its own. The spaces round each
+    term are wider than a ring stands off it (RING_BUFF), so a ring clears the
+    = and + on either side. Whatever the left-hand side is,
     it stays a single substring, so the terms keep the same indices.
     """
-    def term(name, trailing=r"\,"):
-        return r"\," + term_prefix + r"\Phi_{\text{" + name + r"}}" + trailing
+    def term(name, trailing=r"\;\;"):
+        return r"\;\;" + term_prefix + r"\Phi_{\text{" + name + r"}}" + trailing
 
     return MathTex(
         lhs, "=", term("propagation"), "+", term("laser", trailing=""),

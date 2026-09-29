@@ -23,10 +23,14 @@ from aionanim.tools.slicing import CLOUD_WIDTH, SlicingCloud, VelocityPlot
 # --- velocity-slicing layout ----------------------------------------------
 VS_STAGE = 6  # into STAGES
 VS_HEADING_CORNER = [-6.6, 3.7, 0]
-VS_TIMELINE_CENTER = [0.9, 3.3, 0]
-VS_LEVELS_CENTER = [5.35, 2.55, 0]
-VS_LEVELS_SCALE = 0.5
-VS_PLOT_CENTER = [1.4, -0.95, 0]
+# timeline bottom right and levels top right, where the other sequence
+# scenes keep them; the plot is raised and narrowed to end clear of both
+VS_TIMELINE_CENTER = [4.6, -2.95, 0]
+VS_LEVELS_CENTER = [5.2, 2.4, 0]
+VS_LEVELS_SCALE = 0.6
+VS_PLOT_CENTER = [0.55, -0.65, 0]
+VS_PLOT_WIDTH = 6.0
+VS_PLOT_HEIGHT = 3.0
 VS_CLOUD_CENTER = np.array([-4.7, -1.2, 0])
 VS_CLOCK_BEAM_SPAN = (-4.1, 0.7)  # the vertical clock beam, bottom to top
 VS_CLOCK_BEAM_WIDTH = CLOUD_WIDTH + 0.5
@@ -85,7 +89,8 @@ class VelocitySlicing(Scene):
         levels = SrLevels().scale(VS_LEVELS_SCALE).move_to(VS_LEVELS_CENTER)
         timeline = Timeline(STAGES[VS_STAGE - 1:VS_STAGE + 2]).move_to(VS_TIMELINE_CENTER)
         heading = stage_heading(STAGES[VS_STAGE]).move_to(VS_HEADING_CORNER, aligned_edge=UL)
-        plot = VelocityPlot(center=VS_PLOT_CENTER)
+        plot = VelocityPlot(center=VS_PLOT_CENTER, width=VS_PLOT_WIDTH,
+                            height=VS_PLOT_HEIGHT)
         cloud = SlicingCloud(VS_CLOUD_CENTER)
 
         clock_beam = gaussian_band([VS_CLOUD_CENTER[0], VS_CLOCK_BEAM_SPAN[0], 0],

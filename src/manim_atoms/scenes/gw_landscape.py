@@ -23,6 +23,7 @@ import numpy as np
 from manim import *
 
 from aionanim.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from aionanim.tools.layout import slide_title
 from aionanim.physics.gw_signals import mass_tex, merger_track, phenom_a_frequencies
 from aionanim.style import *
 
@@ -115,6 +116,12 @@ def redshift_key(axes, redshifts):
 class SensitivityBuildUp(Scene):
     # The mid-band detectors brought in last, in order, one step each.
     GAP_FILLERS = ("AION-10", "AION-100", "AION-km", "AEDGE")
+    # None: the plot fills the slide. A title needs the plot brought down
+    # under it, so a subclass that sets one moves the plot too.
+    TITLE = None
+    PLOT_ORIGIN = PLOT_ORIGIN
+    PLOT_WIDTH = PLOT_WIDTH
+    PLOT_HEIGHT = PLOT_HEIGHT
 
     def beat(self):
         """The pause between steps; a click on the slide version."""
@@ -131,8 +138,10 @@ class SensitivityBuildUp(Scene):
 
     def construct(self):
         axes, frame = sensitivity_axes(
-            LOG_F_RANGE, LOG_H_RANGE, PLOT_ORIGIN, PLOT_WIDTH, PLOT_HEIGHT
+            LOG_F_RANGE, LOG_H_RANGE, self.PLOT_ORIGIN, self.PLOT_WIDTH, self.PLOT_HEIGHT
         )
+        if self.TITLE:
+            frame = VGroup(slide_title(self.TITLE), frame)
 
         # --- 1. LIGO and one merger ---------------------------------------
         first = merger(axes, *FIRST_MERGER, width=GW_TRACK_WIDTH)

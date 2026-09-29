@@ -389,8 +389,8 @@ ULDM_MARK_DOT_RADIUS = 0.065
 ULDM_LABEL_OUTLINE = dict(color=PLOT_BACKGROUND, width=3)
 # An inset has to fit beside a full figure, so its type is a notch below the
 # footer's-plus: the smallest that still reads from the back of a room.
-FONT_INSET_TICK = 18
-FONT_INSET_LABEL = 20
+FONT_INSET_TICK = 22
+FONT_INSET_LABEL = 24
 
 
 # --- the experimental sequence --------------------------------------------
@@ -441,7 +441,7 @@ TIMELINE_DONE_OPACITY = 0.5
 TIMELINE_ACTIVE_RING = dict(color=WHITE, width=4)
 FONT_TIMELINE = 20
 FONT_REFERENCE = 18
-REFERENCE_IDLE_OPACITY = 0.4
+REFERENCE_IDLE_OPACITY = 0.7  # still legible from the back of a room when idle
 # The imaging stops once the lower trap is loaded; the stages after it carry
 # on over its last frame, dimmed, so the frame stays as a reminder of where
 # the atoms are.

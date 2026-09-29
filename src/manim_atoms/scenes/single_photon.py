@@ -50,13 +50,14 @@ class SinglePhotonMachZehnder(MachZehnder):
 
     def construct(self):
         # --- 1. setup ----------------------------------------------------
-        # Title right, levels left: the two photons stimulated out of the
-        # upper arm at the mirror fly straight up x = MZ_B[0] and off the top
-        # of the frame, so that column has to stay clear of both.
+        # Title top left, as on every slide, levels top right. The two
+        # photons stimulated out of the upper arm at the mirror fly straight
+        # up x = MZ_B[0] and off the top of the frame, crossing the title on
+        # their way out.
         title = Tex(
             r"Single-photon Mach--Zehnder: $\pi/2 - \pi - \pi/2$",
             font_size=FONT_TITLE,
-        ).to_corner(UR)
+        ).to_corner(UL)
         levels = make_level_diagram()
         self.play(FadeIn(title), FadeIn(levels), run_time=1.0)
         self.beat()

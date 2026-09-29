@@ -18,13 +18,12 @@ from aionanim.tools.primitives import (
 # photon does the work, and the laser's phase is written into the atom once
 # per pulse instead of twice.
 #
-# The diagram sits upper left and doubles as the figure's key: |g> carries
+# The diagram sits upper right and doubles as the figure's key: |g> carries
 # ATOM_COLOR and |e> carries KICKED_COLOR, which are the colours the two arms
 # are drawn in, so it says everything a separate legend would and also says
-# what the pulses are resonant with. Upper left is the one corner it can sit
-# in -- the mirror's emitted photons climb the column x = MZ_B[0] and out of
-# the top of the frame, and the title already occupies the right.
-SP_LEVELS = np.array([-5.5, 2.05, 0.0])  # centre of the gap
+# what the pulses are resonant with. The title takes the upper left, as on
+# every slide, and the interferometer's ports end well short of this corner.
+SP_LEVELS = np.array([5.0, 2.05, 0.0])  # centre of the gap
 SP_LEVEL_LENGTH = 1.6
 SP_LEVEL_GAP = 1.6  # vertical separation of the two levels
 SP_LEVEL_INSET = 0.1  # how far the gap arrow stands off each level line

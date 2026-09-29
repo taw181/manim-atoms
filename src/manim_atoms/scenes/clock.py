@@ -181,8 +181,10 @@ class ClockPhase(Scene):
 
         # --- leg 2: and so the other hand turns --------------------------------
         kets = [
+            # past the middle of its leg, so it clears the right-hand edge of
+            # the effect box that later spans the middle half of it
             arm_ket(True, r"\phi_2 - \omega_A T", CP_KET_FONT)
-            .next_to(midpoint(b, c), DR, buff=CP_KET_BUFF),
+            .next_to(b + 0.7 * (c - b), DR, buff=CP_KET_BUFF),
             arm_ket(False, r"\phi_1 - \phi_2 - \omega_A T", CP_KET_FONT)
             .next_to(midpoint(b_up, c), UP, buff=CP_KET_BUFF),
         ]

@@ -341,6 +341,7 @@ class BlackHoleMerger(ThreeDScene):
         frame_center=[0.0, 0.0, -0.45],
     )
     AMBIENT_ROTATION = 0.02  # rad/s
+    TITLE = r"Gravitational waves from a binary black hole merger"
 
     def entrance(self, clock):
         """Animations to play as the sheet and the title come in."""
@@ -377,10 +378,7 @@ class BlackHoleMerger(ThreeDScene):
 
         # --- 1. flat spacetime -------------------------------------------
         sheet = make_sheet()
-        title = Tex(
-            r"Gravitational waves from a binary black hole merger",
-            font_size=FONT_TITLE,
-        ).to_corner(UL)
+        title = Tex(self.TITLE, font_size=FONT_TITLE).to_corner(UL)
         self.add_fixed_in_frame_mobjects(title)
         self.play(
             FadeIn(sheet, run_time=1.5), FadeIn(title, run_time=1.0), *self.entrance(clock)
@@ -488,10 +486,11 @@ SIDE_TRACE_WIDTH = 6.4
 # Once the sheet settles, the left panel becomes what LIGO actually recorded
 # from GW150914 -- a 36 + 29 Msun merger at z = 0.09, so a near twin of the
 # track on the right. Its pure black is lifted to the talk's background so
-# the image has no visible edge.
+# the image has no visible edge. Its time axis ends clear of the footer's
+# citation line.
 LIGO_DATA_IMAGE = data_path("images", "ligo20160211a.jpg")
-LIGO_DATA_HEIGHT = 6.3
-LIGO_DATA_CENTER = np.array([SIDE_SHEET_X, -0.75, 0.0])
+LIGO_DATA_HEIGHT = 5.9
+LIGO_DATA_CENTER = np.array([SIDE_SHEET_X, -0.5, 0.0])
 # The figure runs from t = 0.25 s to 0.46 s with the peak at 0.42 s: from
 # 0.17 s before merger (36 Hz on this track, the 35 Hz LIGO quote) on through
 # the ringdown. That stretch of the track is recoloured as the data comes in.

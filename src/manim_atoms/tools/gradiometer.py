@@ -168,7 +168,7 @@ def fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None,
 # the open band between the two interferometers, which is where the budget
 # goes once the diagram is drawn -- and left of centre, because the right-hand
 # end of that band is where the lower interferometer's ports climb into
-GR_TERMS = np.array([-1.5, -0.3, 0.0])
+GR_TERMS = np.array([-1.5, 0.1, 0.0])  # its labels clear of the lower cloud's last leg
 GR_TERMS_WIDTH = 7.6  # the clear span between the L arrow and the ports
 # Where the wave scenes say what is done with the two dials. Same band and
 # same clear span as the budget, so all three gradiometer scenes end in the

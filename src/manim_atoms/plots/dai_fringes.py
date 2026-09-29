@@ -23,7 +23,9 @@ deviations ``data_scripts/process_dai_adev.py`` and the likelihood scans
   fitted to the differential phase against trial frequency, over the
   periodogram of the drive: the fit finds each one where it was put.
 
-Both return matplotlib Figures; saving them is the caller's business.
+Both return matplotlib Figures; saving them is the caller's business. Build
+and save them inside ``deck_fonts()`` to set them in the deck's Computer
+Modern rather than matplotlib's sans.
 """
 
 import csv
@@ -55,6 +57,22 @@ LISSAJOUS_CHUNK = LISSAJOUS_SHOTS // 10
 
 LABEL_SIZE = 15
 TICK_SIZE = 13
+
+# Computer Modern, the face LaTeX sets every other slide in. cmr10 ships with
+# matplotlib but has no Unicode minus, so ticks are drawn as mathtext.
+DECK_RC = {
+    "font.family": "serif",
+    "font.serif": ["cmr10"],
+    "mathtext.fontset": "cm",
+    "axes.formatter.use_mathtext": True,
+    "axes.unicode_minus": False,
+}
+
+
+def deck_fonts():
+    """A context to build and save the figures in: tick labels are made when
+    a figure is drawn, so the fonts have to hold until it is saved."""
+    return plt.rc_context(DECK_RC)
 
 
 def hexed(color):

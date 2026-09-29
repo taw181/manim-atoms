@@ -60,7 +60,7 @@ class VelocityPlot(VGroup):
     thermal curve dashed, for comparing the slice against at the end.
     """
 
-    def __init__(self, center=ORIGIN, **kwargs):
+    def __init__(self, center=ORIGIN, width=PLOT_WIDTH, height=PLOT_HEIGHT, **kwargs):
         super().__init__(**kwargs)
         # placed before anything is drawn from it: the curves that come and go
         # are built in the axes' coordinates and aren't part of this group. The
@@ -70,8 +70,8 @@ class VelocityPlot(VGroup):
         self.axes = Axes(
             x_range=[0, SLICE_U_RANGE[1] - SLICE_U_RANGE[0], 1],
             y_range=[0, PLOT_Y_MAX, 1],
-            x_length=PLOT_WIDTH,
-            y_length=PLOT_HEIGHT,
+            x_length=width,
+            y_length=height,
             tips=False,
             axis_config=dict(
                 color=PLOT_FOREGROUND, stroke_width=2, include_ticks=False

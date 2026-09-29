@@ -105,7 +105,10 @@ TRANSITIONS = {
                 linewidth=r"30\,\mathrm{MHz}"),
     "689": dict(upper=r"{}^3P_1", color=TRANSITION_689_COLOR, double=False,
                 start=(0.0, LV_GROUND), end=(1.9, LV_3P[1]), side=LEFT,
-                linewidth=r"7.4\,\mathrm{kHz}"),
+                linewidth=r"7.4\,\mathrm{kHz}",
+                # further out: the arrow leans under its label, so at the
+                # default the linewidth line runs into it
+                label_buff=0.55),
     "698": dict(upper=r"{}^3P_0", color=TRANSITION_698_COLOR, double=True,
                 start=(0.45, LV_GROUND), end=(2.3, LV_3P[0]), side=RIGHT,
                 linewidth=r"{\sim}1\,\mathrm{mHz}"),
@@ -168,7 +171,7 @@ def _transition(key, color, width):
         Tex(f"{key} nm", font_size=FONT_LEGEND, color=color),
         MathTex(spec["linewidth"], font_size=FONT_LINEWIDTH, color=color),
     ).arrange(DOWN, buff=0.1, aligned_edge=-spec["side"])
-    label.next_to(arrow.get_center(), spec["side"], buff=0.3)
+    label.next_to(arrow.get_center(), spec["side"], buff=spec.get("label_buff", 0.3))
     return VGroup(arrow, label)
 
 

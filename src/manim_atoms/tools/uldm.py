@@ -152,7 +152,9 @@ def field_marker(now):
     page says they are the same number.
     """
     def at():
-        t = now.get_value()
+        # held at the curve's end once lab time runs past it, rather than
+        # riding on over the trace's label
+        t = min(now.get_value(), DM_TRACE_X[1])
         return [t, DM_TRACE_Z + DM_TRACE_AMPLITUDE * dm_field(t), 0]
 
     return always_redraw(
@@ -245,9 +247,12 @@ def make_modulated_levels(now, center=DM_LEVELS, scale=1.0, text_scale=1.0):
             return VGroup()
         foot = resonant + RIGHT * s * DM_MARK_X
         bar = Line(foot, foot + UP * offset, color=LASER_COLOR, stroke_width=2)
+        # past the lines' right end, level with the bar: inside their span
+        # the resonance line and the moving level run through it
+        beside = [center[0] + s * DM_LEVEL_LENGTH / 2, foot[1] + 0.5 * offset, 0]
         label = MathTex(
             r"\delta", font_size=FONT_LEGEND * ts, color=LASER_COLOR
-        ).next_to(foot + UP * 0.5 * offset, RIGHT, buff=0.08 * ts)
+        ).next_to(beside, RIGHT, buff=0.08 * ts)
         group = VGroup(bar, label)
         group.set_opacity(min(1.0, abs(offset) / (0.5 * s * DM_LEVEL_SWING)))
         return group

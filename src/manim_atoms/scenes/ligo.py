@@ -29,8 +29,8 @@ from aionanim.tools.primitives import make_guide
 # detector on a dark fringe to begin with.
 BS = np.array([-2.6, -1.1, 0.0])
 ARM = 3.7  # drawn length of each arm
-LASER = BS + LEFT * 3.2
-DETECTOR = BS + DOWN * 2.3
+LASER = BS + LEFT * 3.0  # the box's left edge clear of the frame's
+DETECTOR = BS + DOWN * 2.0  # the photodiode's body clear of the footer
 X_END = BS + RIGHT * ARM  # the x arm's test mass, at rest
 Y_END = BS + UP * ARM  # the y arm's test mass, at rest
 
@@ -423,7 +423,8 @@ def make_equation(panel=FULL_FRAME):
         r"= \frac{4\pi L}{\lambda}\, h", font_size=FONT_ANNOTATION
     )
     in_h.next_to(readout, DOWN, buff=0.25).align_to(readout[1], LEFT)
-    VGroup(readout, in_h).move_to([np.mean(PANEL_X), -2.4, 0])
+    # high enough that the scale line under it clears the slide number
+    VGroup(readout, in_h).move_to([np.mean(PANEL_X), -2.15, 0])
     scale = MathTex(
         r"h \sim 10^{-21},\ L = 4\,\mathrm{km}"
         r"\ \Rightarrow\ \Delta L \sim 10^{-18}\,\mathrm{m}",
