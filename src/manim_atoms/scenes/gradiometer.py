@@ -191,10 +191,10 @@ class Gradiometer(GradiometerGW):
         # --- some effect on the atoms -----------------------------------------
         # Not replayed: a box on each interferometer, and the hand of the arm
         # excited there (the one kicked at the mirror) sweeping on by what it
-        # picked up, while a line crosses each box. The ports follow the
+        # picked up. The ports follow the
         # hands, so each interferometer's excited port fills in by its own
         # amount -- the two splits come out unequal.
-        boxes, cursors, live = VGroup(), VGroup(), []
+        boxes, live = VGroup(), []
         for cloud, v, z in (("low", low, GR_LOWER_Z), ("up", up, GR_UPPER_Z)):
             start, end = (v[1][0] + f * (v[3][0] - v[1][0]) for f in GR_EFFECT_SPAN)
             box = Rectangle(
@@ -202,8 +202,6 @@ class Gradiometer(GradiometerGW):
                 **PERTURBATION_STYLE,
             ).move_to([(start + end) / 2, z + GR_ARM / 2, 0])
             boxes.add(box)
-            cursors.add(Line(box.get_corner(DL), box.get_corner(UL),
-                             color=PERTURBATION_COLOR, stroke_width=3))
             live.append(always_redraw(
                 lambda c=cloud: phase_sweep(
                     GR_DIALS[c], phase[c][1], phase[c][0], GR_DIAL_RADIUS
@@ -231,10 +229,9 @@ class Gradiometer(GradiometerGW):
         self.play(
             *[phase[c][0].animate.increment_value(GR_EFFECT_PHASE[c])
               for c in ("low", "up")],
-            *[cursor.animate.align_to(box, RIGHT) for cursor, box in zip(cursors, boxes)],
             rate_func=linear, run_time=GR_EFFECT_TIME,
         )
-        self.play(FadeOut(cursors), run_time=0.3)
+        self.wait(0.3)
         self.beat()
 
         show_phase_budget(
