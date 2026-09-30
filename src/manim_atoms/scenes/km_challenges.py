@@ -18,14 +18,12 @@ from aionanim.physics.km_scale import (
     BEST_SR_LMT,
     KM_ATOMS,
     KM_BASELINE,
-    KM_CLOUD_SPREAD,
     KM_FIDELITY,
     KM_LMT,
     KM_PULSES,
     KM_T,
     KM_WAIST,
     PROTO_ATOMS,
-    PROTO_BASELINE,
     PROTO_POWER,
     PROTO_T,
     PROTO_TEMPERATURE,
@@ -37,9 +35,9 @@ from aionanim.tools.layout import slide_title
 # The left edge of each column, and the heading row's height; rows stack down
 # from under the headings, a rule between each.
 KC_COLUMNS = (-6.75, -2.0, 2.15)
-KC_HEADING_Y = 2.8
-KC_ROW_BUFF = 0.16  # between a row and the rule on either side of it
-KC_LINE_BUFF = 0.1  # between the lines within a cell
+KC_HEADING_Y = 2.9
+KC_ROW_BUFF = 0.15  # between a row and the rule on either side of it
+KC_LINE_BUFF = 0.09  # between the lines within a cell
 
 
 def _sci(x, digits=0):
@@ -61,11 +59,14 @@ KC_ROWS = (
     (
         [r"Uniform laser over km"],
         [r"same pulse area and phase", r"for every atom"],
-        [rf"$w_0 = {PROTO_WAIST * 1e3:.1f}\,$mm, ${PROTO_POWER * 1e3:.0f}\,$mW"],
-        [
-            rf"$w_0 \gtrsim {KM_WAIST * 1e2:.0f}\,$cm to stay collimated over ${_km(KM_BASELINE)}$",
-            r"$\sim$kW laser power",
-        ],
+        [rf"$w_0 = {PROTO_WAIST * 1e3:.1f}\,$mm"],
+        [rf"$w_0 \gtrsim {KM_WAIST * 1e2:.0f}\,$cm to stay collimated over ${_km(KM_BASELINE)}$"],
+    ),
+    (
+        [r"Laser power"],
+        [r"fast $\pi$ pulses across a wide beam"],
+        [rf"${PROTO_POWER * 1e3:.0f}\,$mW"],
+        [r"$\sim$kW"],
     ),
     (
         [r"Large momentum transfer"],
@@ -81,29 +82,19 @@ KC_ROWS = (
         [r"Atom number"],
         [r"shot noise $1/\sqrt{N}$ per shot"],
         [rf"$\sim{_sci(PROTO_ATOMS)}$ atoms per shot"],
-        [rf"${_sci(KM_ATOMS)}$ atoms per shot", r"or squeezed atoms"],
+        [rf"${_sci(KM_ATOMS)}$ atoms per shot"],
     ),
     (
         [r"Long free fall"],
-        [r"the whole baseline in", r"vacuum and shielded"],
-        [
-            rf"$T = {PROTO_T * 1e6:.0f}\,\mu$s over ${PROTO_BASELINE * 1e3:.0f}\,$mm",
-        ],
-        [
-            rf"$T = {KM_T:.0f}\,$s over ${_km(KM_BASELINE)}$ of UHV",
-            r"and magnetic shield",
-        ],
+        [r"the signal builds up over $2T$"],
+        [rf"$T = {PROTO_T * 1e6:.0f}\,\mu$s"],
+        [rf"$T = {KM_T:.0f}\,$s"],
     ),
     (
         [r"Colder atoms"],
-        [r"the cloud must stay small", r"against the beam for $2T$"],
-        [
-            rf"${PROTO_TEMPERATURE * 1e6:.0f}\,\mu$K before velocity slicing",
-            rf"(grows ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm in ${2 * KM_T:.0f}\,$s)",
-        ],
-        [
-            r"$<1\,$nK, so the cloud barely spreads",
-        ],
+        [r"so the cloud barely spreads over $2T$"],
+        [rf"${PROTO_TEMPERATURE * 1e9:.0f}\,$nK"],
+        [r"$<1\,$nK"],
     ),
 )
 

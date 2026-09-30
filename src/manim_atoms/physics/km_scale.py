@@ -12,10 +12,6 @@ import numpy as np
 from aionanim.physics.uldm_sensitivity import AION_PARAMETERS
 
 # --- constants ---------------------------------------------------------------
-K_B = 1.380649e-23  # J/K
-AMU = 1.66053907e-27  # kg
-G = 9.81  # m/s^2
-M_SR87 = 86.9089 * AMU
 CLOCK_WAVELENGTH = 698.4e-9  # m, 1S0 -> 3P0
 
 # --- the prototype (Baynham et al. 2026) -------------------------------------
@@ -26,7 +22,9 @@ PROTO_POWER = 0.640  # W, the most clock light there is: a 44 us pi pulse
 PROTO_PI_TIME = 44e-6  # s
 PROTO_ATOMS = 3100 + 2040  # median atoms per shot, top trap + bottom
 PROTO_SHOT_RATE = 0.3  # Hz, the typical sampling rate
-PROTO_TEMPERATURE = 2e-6  # K, the clouds in the dipole traps
+# K, the atoms that make it through velocity slicing (our figure: the paper
+# quotes only the 2 uK of the dipole traps, before slicing)
+PROTO_TEMPERATURE = 10e-9
 PROTO_INJECTED_NOISE = 4 * np.pi  # rad, s.d. of the phase steps put in (HLN)
 KM_LASER_PHASE = 0.71  # rad per shot at T = 5 s: their Methods' estimate
 # Best LMT on a strontium clock-type line to date (Rudolph et al. PRL 124,
@@ -64,15 +62,8 @@ def fidelity_for_contrast(pulses, contrast=np.exp(-1)):
     return contrast ** (1 / pulses)
 
 
-def cloud_spread(duration, temperature=PROTO_TEMPERATURE, mass=M_SR87):
-    """How far an unkicked thermal cloud's rms radius grows in `duration`:
-    sigma_v t, with sigma_v = sqrt(k_B T / m)."""
-    return np.sqrt(K_B * temperature / mass) * duration
-
-
 # --- the figures the challenges slide quotes ---------------------------------
 KM_WAIST = waist_for_rayleigh_range(KM_BASELINE)  # ~2.1 cm
 KM_POWER = power_for_same_rabi(KM_WAIST)  # ~800 W
 KM_PULSES = pulse_count()  # ~1.6e5
 KM_FIDELITY = fidelity_for_contrast(KM_PULSES)  # 1 - ~6e-6
-KM_CLOUD_SPREAD = cloud_spread(2 * KM_T)  # ~14 cm at 2 uK
