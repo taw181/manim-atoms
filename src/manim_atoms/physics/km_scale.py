@@ -2,8 +2,9 @@
 
 The prototype's figures are from Baynham et al., Nature 654, 622 (2026) and
 its Methods; AION-km's are Table 1 of Badurina et al., JCAP 05 (2020) 011
-(via ``uldm_sensitivity.AION_PARAMETERS``). Everything else here follows from
-those by textbook scaling -- each function says which.
+(via ``uldm_sensitivity.AION_PARAMETERS``), bar the atom number, which is the
+AION proposal's. Everything else here follows from those by textbook scaling
+-- each function says which.
 """
 
 import numpy as np
@@ -34,6 +35,8 @@ BEST_SR_LMT = 141
 
 # --- AION-km (Badurina et al. 2020, Table 1) ---------------------------------
 KM_BASELINE, KM_T, KM_PHASE_NOISE, KM_LMT = AION_PARAMETERS["aion_km"]
+# Atoms per shot: from the AION proposal, not the paper.
+KM_ATOMS = 1e7
 
 
 def waist_for_rayleigh_range(z_r, wavelength=CLOCK_WAVELENGTH):
@@ -61,12 +64,6 @@ def fidelity_for_contrast(pulses, contrast=np.exp(-1)):
     return contrast ** (1 / pulses)
 
 
-def flux_for_phase_noise(delta_phi):
-    """Atoms per second at the standard quantum limit, 1/sqrt(N) per shot, for
-    a phase noise density delta_phi / (rad/sqrt Hz): N-dot = 1 / delta_phi^2."""
-    return 1 / delta_phi**2
-
-
 def cloud_spread(duration, temperature=PROTO_TEMPERATURE, mass=M_SR87):
     """How far an unkicked thermal cloud's rms radius grows in `duration`:
     sigma_v t, with sigma_v = sqrt(k_B T / m)."""
@@ -78,6 +75,4 @@ KM_WAIST = waist_for_rayleigh_range(KM_BASELINE)  # ~2.1 cm
 KM_POWER = power_for_same_rabi(KM_WAIST)  # ~800 W
 KM_PULSES = pulse_count()  # ~1.6e5
 KM_FIDELITY = fidelity_for_contrast(KM_PULSES)  # 1 - ~6e-6
-KM_FLUX = flux_for_phase_noise(KM_PHASE_NOISE)  # ~1e11 atoms/s
-PROTO_FLUX = PROTO_ATOMS * PROTO_SHOT_RATE  # ~1.5e3 atoms/s
 KM_CLOUD_SPREAD = cloud_spread(2 * KM_T)  # ~14 cm at 2 uK

@@ -16,20 +16,17 @@ from manim import *
 from aionanim.style import *
 from aionanim.physics.km_scale import (
     BEST_SR_LMT,
+    KM_ATOMS,
     KM_BASELINE,
     KM_CLOUD_SPREAD,
     KM_FIDELITY,
-    KM_FLUX,
     KM_LMT,
-    KM_PHASE_NOISE,
     KM_PULSES,
     KM_T,
     KM_WAIST,
     PROTO_ATOMS,
     PROTO_BASELINE,
-    PROTO_FLUX,
     PROTO_POWER,
-    PROTO_SHOT_RATE,
     PROTO_T,
     PROTO_TEMPERATURE,
     PROTO_WAIST,
@@ -81,16 +78,10 @@ KC_ROWS = (
         ],
     ),
     (
-        [r"Atom flux"],
+        [r"Atom number"],
         [r"shot noise $1/\sqrt{N}$ per shot"],
-        [
-            rf"$\sim{_sci(PROTO_FLUX, 1)}\,$atoms/s",
-            rf"(${_sci(PROTO_ATOMS)}$ at ${PROTO_SHOT_RATE:.1f}\,$Hz)",
-        ],
-        [
-            rf"${_sci(KM_FLUX)}\,$atoms/s for ${_sci(KM_PHASE_NOISE)}\,$rad$/\sqrt{{\mathrm{{Hz}}}}$",
-            r"or squeezed atoms",
-        ],
+        [rf"$\sim{_sci(PROTO_ATOMS)}$ atoms per shot"],
+        [rf"${_sci(KM_ATOMS)}$ atoms per shot", r"or squeezed atoms"],
     ),
     (
         [r"Long free fall"],
