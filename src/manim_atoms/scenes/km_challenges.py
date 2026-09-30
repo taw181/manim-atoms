@@ -17,8 +17,6 @@ from aionanim.style import *
 from aionanim.physics.km_scale import (
     BEST_SR_LMT,
     KM_BASELINE,
-    KM_CLOUD_FRACTION,
-    KM_CLOUD_SIZE,
     KM_CLOUD_SPREAD,
     KM_FIDELITY,
     KM_FLUX,
@@ -28,7 +26,6 @@ from aionanim.physics.km_scale import (
     KM_POWER,
     KM_PULSES,
     KM_T,
-    KM_TEMPERATURE,
     KM_WAIST,
     PROTO_ATOMS,
     PROTO_BASELINE,
@@ -125,8 +122,7 @@ KC_ROWS = (
             rf" ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm in ${2 * KM_T:.0f}\,$s",
         ],
         [
-            rf"$\lesssim{KM_TEMPERATURE * 1e9:.1f}\,$nK to stay"
-            rf" $\lesssim{KM_CLOUD_SIZE * 1e3:.0f}\,$mm ($w_0/{1 / KM_CLOUD_FRACTION:.0f}$)",
+            r"$<1\,$nK, so the cloud barely spreads",
             r"(delta-kick collimation)",
         ],
     ),

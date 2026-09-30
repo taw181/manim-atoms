@@ -67,12 +67,6 @@ def flux_for_phase_noise(delta_phi):
     return 1 / delta_phi**2
 
 
-def temperature_for_spread(size, duration, mass=M_SR87):
-    """The temperature whose cloud grows by no more than `size` (rms) in
-    `duration`: cloud_spread inverted, m (size / duration)^2 / k_B."""
-    return mass * (size / duration) ** 2 / K_B
-
-
 def cloud_spread(duration, temperature=PROTO_TEMPERATURE, mass=M_SR87):
     """How far an unkicked thermal cloud's rms radius grows in `duration`:
     sigma_v t, with sigma_v = sqrt(k_B T / m)."""
@@ -87,9 +81,3 @@ KM_FIDELITY = fidelity_for_contrast(KM_PULSES)  # 1 - ~6e-6
 KM_FLUX = flux_for_phase_noise(KM_PHASE_NOISE)  # ~1e11 atoms/s
 PROTO_FLUX = PROTO_ATOMS * PROTO_SHOT_RATE  # ~1.5e3 atoms/s
 KM_CLOUD_SPREAD = cloud_spread(2 * KM_T)  # ~14 cm at 2 uK
-# None of the three papers sets a temperature, so this one is ours: small
-# enough that the cloud stays a tenth of the beam's waist through 2T, where
-# the beam's intensity and wavefront are nearly the same for every atom.
-KM_CLOUD_FRACTION = 0.1
-KM_CLOUD_SIZE = KM_CLOUD_FRACTION * KM_WAIST  # ~2 mm
-KM_TEMPERATURE = temperature_for_spread(KM_CLOUD_SIZE, 2 * KM_T)  # ~0.4 nK
