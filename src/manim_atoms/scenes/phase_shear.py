@@ -10,8 +10,7 @@ the same phase, the ports are two smooth blobs, and one shot gives a single
 number, P_e = (1 - C cos Phi) / 2 -- blind to the sign of Phi and mixed up
 with the contrast. Tilt the pulse by theta and the wavefronts cross the cloud
 Lambda = lambda / theta apart: the hands fan out across it, the ports come
-out striped, and a fit to the stripes gives Phi from the one image. A signal
-that moves Phi slides the stripes along.
+out striped, and a fit to the stripes gives Phi from the one image.
 
     uv run manim -qh src/aionanim/scenes/phase_shear.py PhaseShearReadout
 """
@@ -61,23 +60,20 @@ PLOT_ORIGIN_Y = -3.0
 PLOT_HEIGHT = 2.2
 N_BINS = 25
 
-# The interferometer phase before the signal, and after it.
-PHI_0 = 1.2
-PHI_SIGNAL = 3.0
+PHI = 1.2  # the interferometer phase the fit reads back
 
 
 class PhaseShearReadout(Scene):
-    """The last pulse square on, then tilted, then a signal sliding the fringes."""
+    """The last pulse square on, then tilted, then the phase read off the fringes."""
 
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version."""
 
     def construct(self):
         theta = ValueTracker(0.0)
-        phi = ValueTracker(PHI_0)
 
         def phase(x):
-            return shear_phase(x, theta.get_value(), phi.get_value(), SPACING)
+            return shear_phase(x, theta.get_value(), PHI, SPACING)
 
         # --- 1. the cloud at the last pulse, square on --------------------
         title = Tex(r"Phase-shear readout", font_size=FONT_TITLE).to_corner(UL)
@@ -202,11 +198,11 @@ class PhaseShearReadout(Scene):
             run_time=3.0,
         )
         arc = Arc(
-            radius=ANGLE_RADIUS, start_angle=-PI / 2, angle=TILT,
+            radius=ANGLE_RADIUS, start_angle=-PI / 2, angle=-TILT,
             arc_center=CLOUD, stroke_width=2, color=lighten(GUIDE_COLOR),
         )
         theta_label = MathTex(r"\theta", font_size=FONT_ANNOTATION, color=lighten(GUIDE_COLOR))
-        theta_label.move_to(CLOUD + (ANGLE_RADIUS + 0.35) * rotate_vector(DOWN, TILT / 2))
+        theta_label.move_to(CLOUD + (ANGLE_RADIUS + 0.35) * rotate_vector(DOWN, -TILT / 2))
         theta_label.set_stroke(PLOT_BACKGROUND, width=5, background=True)
         self.play(Create(arc), FadeIn(theta_label), run_time=0.6)
         self.beat()
@@ -230,15 +226,12 @@ class PhaseShearReadout(Scene):
         self.play(GrowFromCenter(span), FadeIn(span_label), FadeIn(scale), run_time=0.8)
         self.beat()
 
-        # --- 5. a signal moves Phi: the fringes slide -----------------------
+        # --- 5. what the fit to the fringes gives back ---------------------
         readout = VGroup(
             MathTex(r"\text{fit: }\Phi =", font_size=FONT_ANNOTATION),
-            DecimalNumber(PHI_0, num_decimal_places=2, font_size=FONT_ANNOTATION),
+            DecimalNumber(PHI, num_decimal_places=2, font_size=FONT_ANNOTATION),
             MathTex(r"\,\text{rad}", font_size=FONT_ANNOTATION),
         ).arrange(RIGHT, buff=0.12)
-        readout[1].add_updater(lambda m: m.set_value(phi.get_value()))
         readout.next_to(axes, DOWN, buff=0.25).align_to(axes, RIGHT)
         self.play(FadeIn(readout), run_time=0.6)
-        self.beat()
-        self.play(phi.animate.set_value(PHI_SIGNAL), run_time=3.0)
-        self.wait(1.0)
+        self.wait(1.5)
