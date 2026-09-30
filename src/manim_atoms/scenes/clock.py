@@ -66,7 +66,13 @@ CP_EFFECT_SPAN = (0.25, 0.75)
 CP_EFFECT_PAD = 0.3  # the box's reach above and below the two arms
 CP_EFFECT_PHASE = 0.9
 CP_EFFECT_TIME = 2.5  # the hand sweeps as the effect acts, not in a jump
-CP_KET_BUFF = CLOCK_ATOM_RADIUS + 0.05  # clear of an atom flying past
+# From a leg to its ket: close enough to read as that leg's. An atom flying
+# past crosses the ket on its way, which is fine -- it is gone in a moment.
+CP_KET_BUFF = 0.1
+# ...but the two under the |g, p> legs drop clear of the atom resting at the
+# first pulse through the opening stop, which would sit on the way in's; the
+# lower leg's matches it, so the two read as one row.
+CP_GROUND_KET_BUFF = CLOCK_ATOM_RADIUS + 0.05
 
 
 class ClockPhase(Scene):
@@ -117,10 +123,17 @@ class ClockPhase(Scene):
         dial = make_dial(CP_DIAL, r"accumulated phase")
         self.play(FadeIn(dial), run_time=0.6)
 
-        seed = make_atom(radius=CLOCK_ATOM_RADIUS).move_to(a)
+        # The atom flies in along its own leg, as in the Mach-Zehnder, from
+        # just off the left edge: the first pulse is too near the edge for a
+        # way in drawn wholly on the page to be more than a stub.
+        entry = np.array([-config.frame_x_radius - CLOCK_ATOM_RADIUS, CP_Z, 0.0])
+        seed = make_atom(radius=CLOCK_ATOM_RADIUS).move_to(entry)
+        # below the line, as the lower arm's is: both are |g, p>
         ket_in = arm_ket(False, font_size=CP_KET_FONT)
-        ket_in.next_to(seed, UP, buff=CP_KET_BUFF).to_edge(LEFT, buff=0.15)
-        self.play(FadeIn(seed, scale=0.5), FadeIn(ket_in), run_time=0.5)
+        ket_in.next_to(midpoint(entry, a), DOWN, buff=CP_GROUND_KET_BUFF).to_edge(
+            LEFT, buff=0.15
+        )
+        draw_legs(self, [(seed, entry, a, ATOM_COLOR)], extra=[FadeIn(ket_in)])
         self.beat()
 
         # --- the beamsplitter ----------------------------------------------
@@ -149,9 +162,9 @@ class ClockPhase(Scene):
 
         # --- leg 1: the kicked arm is the excited one ------------------------
         kets = [
-            # inside the parallelogram: below the leg is the readout's row
+            # below the leg, as the way in has it
             arm_ket(False, font_size=CP_KET_FONT)
-            .next_to(midpoint(a, b), UP, buff=CP_KET_BUFF).shift(RIGHT * 0.3),
+            .next_to(midpoint(a, b), DOWN, buff=CP_GROUND_KET_BUFF),
             # stacked: in one line it runs off the left of the frame
             arm_ket(True, r"\phi_1 - \omega_A T", CP_KET_FONT, stacked=True)
             .next_to(midpoint(a, b_up), UL, buff=CP_KET_BUFF),
@@ -181,10 +194,10 @@ class ClockPhase(Scene):
 
         # --- leg 2: and so the other hand turns --------------------------------
         kets = [
-            # past the middle of its leg, so it clears the right-hand edge of
-            # the effect box that later spans the middle half of it
+            # the effect box that later spans the middle half of the leg is
+            # drawn under it
             arm_ket(True, r"\phi_2 - \omega_A T", CP_KET_FONT)
-            .next_to(b + 0.7 * (c - b), DR, buff=CP_KET_BUFF),
+            .next_to(midpoint(b, c), DR, buff=CP_KET_BUFF),
             arm_ket(False, r"\phi_1 - \phi_2 - \omega_A T", CP_KET_FONT)
             .next_to(midpoint(b_up, c), UP, buff=CP_KET_BUFF),
         ]
