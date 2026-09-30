@@ -644,13 +644,11 @@ PROBE_COLOR = TRANSITION_689_COLOR
 CAVITY_MODE_OPACITY = 0.45
 MIRROR_STROKE_WIDTH = 7
 PROBE_STROKE_WIDTH = 3
-MEASURED_STYLE = dict(
-    dash_length=0.1, stroke_width=2.5, stroke_opacity=0.9, color=PROBE_COLOR
-)
+MEASURED_WIDTH = 2.5  # the ring of fixed J_z the measurement pins the spin to
 EMPTY_CAVITY_STROKE = dict(color=GUIDE_COLOR, width=2.5, opacity=0.8)
 TRANSMISSION_WIDTH = 3.5
-# The Bloch sphere and the patch of it zoomed in on: furniture, in the
-# lightened construction grey.
+# The Bloch sphere: furniture, in the lightened construction grey, with its
+# axis through the poles a faint dashed guide.
 BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
-ZOOM_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
-                  color=GUIDE_COLOR)
+BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
+                        color=GUIDE_COLOR)

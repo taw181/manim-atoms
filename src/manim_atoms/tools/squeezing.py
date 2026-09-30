@@ -19,8 +19,9 @@ known better than sqrt(N)/2, the disc is squeezed along J_z and stretched
 along the phase; a rotation about the mean spin turns the narrow direction
 onto the phase, and the interferometer resolves it to xi / sqrt(N), xi < 1.
 
-The helpers draw the pieces: the Bloch sphere, a noise blob on its tangent
-plane, the cavity with its probe, and the transmission line shape it reads.
+The helpers draw the pieces: the Bloch sphere in perspective, with the noise
+as a patch on its surface, the cavity with its probe, and the transmission
+line shape it reads.
 """
 
 import numpy as np
@@ -28,7 +29,7 @@ from manim import *
 
 from aionanim.style import *
 from aionanim.tools.dipole import gaussian_band
-from aionanim.tools.primitives import make_cloud, state_label
+from aionanim.tools.primitives import make_cloud
 
 
 def rabi_transmission(x, center, kappa, gamma, coupling):
@@ -42,38 +43,88 @@ def rabi_transmission(x, center, kappa, gamma, coupling):
     return np.abs(t) ** 2
 
 
-def noise_blob(radius, color=COHERENT_COLOR):
-    """The collective spin's quantum noise seen head-on: a translucent disc,
-    ``radius`` across. Stretch it to squeeze it."""
-    return Circle(
-        radius=radius,
+class BlochView:
+    """A Bloch sphere drawn in perspective on a flat scene: |e> up, the viewer
+    a little above the equator, looking down by ``elevation``.
+
+    World coordinates have x towards the viewer, y to the right and z up
+    (towards |e>); every point is a direction on the unit sphere, scaled to
+    ``radius`` on screen. Curves on the sphere come out split into the part
+    in front, drawn solid, and the part behind it, dashed and faint.
+    """
+
+    def __init__(self, center, radius, elevation=15 * DEGREES):
+        self.center = np.array(center, dtype=float)
+        self.radius = radius
+        self.cos_el, self.sin_el = np.cos(elevation), np.sin(elevation)
+
+    def point(self, v):
+        """Where the direction ``v`` lands on screen."""
+        x, y, z = v
+        return self.center + self.radius * np.array(
+            [y, z * self.cos_el - x * self.sin_el, 0.0]
+        )
+
+    def depth(self, v):
+        """> 0 for a point on the side of the sphere facing the viewer."""
+        return v[0] * self.cos_el + v[2] * self.sin_el
+
+    def curve(self, points, color, width, back_opacity=0.35):
+        """A curve through directions on the sphere: solid in front, dashed
+        and faint behind."""
+        front, back = VGroup(), VGroup()
+        run, facing = [], None
+        for v in points:
+            f = self.depth(v) >= 0
+            if facing is not None and f != facing:
+                (front if facing else back).add(self._path(run + [v]))
+                run = []
+            run.append(v)
+            facing = f
+        (front if facing else back).add(self._path(run))
+        front.set_stroke(color, width)
+        back = VGroup(*[
+            DashedVMobject(m, num_dashes=max(2, int(m.get_arc_length() / 0.12)))
+            for m in back
+        ])
+        back.set_stroke(color, width * 0.8, opacity=back_opacity)
+        return VGroup(back, front)
+
+    def _path(self, dirs):
+        return VMobject().set_points_as_corners([self.point(v) for v in dirs])
+
+    def ring(self, axis, height=0.0, n=160):
+        """The circle of directions v with v . axis = height."""
+        axis = np.asarray(axis, dtype=float)
+        u = np.cross(axis, [0, 0, 1] if abs(axis[2]) < 0.9 else [1, 0, 0])
+        u /= np.linalg.norm(u)
+        w = np.cross(axis, u)
+        r = np.sqrt(max(0.0, 1 - height**2))
+        return [height * axis + r * (np.cos(s) * u + np.sin(s) * w)
+                for s in np.linspace(0, TAU, n)]
+
+    def outline(self):
+        return Circle(radius=self.radius, **BLOCH_STYLE).move_to(self.center)
+
+    def patch(self, center, e1, e2, a, b, n=90):
+        """The outline of a patch of the sphere round the direction ``center``:
+        an ellipse of angular half-widths ``a`` along the tangent ``e1`` and
+        ``b`` along ``e2``, wrapped onto the surface."""
+        return [
+            normalize(center + np.tan(a) * np.cos(t) * e1 + np.tan(b) * np.sin(t) * e2)
+            for t in np.linspace(0, TAU, n)
+        ]
+
+
+def noise_patch(view, center, e1, e2, a, b, color):
+    """The collective spin's quantum noise, a filled patch on the sphere."""
+    return Polygon(
+        *[view.point(v) for v in view.patch(center, e1, e2, a, b)],
         fill_color=color,
         fill_opacity=NOISE_BLOB_OPACITY,
         stroke_color=lighten(color),
         stroke_width=NOISE_BLOB_STROKE_WIDTH,
     )
-
-
-def make_bloch(center, radius, tip_angle, tilt=0.28):
-    """A Bloch sphere, |e> at the top and |g> at the bottom, with the mean
-    spin on the equator ``tip_angle`` round from the front, towards the right.
-
-    ``tilt`` is how far open the equator is drawn (its height over its width).
-    Returns (sphere, arrow, tip): the sphere with its equator and pole labels,
-    the mean-spin arrow, and the point the arrow ends at.
-    """
-    center = np.array(center, dtype=float)
-    circle = Circle(radius=radius, **BLOCH_STYLE).move_to(center)
-    equator = Ellipse(width=2 * radius, height=2 * radius * tilt, **BLOCH_STYLE)
-    equator.move_to(center).set_stroke(opacity=0.6)
-    poles = VGroup(
-        state_label(r"|e\rangle", KICKED_COLOR, FONT_LEGEND).next_to(circle, UP, buff=0.08),
-        state_label(r"|g\rangle", ATOM_COLOR, FONT_LEGEND).next_to(circle, DOWN, buff=0.08),
-    )
-    tip = center + radius * np.array([np.sin(tip_angle), -tilt * np.cos(tip_angle), 0])
-    arrow = Arrow(center, tip, buff=0, stroke_width=3, color=WHITE,
-                  max_tip_length_to_length_ratio=0.25)
-    return VGroup(circle, equator, poles), arrow, tip
 
 
 def make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out):

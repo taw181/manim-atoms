@@ -1,14 +1,15 @@
 """Spin squeezing: a cavity measurement takes the phase below the shot-noise limit.
 
-Right, the collective spin of N atoms: a Bloch sphere with the mean spin on
-its equator, and the patch round its tip zoomed in on, J_z = (N_e - N_g)/2
-up and the phase across. The coherent state's noise disc, 1/sqrt(N) wide, is the standard
-quantum limit. Left, the atoms in an optical cavity tuned to the 689 nm
+Right, the collective spin of N atoms: a Bloch sphere, |e> up, with the mean
+spin on its equator and its quantum noise a patch of the surface round the
+tip -- J_z = (N_e - N_g)/2 up the sphere, the phase round the equator. The
+coherent state's patch, 1/sqrt(N) across, is the standard quantum limit. Left, the atoms in an optical cavity tuned to the 689 nm
 line: coupled to the atoms in |g>, its line splits in two, 2 g sqrt(N_g)
 apart -- the vacuum Rabi splitting -- and measuring the splitting counts
 them without flipping any, a quantum non-demolition measurement of J_z
 (Chen et al., PRL 106, 133601 (2011)). Knowing J_z squeezes the disc
-along it; a rotation about the mean spin turns the squeezing onto the phase.
+along it, onto a ring of fixed J_z; a rotation about the mean spin turns the
+squeezing, ring and all, onto the phase.
 
     uv run manim -qh src/aionanim/scenes/squeezing.py SpinSqueezing
 
@@ -21,12 +22,13 @@ from manim import *
 
 from aionanim.style import *
 from aionanim.tools.layout import slide_title
+from aionanim.tools.primitives import state_label
 from aionanim.tools.squeezing import (
+    BlochView,
     cavity_atoms,
-    rabi_transmission,
-    make_bloch,
     make_cavity,
-    noise_blob,
+    noise_patch,
+    rabi_transmission,
 )
 
 # --- spin-squeezing geometry ------------------------------------------------
@@ -46,22 +48,23 @@ SQ_KAPPA = 0.25  # the cavity line's half-width
 SQ_GAMMA = 0.03  # the atoms': 689 nm's 7.5 kHz is far narrower than any cavity's
 SQ_COUPLING = 1.1  # g sqrt(N_g): the normal modes sit this far either side
 
-# Right column: the patch round the tip of the collective spin, zoomed in,
-# and the Bloch sphere it comes from on its right, the spin pointing back
-# towards it so the zoom lines don't cross the sphere.
-SQ_BLOCH = np.array([6.15, 1.25, 0.0])
-SQ_BLOCH_RADIUS = 0.72
-SQ_TIP_ANGLE = -55 * DEGREES
-SQ_PLANE = np.array([2.95, 0.4, 0.0])
-SQ_PLANE_HALF = 1.75
-SQ_INSET_BLOB = 0.1  # the noise disc on the sphere, much magnified already
-SQ_SQL_RADIUS = 0.8  # the coherent state's disc, on the zoomed plane
+# Right column: the Bloch sphere, looked at from a little above the equator,
+# with the mean spin on the equator turned towards the viewer and right, so
+# the noise round its tip is seen nearly face on.
+SQ_BLOCH = np.array([4.3, 0.6, 0.0])
+SQ_BLOCH_RADIUS = 1.7
+SQ_TIP_AZIMUTH = 25 * DEGREES  # from the viewer, towards the right
+# The coherent state's noise, as an angle on the sphere: 1/sqrt(N) for a
+# handful of atoms, which is what it takes to see it.
+SQ_SQL_ANGLE = 0.3
 # The squeezed state: J_z known to xi of the coherent width, the phase blurred
 # by more than the coherent state's -- a real measurement is not lossless, so
 # the stretch more than makes up the squeeze.
 SQ_XI = 0.3
 SQ_ANTI = 1.5
-SQ_MEASURED = 0.4  # the J_z this shot's measurement happened to give
+SQ_MEASURED = 0.5 * SQ_SQL_ANGLE  # where this shot's measurement happened to land
+SQ_LABELS_X = 1.1  # the left edge of the state's name and the formulas
+SQ_FORMULA_Y = -1.95
 
 
 class SpinSqueezing(Scene):
@@ -75,60 +78,66 @@ class SpinSqueezing(Scene):
         # --- 1. the collective spin and its shot noise ---------------------
         title = slide_title(r"Spin squeezing: below the shot-noise limit")
 
-        sphere, spin, tip = make_bloch(SQ_BLOCH, SQ_BLOCH_RADIUS, SQ_TIP_ANGLE)
-        inset_blob = noise_blob(SQ_INSET_BLOB).move_to(tip)
+        view = BlochView(SQ_BLOCH, SQ_BLOCH_RADIUS)
+        up = np.array([0.0, 0.0, 1.0])
+        mean = np.array([np.cos(SQ_TIP_AZIMUTH), np.sin(SQ_TIP_AZIMUTH), 0.0])
+        along = np.array([-np.sin(SQ_TIP_AZIMUTH), np.cos(SQ_TIP_AZIMUTH), 0.0])  # phase
 
-        frame = Square(side_length=2 * SQ_PLANE_HALF, **BLOCH_STYLE).move_to(SQ_PLANE)
-        zoom = VGroup(*[
-            DashedLine(inset_blob.get_left(), corner, **ZOOM_STYLE)
-            for corner in (frame.get_corner(UR), frame.get_corner(DR))
-        ])
-        axes = VGroup(
-            Line(SQ_PLANE + DOWN * SQ_PLANE_HALF, SQ_PLANE + UP * SQ_PLANE_HALF),
-            Line(SQ_PLANE + LEFT * SQ_PLANE_HALF, SQ_PLANE + RIGHT * SQ_PLANE_HALF),
-        ).set_stroke(GUIDE_COLOR, 1.5, opacity=0.6)
-        # J_z = (N_e - N_g)/2, labelled as the count it is
-        jz_label = MathTex(r"N_e - N_g", font_size=FONT_AXIS, color=PLOT_FOREGROUND)
-        jz_label.next_to(frame.get_top(), DR, buff=0.1)
-        phi_label = MathTex(r"\phi", font_size=FONT_AXIS, color=PLOT_FOREGROUND)
-        phi_label.next_to(frame.get_right(), UL, buff=0.1)
+        outline = view.outline()
+        equator = view.curve(view.ring(up), lighten(GUIDE_COLOR), 2)
+        axis = DashedLine(view.point(-up), view.point(up), **BLOCH_AXIS_STYLE)
+        poles = VGroup(
+            state_label(r"|e\rangle", KICKED_COLOR, FONT_LEGEND).next_to(outline, UP, buff=0.1),
+            state_label(r"|g\rangle", ATOM_COLOR, FONT_LEGEND).next_to(outline, DOWN, buff=0.1),
+        )
+        sphere = VGroup(outline, axis, equator, poles)
 
-        blob = noise_blob(SQ_SQL_RADIUS).move_to(SQ_PLANE)
+        # squeeze runs 0 to 1 from the coherent state to the squeezed one,
+        # turn 0 to pi/2 as it is rotated about the mean spin
+        squeeze, turn = ValueTracker(0.0), ValueTracker(0.0)
+
+        def axes():
+            """The patch's own tangent directions, turned about the mean spin:
+            e1 its long one once squeezed, e2 its short one (J_z at first)."""
+            psi = turn.get_value()
+            return (np.cos(psi) * along + np.sin(psi) * up,
+                    -np.sin(psi) * along + np.cos(psi) * up)
+
+        def state():
+            """The noise patch: its centre, the tangents there, its half-widths."""
+            s = squeeze.get_value()
+            e1, e2 = axes()
+            d = s * SQ_MEASURED
+            center = np.cos(d) * mean + np.sin(d) * e2
+            e2_there = -np.sin(d) * mean + np.cos(d) * e2
+            return (center, e1, e2_there,
+                    SQ_SQL_ANGLE * (1 + (SQ_ANTI - 1) * s),
+                    SQ_SQL_ANGLE * (1 + (SQ_XI - 1) * s))
+
+        spin = always_redraw(lambda: Arrow(
+            view.center, view.point(state()[0]), buff=0, stroke_width=3, color=WHITE,
+            max_tip_length_to_length_ratio=0.12,
+        ))
+        blob = always_redraw(lambda: noise_patch(
+            view, *state(),
+            interpolate_color(COHERENT_COLOR, SQUEEZED_COLOR, squeeze.get_value()),
+        ))
         state_name = Tex(r"coherent state", font_size=FONT_LEGEND,
                          color=lighten(COHERENT_COLOR))
-        state_name.next_to(frame, UP, buff=0.15).align_to(frame, LEFT)
+        state_name.move_to([SQ_LABELS_X, outline.get_top()[1], 0], aligned_edge=LEFT)
 
-        def phi_span(center_x, half, color):
-            """A double arrow across the phase resolution, under the frame."""
-            y = SQ_PLANE[1] - SQ_PLANE_HALF - 0.22
-            return DoubleArrow(
-                [center_x - half, y, 0], [center_x + half, y, 0], buff=0,
-                stroke_width=3, color=color, tip_length=0.15,
-                max_tip_length_to_length_ratio=0.3,
-            )
-
-        sql_span = phi_span(SQ_PLANE[0], SQ_SQL_RADIUS, lighten(COHERENT_COLOR))
         sql = MathTex(r"\Delta\phi_\mathrm{SQL} = \frac{1}{\sqrt{N}}",
                       font_size=FONT_ANNOTATION, color=lighten(COHERENT_COLOR))
-        sql.next_to(frame, DOWN, buff=0.5).align_to(frame, LEFT)
+        sql.move_to([SQ_LABELS_X, SQ_FORMULA_Y, 0], aligned_edge=LEFT)
         sql_note = Tex(r"$N$ atoms, each\\projected on its own",
                        font_size=FONT_TICK, color=lighten(GUIDE_COLOR))
         sql_note.next_to(sql, RIGHT, buff=0.4)
 
-        self.play(
-            FadeIn(title), FadeIn(sphere), GrowArrow(spin), FadeIn(inset_blob),
-            run_time=0.8,
-        )
-        self.play(
-            *[Create(z) for z in zoom], FadeIn(frame), FadeIn(axes),
-            FadeIn(jz_label), FadeIn(phi_label),
-            run_time=0.8,
-        )
-        self.play(
-            FadeIn(blob), FadeIn(state_name), GrowFromCenter(sql_span),
-            FadeIn(sql), FadeIn(sql_note),
-            run_time=0.8,
-        )
+        self.play(FadeIn(title), FadeIn(sphere), run_time=0.8)
+        self.play(GrowArrow(spin), run_time=0.6)
+        self.add(spin)
+        self.play(FadeIn(blob), FadeIn(state_name), FadeIn(sql), FadeIn(sql_note),
+                  run_time=0.8)
         self.beat()
 
         # --- 2. the cavity counts the atoms in |g> -------------------------
@@ -200,60 +209,49 @@ class SpinSqueezing(Scene):
         self.play(GrowFromCenter(shift), FadeIn(shift_label), FadeIn(qnd), run_time=0.8)
         self.beat()
 
-        # --- 3. J_z known: the disc squeezes along it ----------------------
+        # --- 3. J_z known: the noise squeezes along it -------------------
+        # The measurement pins the spin to a ring of fixed J_z; the patch
+        # shrinks onto it, and stretches along it.
         reference = DashedVMobject(
-            Circle(radius=SQ_SQL_RADIUS).move_to(SQ_PLANE), num_dashes=30,
+            Polygon(*[view.point(v) for v in view.patch(mean, along, up, SQ_SQL_ANGLE,
+                                                        SQ_SQL_ANGLE)]),
+            num_dashes=30,
         ).set_stroke(**COHERENT_OUTLINE_STROKE)
-        measured_at = SQ_PLANE + UP * SQ_MEASURED
-        measured = DashedLine(
-            measured_at + LEFT * SQ_PLANE_HALF, measured_at + RIGHT * SQ_PLANE_HALF,
-            **MEASURED_STYLE,
-        )
+        measured = always_redraw(lambda: view.curve(
+            view.ring(axes()[1], np.sin(SQ_MEASURED)), PROBE_COLOR, MEASURED_WIDTH,
+        ))
         measured_label = Tex(r"measured", font_size=FONT_TICK, color=lighten(PROBE_COLOR))
-        measured_label.next_to(measured, LEFT, buff=0.12)
-        squeezed = (
-            noise_blob(SQ_SQL_RADIUS, SQUEEZED_COLOR)
-            .stretch(SQ_XI, 1).stretch(SQ_ANTI, 0).move_to(measured_at)
+        measured_label.next_to(
+            view.point([0, -np.cos(SQ_MEASURED), np.sin(SQ_MEASURED)]), LEFT, buff=0.12
         )
         squeezed_name = Tex(r"squeezed state", font_size=FONT_LEGEND,
                             color=lighten(SQUEEZED_COLOR)).move_to(state_name, aligned_edge=LEFT)
-        inset_squeezed = (
-            noise_blob(SQ_INSET_BLOB, SQUEEZED_COLOR)
-            .stretch(SQ_XI, 1).stretch(SQ_ANTI, 0).move_to(tip)
-        )
         self.add(reference)
-        self.play(Create(measured), FadeIn(measured_label), run_time=0.6)
+        self.play(FadeIn(measured), FadeIn(measured_label), run_time=0.6)
+        self.bring_to_front(blob, spin)  # the ring runs under the patch
         self.play(
-            Transform(blob, squeezed), Transform(inset_blob, inset_squeezed),
+            squeeze.animate.set_value(1.0),
             FadeTransform(state_name, squeezed_name),
             run_time=1.5,
         )
         self.beat()
 
         # --- 4. turn the squeezing onto the phase --------------------------
-        # A rotation about the mean spin turns the whole plane about its
-        # centre, the measured value with it: it becomes a known phase offset.
-        turn = Tex(r"rotate about the mean spin", font_size=FONT_TICK,
-                   color=lighten(GUIDE_COLOR))
-        turn.next_to(frame.get_corner(DL), UR, buff=0.12).shift(UP * 0.35)
-        self.play(FadeOut(measured_label), FadeIn(turn), run_time=0.4)
-        self.play(
-            Rotate(VGroup(blob, measured), PI / 2, about_point=SQ_PLANE),
-            Rotate(inset_blob, PI / 2),
-            run_time=1.5,
-        )
-        offset = blob.get_center()[0]
-        squeezed_span = phi_span(offset, SQ_XI * SQ_SQL_RADIUS, lighten(SQUEEZED_COLOR))
+        # A rotation about the mean spin turns the ring of fixed J_z with the
+        # patch: the measured value becomes a known phase offset.
+        turn_note = Tex(r"rotate about the mean spin", font_size=FONT_TICK,
+                        color=lighten(GUIDE_COLOR))
+        turn_note.next_to(squeezed_name, DOWN, buff=0.15, aligned_edge=LEFT)
+        self.play(FadeOut(measured_label), FadeIn(turn_note), run_time=0.4)
+        self.play(turn.animate.set_value(PI / 2), run_time=1.5)
         gain = MathTex(r"\Delta\phi = \frac{\xi}{\sqrt{N}},\ \xi < 1",
                        font_size=FONT_ANNOTATION, color=lighten(SQUEEZED_COLOR))
         gain.next_to(sql, DOWN, buff=0.2, aligned_edge=LEFT)
         self.play(
-            ReplacementTransform(sql_span.copy(), squeezed_span),
-            sql_span.animate.set_opacity(0.4),
             FadeOut(sql_note),
             sql.animate.set_opacity(0.5),
             FadeIn(gain),
-            FadeOut(turn),
+            FadeOut(turn_note),
             run_time=1.0,
         )
         self.wait(1.5)
