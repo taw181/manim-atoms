@@ -593,3 +593,21 @@ DIMENSION_TIP_LENGTH = 0.16
 DIMENSION_TICK = 0.12  # half the length of the bar across each end
 DIMENSION_OUTLINE = dict(color=PLOT_BACKGROUND, width=6, opacity=0.85)
 FONT_DIMENSION = FONT_CHAMBER_LABEL
+
+
+# --- phase-shear readout --------------------------------------------------
+# The last pulse drawn as a broad beam rather than a wavepacket, because what
+# matters here is its wavefronts: lines of equal laser phase, in the laser red,
+# over a faint band of the same red that fades out above the atoms, so it
+# reads as light passing on up rather than a slab that stops.
+SHEAR_BEAM_OPACITY = 0.14
+SHEAR_WAVEFRONT_STYLE = dict(stroke_width=2.5, color=LASER_COLOR, stroke_opacity=0.75)
+SHEAR_AXIS_STYLE = dict(dash_length=0.1, stroke_width=2, stroke_opacity=0.6,
+                        color=LASER_COLOR)
+# A camera image of one output port: the port's state colour, bright where
+# the atoms are, framed like the videos. Measured fringes are never full
+# contrast, so neither are these.
+SHEAR_IMAGE_BORDER_STYLE = VIDEO_BORDER_STYLE
+SHEAR_CONTRAST = 0.85
+SHEAR_PROFILE_WIDTH = 3.5  # the fitted fringe
+SHEAR_DATA_DOT_RADIUS = 0.05  # the binned profile it is fitted to
