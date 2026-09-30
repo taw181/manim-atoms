@@ -283,20 +283,12 @@ def returning_waves(now, h=strain, panel=FULL_FRAME):
     zero_sum = DashedLine(
         [PANEL_X[0], SUM_Y, 0], [PANEL_X[1], SUM_Y, 0], **GUIDE_STYLE
     )
-    key = VGroup(
-        MathTex(r"\text{from } L_x", font_size=FONT_LEGEND, color=lighten(X_ARM_COLOR)),
-        MathTex(r"\text{from } L_y", font_size=FONT_LEGEND, color=lighten(Y_ARM_COLOR)),
-    ).arrange(RIGHT, buff=0.6).move_to(
-        [np.mean(PANEL_X), RETURN_Y + RETURN_AMPLITUDE + 0.35, 0]
-    )
-    sum_tag = Tex(
-        "at the detector", font_size=FONT_LEGEND, color=OUTPUT_COLOR
-    ).move_to([np.mean(PANEL_X), SUM_Y + 2 * RETURN_AMPLITUDE + 0.3, 0])
-
+    # Unlabelled: the arm colours already say which beam is which, and the
+    # sum is the one in the detector's white.
     return (
-        panel(VGroup(zero_return, key)),
+        panel(VGroup(zero_return)),
         VGroup(row(RETURN_Y, e_x, X_ARM_COLOR), row(RETURN_Y, e_y, Y_ARM_COLOR)),
-        panel(VGroup(zero_sum, sum_tag)),
+        panel(VGroup(zero_sum)),
         row(SUM_Y, lambda u, t: e_x(u, t) + e_y(u, t), OUTPUT_COLOR, 4),
     )
 
