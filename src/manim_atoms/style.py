@@ -622,3 +622,35 @@ FONT_TABLE_NAME = 28
 FONT_TABLE_NOTE = 22
 FONT_TABLE_CELL = 24
 TABLE_RULE_STYLE = dict(stroke_width=1.5, color=GUIDE_COLOR, stroke_opacity=0.5)
+
+
+# --- spin squeezing -------------------------------------------------------
+# The quantum-noise blob of the collective spin. The coherent state is the
+# standard quantum limit, which the talk already draws in the guide grey (the
+# SQL band on the Allan plot); it stays up as a dashed outline once squeezed,
+# as the reference the squeezed state is held against. The squeezed state
+# takes the quiet run's green from the same plot: below the grey is where the
+# green sat there too.
+COHERENT_COLOR = SQL_COLOR
+SQUEEZED_COLOR = LLN_COLOR
+NOISE_BLOB_OPACITY = 0.3
+NOISE_BLOB_STROKE_WIDTH = 3
+# (set_stroke() keywords: both are dashed curves, not DashedLines)
+COHERENT_OUTLINE_STROKE = dict(color=COHERENT_COLOR, width=2, opacity=0.7)
+# The cavity probe counts the atoms in |g> on the 689 nm line, so the probe,
+# the cavity mode and the transmission it reads out all take the 689 red; the
+# measured value, marked on the spin's noise plane, is that reading too.
+PROBE_COLOR = TRANSITION_689_COLOR
+CAVITY_MODE_OPACITY = 0.45
+MIRROR_STROKE_WIDTH = 7
+PROBE_STROKE_WIDTH = 3
+MEASURED_STYLE = dict(
+    dash_length=0.1, stroke_width=2.5, stroke_opacity=0.9, color=PROBE_COLOR
+)
+EMPTY_CAVITY_STROKE = dict(color=GUIDE_COLOR, width=2.5, opacity=0.8)
+TRANSMISSION_WIDTH = 3.5
+# The Bloch sphere and the patch of it zoomed in on: furniture, in the
+# lightened construction grey.
+BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
+ZOOM_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
+                  color=GUIDE_COLOR)
