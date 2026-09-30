@@ -158,12 +158,9 @@ class Gradiometer(GradiometerGW):
         self.play(*[FadeIn(m, scale=0.5) for m in seeds.values()], run_time=0.6)
         self.beat()
 
-        # The offset between the two interferometers is the reason for all of
-        # this, so name it rather than leaving it as an unexplained shift.
-        self.lag_note = MathTex(
-            r"L/c\ \text{later}", font_size=FONT_LEGEND, color=LASER_COLOR
-        ).next_to(up[0], UP, buff=0.3)
-
+        # The offset between the two interferometers goes unnamed here: with
+        # nothing passing through it changes nothing, and DarkMatterGradiometer
+        # is where it is named, as the reason the two clocks read differently.
         self.low, self.up = low, up
         self.rate, self.phase = clock_rate(GR_T), phase
         self.atoms, self.seeds = atoms, seeds
@@ -244,8 +241,8 @@ class Gradiometer(GradiometerGW):
         self.wait(2.5)
 
     def pulse_note(self, k):
-        """The lag, named on the first pulse; the rest have nothing to add."""
-        return self.lag_note if k == 0 else None
+        """Nothing: the pulses go uncaptioned (see construct)."""
+        return None
 
     def laser_jump(self, k):
         """Pulse k writes its phase onto both clouds' hands."""
@@ -278,7 +275,6 @@ class Gradiometer(GradiometerGW):
         self.open_arms("low")
         self.open_arms("up")
         self.laser_jump(0)
-        self.play(FadeIn(self.lag_note), run_time=0.5)
 
         draw_legs(self, [
             (atoms["low"][0], low[0], low[1], ATOM_COLOR),
@@ -291,8 +287,7 @@ class Gradiometer(GradiometerGW):
         self.beat()
 
         # --- pulse 2: the mirror ------------------------------------------
-        self.play(FadeOut(self.lag_note), FadeIn(laser_caption(2, GR_T0 + GR_T)),
-                  run_time=0.3)
+        self.play(FadeIn(laser_caption(2, GR_T0 + GR_T)), run_time=0.3)
         fire_pulse(self, GR_T0 + GR_T, flash=[a for p in atoms.values() for a in p])
         big = self.big
         self.play(

@@ -12,6 +12,11 @@ from aionanim.tools.clock import (
     CP_T,
     CP_T0,
 )
+from aionanim.tools.gradiometer import (
+    GR_LAG,
+    GR_T,
+    GR_T0,
+)
 from aionanim.tools.primitives import (
     state_label,
 )
@@ -76,30 +81,50 @@ DM_LASER_X = 0.45  # the laser's arrow, far enough right to read as its own
 DM_MARK_X = 0.60  # the column the laser's labels and the detuning bar sit in
 
 
-def dm_field(t):
+def dm_field(t, t0=CP_T0):
     """The field's modulation of omega_A at time t, normalised to +-1.
 
-    At DM_THETA at the first pulse: an arbitrary phase, not one picked to
-    line the pulses up with the wave.
+    At DM_THETA at the first pulse, `t0`: an arbitrary phase, not one picked
+    to line the pulses up with the wave. A diagram with its first pulse
+    elsewhere on the time axis passes its own, so every figure meets the
+    field at the same point in its cycle.
     """
-    return np.sin(DM_OMEGA * (t - CP_T0) + DM_THETA)
+    return np.sin(DM_OMEGA * (t - t0) + DM_THETA)
 
 
-def dm_phase(rate, t_from, t_to):
+def dm_phase(rate, t_from, t_to, t0=CP_T0):
     """What an arm's hand winds up while excited from t_from to t_to.
 
     The hand turns at the modulated frequency, so what it has accumulated is
     omega_A integrated across the window rather than omega_A times its length.
     Both windows here are one leg long; the integrals differ all the same, and
-    that difference is the whole signal.
+    that difference is the whole signal. `t0` as for dm_field.
     """
     def wound(t):
-        return t - DM_EPS * np.cos(DM_OMEGA * (t - CP_T0) + DM_THETA) / DM_OMEGA
+        return t - DM_EPS * np.cos(DM_OMEGA * (t - t0) + DM_THETA) / DM_OMEGA
 
     return rate * (wound(t_to) - wound(t_from))
 
 
-def make_field_trace(windows):
+# --- the same field over the gradiometer ----------------------------------
+# Along the top of the diagram, where the gravitational-wave scenes run h(t),
+# and on the same time axis as the two interferometers under it. The field is
+# the same everywhere on the baseline -- its wavelength is far longer than any
+# detector -- so one curve serves both clouds. What differs is when each one
+# is looking: every pulse reaches the far cloud L/c after the near one, so the
+# trace carries a pair of markers per pulse, L/c apart.
+DG_T0 = GR_T0  # the first pulse at the near cloud, which meets DM_THETA
+DG_TRACE_Z = 2.75
+DG_TRACE_AMPLITUDE = 0.28
+# ending just past the last marker: its label goes after it, and the far
+# cloud's excited port climbs to the trace's height a little further on
+DG_TRACE_X = (GR_T0 - 0.6, GR_T0 + 2 * GR_T + GR_LAG + 0.3)
+# near cloud, then far cloud, for each pulse
+DG_PULSES = [GR_T0 + k * GR_T + lag for k in range(3) for lag in (0.0, GR_LAG)]
+
+
+def make_field_trace(windows, z=DM_TRACE_Z, amplitude=DM_TRACE_AMPLITUDE,
+                     x_range=DM_TRACE_X, t0=CP_T0, pulses=None):
     """The driving field along the top of the diagram, on its own time axis.
 
     Built the way make_strain_trace builds h(t), and for the same reason:
@@ -114,48 +139,52 @@ def make_field_trace(windows):
     wash only repeats it in words. Returns the curve, those washes, and the
     three pulse markers separately, so a scene can bring each one on at the
     moment it is earned.
-    """
-    def at(t):
-        return [t, DM_TRACE_Z + DM_TRACE_AMPLITUDE * dm_field(t), 0]
 
-    zero = DashedLine(
-        [DM_TRACE_X[0], DM_TRACE_Z, 0], [DM_TRACE_X[1], DM_TRACE_Z, 0],
-        **GUIDE_STYLE,
-    )
+    `z`, `amplitude`, `x_range` and `t0` place it on another diagram (the
+    gradiometer's: see DG_*), and `pulses` are the lab times to mark, by
+    default the single interferometer's three.
+    """
+    if pulses is None:
+        pulses = [CP_T0 + k * CP_T for k in range(3)]
+
+    def at(t):
+        return [t, z + amplitude * dm_field(t, t0), 0]
+
+    zero = DashedLine([x_range[0], z, 0], [x_range[1], z, 0], **GUIDE_STYLE)
     curve = ParametricFunction(
-        at, t_range=[*DM_TRACE_X, 0.02],
+        at, t_range=[*x_range, 0.02],
         color=FIELD_COLOR, stroke_width=FIELD_STROKE_WIDTH,
     )
     tag = MathTex(
         r"\delta\omega_A/\omega_A", font_size=FONT_LEGEND, color=FIELD_COLOR
     ).next_to(curve, RIGHT, buff=0.2)
 
-    top = DM_TRACE_Z + DM_TRACE_AMPLITUDE + 0.2
-    bottom = DM_TRACE_Z - DM_TRACE_AMPLITUDE - 0.2
+    top = z + amplitude + 0.2
+    bottom = z - amplitude - 0.2
     bands = VGroup()
     for t_from, t_to in windows:
         bands.add(Rectangle(
             width=t_to - t_from, height=top - bottom, **FIELD_WINDOW_STYLE
         ).move_to([0.5 * (t_from + t_to), 0.5 * (top + bottom), 0]))
 
-    dots = VGroup(*[
-        Dot(at(CP_T0 + k * CP_T), radius=0.07, color=LASER_COLOR) for k in range(3)
-    ])
+    dots = VGroup(*[Dot(at(t), radius=0.07, color=LASER_COLOR) for t in pulses])
     return VGroup(zero, curve, tag), bands, dots
 
 
-def field_marker(now):
+def field_marker(now, z=DM_TRACE_Z, amplitude=DM_TRACE_AMPLITUDE,
+                 x_range=DM_TRACE_X, t0=CP_T0):
     """A dot riding the trace at the instant the level diagram is showing.
 
     The one thing that ties the two halves of the figure together: without it
     the trace is a curve and the level diagram is a level, and nothing on the
-    page says they are the same number.
+    page says they are the same number. Placed as make_field_trace's
+    arguments place the trace.
     """
     def at():
         # held at the curve's end once lab time runs past it, rather than
         # riding on over the trace's label
-        t = min(now.get_value(), DM_TRACE_X[1])
-        return [t, DM_TRACE_Z + DM_TRACE_AMPLITUDE * dm_field(t), 0]
+        t = min(now.get_value(), x_range[1])
+        return [t, z + amplitude * dm_field(t, t0), 0]
 
     return always_redraw(
         lambda: Dot(at(), radius=0.08, color=lighten(KICKED_COLOR))

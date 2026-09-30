@@ -35,6 +35,22 @@ from aionanim.tools.clock import (
     readout_equation,
     strobe_pulse,
 )
+from aionanim.scenes.gradiometer import launch_time
+from aionanim.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
+from aionanim.tools.gradiometer import (
+    GR_DIAL_RADIUS,
+    GR_DIALS,
+    GR_LAG,
+    GR_LOWER_Z,
+    GR_SIGNAL,
+    GR_T,
+    GR_T0,
+    GR_TERMS_WIDTH,
+    GR_UPPER_Z,
+    gradiometer_frame,
+    sweep_pulse,
+    vertices,
+)
 from aionanim.tools.primitives import (
     draw_legs,
     make_atom,
@@ -44,9 +60,15 @@ from aionanim.tools.spacetime import (
     carry,
     growing_band,
     growing_trail,
+    run_to,
     worldline,
 )
 from aionanim.tools.uldm import (
+    DG_PULSES,
+    DG_T0,
+    DG_TRACE_AMPLITUDE,
+    DG_TRACE_X,
+    DG_TRACE_Z,
     DM_OMEGA,
     dm_field,
     dm_phase,
@@ -56,14 +78,6 @@ from aionanim.tools.uldm import (
 )
 
 
-# Where the scalings go: the rest of CP_READOUT's strip, right of the readout
-# equation. The only clear span left, once the dial and its verdict have taken
-# the right-hand side and the trace has taken the top. Wide enough for a
-# proportionality and a line naming it, which is all that goes here: a full
-# expression had to be shrunk to fit, and a shrunk equation at the bottom of a
-# frame is one nobody reads.
-CP_SCALING = np.array([1.5, -3.25, 0.0])
-CP_SCALING_WIDTH = 8.4
 # the band between the field's trace and the interferometer, which is where the
 # modulation law goes -- it belongs to both, so it sits between them
 DM_LAW = np.array([-1.8, 0.75, 0.0])
@@ -184,32 +198,10 @@ class DarkMatterPhase(Scene):
         # self.play(FadeIn(result), run_time=1.0)
         # self.beat()
 
-        # What the instrument gets out of what the figure has drawn. One
-        # interferometer has no L in it -- this one is a single clock, and its
-        # phase is the oscillation integrated over two windows that no longer
-        # agree. Two of them a baseline apart sample that oscillation L/c out
-        # of step, and the length scale appears exactly as it does in the
-        # wave's own signal: same form, epsilon where h was. That is the point
-        # of putting it here rather than only on the gradiometer scenes.
-        scaling = (
-            VGroup(
-                MathTex(
-                    r"\Delta\Phi \propto n\,L\,\varepsilon\,"
-                    r"\sin^2(\omega_\phi T/2)",
-                    font_size=FONT_ANNOTATION,
-                ),
-                # Tex(
-                #     r"measured differentially: the wave's form, with $\varepsilon$ for $h$",
-                #     font_size=FONT_LEGEND,
-                #     color=lighten(GUIDE_COLOR),
-                # ),
-            )
-            .arrange(DOWN, buff=0.18)
-            .move_to(CP_SCALING)
-        )
-        if scaling.width > CP_SCALING_WIDTH:
-            scaling.scale(CP_SCALING_WIDTH / scaling.width)
-        self.play(FadeIn(scaling), run_time=1.0)
+        # It ends on the phase, with no L in it: this is a single clock, and
+        # its phase is the oscillation integrated over two windows that no
+        # longer agree. The baseline, and the scaling it brings, are
+        # DarkMatterGradiometer's.
         self.wait(2.0)
 
     def split(self, at):
@@ -413,6 +405,177 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
 
         # --- recombine -------------------------------------------------------
         strobe_pulse(self, now, c[0], top=c[1], flash_at=[c])
+
+
+class DarkMatterGradiometer(RunsContinuously, GradiometerGW):
+    """The field through the gradiometer: where the differential phase comes from.
+
+    DarkMatterPhase ends on one clock whose hands the field has pulled apart.
+    Two of them a baseline apart, driven by one laser, see the same field --
+    it is uniform over any detector -- but not at the same moment: every
+    pulse reaches the far cloud L/c after the near one, so the far cloud's
+    windows sit L/c further along the oscillation, it integrates a slightly
+    different stretch of it, and its hands part by a different amount. The
+    difference between the two dials is that shift, and the length scale
+    comes into the signal exactly as it does for a gravitational wave: same
+    form, epsilon where h was.
+
+    Continuous only, on RunsContinuously's clock like the other interferometer
+    slides: the claim is about *when* each cloud is pulsed, which a scene that
+    stops the atoms for every pulse can only assert in a caption. Its phase
+    comes from the field (dm_phase, as in DarkMatterPhase) rather than from a
+    constant rate, which is why it writes its own fly.
+    """
+
+    def construct(self):
+        gradiometer_frame(self, r"Ultralight dark matter, measured differentially")
+
+        # the field, on the diagram's own time axis, marked where each pulse
+        # reaches each cloud
+        trace, _, dots = make_field_trace(
+            [], DG_TRACE_Z, DG_TRACE_AMPLITUDE, DG_TRACE_X, DG_T0, DG_PULSES
+        )
+        self.play(FadeIn(trace[0]), Create(trace[1]), FadeIn(trace[2]), run_time=1.2)
+
+        low = vertices(GR_LOWER_Z, 0.0)
+        up = vertices(GR_UPPER_Z, GR_LAG)
+        phase = {
+            cloud: (ValueTracker(0.0), ValueTracker(0.0))
+            for cloud in ("low", "up")
+        }
+        # in the scene ahead of the hands that read them (see DarkMatterPhase)
+        self.add(*[t for pair in phase.values() for t in pair])
+
+        dials = VGroup(*[
+            make_dial(GR_DIALS[c], cap, GR_DIAL_RADIUS)
+            for c, cap in (
+                ("low", r"$\Phi_{\text{lower}}$"),
+                ("up", r"$\Phi_{\text{upper}}$"),
+            )
+        ])
+        self.play(FadeIn(dials), run_time=0.6)
+
+        atoms = {
+            cloud: [
+                make_atom(radius=CLOCK_ATOM_RADIUS).move_to(v[0]),
+                make_atom(KICKED_COLOR, radius=CLOCK_ATOM_RADIUS).move_to(v[0]),
+            ]
+            for cloud, v in (("low", low), ("up", up))
+        }
+        seeds = {
+            cloud: make_atom(radius=CLOCK_ATOM_RADIUS).move_to(v[0])
+            for cloud, v in (("low", low), ("up", up))
+        }
+        self.play(*[FadeIn(m, scale=0.5) for m in seeds.values()], run_time=0.6)
+        self.beat()
+
+        # The offset between the two interferometers is where the signal
+        # comes from, so it is named on the first pulse, at the far cloud.
+        self.lag_note = MathTex(
+            r"L/c\ \text{later}", font_size=FONT_LEGEND, color=LASER_COLOR
+        ).next_to(up[0], UP, buff=0.3)
+
+        self.low, self.up = low, up
+        self.rate, self.phase = clock_rate(GR_T), phase
+        self.atoms, self.seeds, self.dots = atoms, seeds, dots
+        self.hands, self.big = [], VGroup()
+        self.fly()
+
+        # --- the readout ---------------------------------------------------
+        # Each dial reads its own interferometer. The two windows each cloud
+        # was excited over differ from the other cloud's by L/c, so the two
+        # sectors -- and the two ports' splits -- come out different. Measured
+        # from the mirror-kicked hand, as DarkMatterPhase's is, which takes
+        # the short way round and leaves the two sectors comparable by eye.
+        sweeps = [
+            phase_sweep(GR_DIALS[c], phase[c][0], phase[c][1], GR_DIAL_RADIUS)[0]
+            for c in ("low", "up")
+        ]
+        self.remove(*atoms["low"], *atoms["up"], *self.hands)
+        self.close(sweeps)
+        self.play(
+            *[Flash(d[0], **{**FLASH_STYLE, "color": AREA_COLOR}) for d in dials],
+            run_time=0.5,
+        )
+        self.beat()
+
+        # What the instrument gets out of it. A proportionality rather than
+        # the equation, as on the wave's slide: the baseline, the photon
+        # kicks, and the interrogation time through a sin^2, which peaks at
+        # omega_phi T = pi and is zero only at whole periods.
+        signal = VGroup(
+            Tex(
+                r"the far cloud samples the same field $L/c$ later",
+                font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
+            ),
+            MathTex(
+                r"\Delta\Phi = \Phi_{\text{upper}} - \Phi_{\text{lower}}"
+                r" \propto n\,L\,\varepsilon\,\sin^2(\omega_\phi T/2)",
+                font_size=FONT_ANNOTATION,
+            ),
+        ).arrange(DOWN, buff=0.22).move_to(GR_SIGNAL)
+        if signal.width > GR_TERMS_WIDTH:
+            signal.scale(GR_TERMS_WIDTH / signal.width)
+        self.play(FadeIn(signal), run_time=1.0)
+        self.wait(2.0)
+
+    def pulse_note(self, k):
+        """The lag, named on the first pulse; the rest have nothing to add."""
+        return self.lag_note if k == 0 else None
+
+    def fly(self):
+        low, up, phase = self.low, self.up, self.phase
+
+        # Lab time starts as the first pulse leaves the laser.
+        clock = self.clock = ValueTracker(launch_time(GR_T0))
+        self.add(clock, field_marker(
+            clock, DG_TRACE_Z, DG_TRACE_AMPLITUDE, DG_TRACE_X, DG_T0
+        ))
+        # each marker lights as its pulse reaches its cloud
+        for dot, t in zip(self.dots, DG_PULSES):
+            dot.add_updater(lambda m, t=t: m.set_opacity(
+                1.0 if clock.get_value() >= t - 1e-6 else 0.0
+            ))
+        self.add(self.dots)
+
+        for cloud in ("low", "up"):
+            v = self.vertices(cloud)
+            start = np.array([clock.get_value(), self.nominal(cloud), 0.0])
+            self.add(growing_trail([start, v[0]], ATOM_COLOR, clock))
+            carry(self.seeds[cloud], worldline([start, v[0]]), clock)
+            # Each hand turns at the field-modulated rate while its arm is
+            # excited, over that cloud's own windows: index 1 is kicked at the
+            # beamsplitter (excited on leg 1), index 0 at the mirror (leg 2).
+            for k, (t_from, t_to) in ((1, (v[0][0], v[1][0])), (0, (v[1][0], v[3][0]))):
+                phase[cloud][k].add_updater(
+                    lambda m, t_from=t_from, t_to=t_to: m.set_value(dm_phase(
+                        self.rate, t_from,
+                        float(np.clip(clock.get_value(), t_from, t_to)), DG_T0,
+                    ))
+                )
+
+        drawn = self.shoot(0, near=[low[0]], far=[up[0]],
+                           on_near=lambda: self.open_arms("low"),
+                           on_far=lambda: self.open_arms("up"))
+        drawn = self.shoot(1, near=[low[1], low[2]], far=[up[1], up[2]],
+                           fade=drawn,
+                           on_near=lambda: self.mirror("low"),
+                           on_far=lambda: self.mirror("up"))
+        # anchored on the recombination points, an arm above the clouds'
+        # starting heights, as in GradiometerContinuous
+        drawn = self.shoot(2, near=[low[3]], far=[up[3]], fade=drawn,
+                           z_near=low[3][1], z_far=up[3][1])
+        run_to(self, clock, clock.get_value() + PULSE_LINGER,
+               *[FadeOut(m) for m in drawn])
+
+    def shoot(self, k, near, far, fade=(), on_near=None, on_far=None,
+              z_near=GR_LOWER_Z, z_far=GR_UPPER_Z):
+        """One pulse, at the quiet baseline's L/c: nothing here moves the light."""
+        return sweep_pulse(
+            self, self.clock, GR_T0 + k * GR_T, near=near, far=far,
+            lag=GR_LAG, note=self.pulse_note(k), fade=fade,
+            z_near=z_near, z_far=z_far, on_near=on_near, on_far=on_far,
+        )
 
 
 # --- DarkMatterField geometry ----------------------------------------------
