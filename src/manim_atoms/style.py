@@ -611,3 +611,15 @@ SHEAR_IMAGE_BORDER_STYLE = VIDEO_BORDER_STYLE
 SHEAR_CONTRAST = 0.85
 SHEAR_PROFILE_WIDTH = 3.5  # the fitted fringe
 SHEAR_DATA_DOT_RADIUS = 0.05  # the binned profile it is fitted to
+
+
+# --- km-scale challenges table --------------------------------------------
+# A table of text: the challenge in white with why it bites under it in the
+# guide grey, the prototype's figures in the grey too (where we are), and
+# AION-km's in white (where we need to be). A thin grey rule between rows.
+FONT_TABLE_HEADING = FONT_LEGEND
+FONT_TABLE_NAME = 28
+FONT_TABLE_NOTE = 22
+FONT_TABLE_CELL = 24
+TABLE_RULE_STYLE = dict(stroke_width=1.5, color=GUIDE_COLOR, stroke_opacity=0.5)
+MET_COLOR = GREEN_C  # the tick on a challenge the prototype has already met
