@@ -47,12 +47,13 @@ VS_HOLD = 1.5  # the pause after each step, where a slide stops instead
 
 # What slicing buys, read out above the plot: the temperature, and the
 # fidelity of the interferometer's own pi pulse (44 us, at full clock power).
-# Before, T is what the 60 kHz Doppler width of the clock line says (3.3 uK,
-# or 2.9 uK with the 20 kHz Fourier width taken out), and a 44 us pulse
+# Before, T is the narrowband red MOT's ~2 uK (the 60 kHz Doppler width of
+# the clock line says 3.3 uK, or 2.9 uK with the 20 kHz Fourier width taken
+# out, but that width carries more than temperature), and a 44 us pulse
 # averaged over that spread excites 31 % -- the 0.3 measured. After, T is the
 # slice's (see aionanim.tools.slicing) and the fidelity the measured 90 %,
 # short of the ~98 % the Doppler spread alone would allow.
-VS_BEFORE = (r"3\,\mu\mathrm{K}", r"30\,\%")
+VS_BEFORE = (r"2\,\mu\mathrm{K}", r"30\,\%")
 VS_AFTER = (r"10\,\mathrm{nK}", r"90\,\%")
 VS_READOUT_Y = 1.2  # just above the plot
 

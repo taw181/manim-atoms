@@ -13,9 +13,10 @@ turned down, the narrowband red MOT squeezes the cloud small and cold,
 with a seventh beam from below holding it up against gravity.
 
 The Sr level scheme in the corner shows which light is on, and the first
-three blocks of the sequence timeline say where in the shot this is. No
-numbers beyond the wavelengths: this is the shape of the sequence, not
-its settings.
+three blocks of the sequence timeline say where in the shot this is, each
+with its duration over it from when it starts. The settings that define each
+stage are written beside it: the coils' field gradient, the modulation
+depth of the red MOT's sweep, and the temperature the cloud ends at.
 """
 
 from manim import *
@@ -74,8 +75,25 @@ COOL_CLOUD = {
 COOL_TEMPERATURE_TEX = {
     "blue_mot": r"T \sim 1\,\mathrm{mK}",
     "modulated_red_mot": r"T \sim 10\,\mu\mathrm{K}",
-    "narrowband_red_mot": r"T \sim 1\,\mu\mathrm{K}",
+    "narrowband_red_mot": r"T \sim 2\,\mu\mathrm{K}",
 }
+# The coils' field gradient: strong for the blue MOT, and ten times weaker
+# once the narrow red line takes over, where it stays for both red stages.
+COOL_GRADIENT_TEX = {
+    "blue_mot": r"3.5\,\mathrm{mT/cm}",
+    "modulated_red_mot": r"0.4\,\mathrm{mT/cm}",
+    "narrowband_red_mot": r"0.4\,\mathrm{mT/cm}",
+}
+COOL_GRADIENT_BUFF = 0.3  # right of the upper coil
+# How long each stage runs, over its block of the timeline.
+COOL_DURATION_TEX = {
+    "blue_mot": r"1.5\,\mathrm{s}",
+    "modulated_red_mot": r"200\,\mathrm{ms}",
+    "narrowband_red_mot": r"100\,\mathrm{ms}",
+}
+COOL_DURATION_BUFF = 0.15
+# the red MOT's frequency sweep, under the 689 nm line of its heading
+COOL_MODULATION_TEX = r"6\,\mathrm{MHz\ modulation}"
 
 # --- pacing ---------------------------------------------------------------
 COOL_SWITCH_TIME = 1.2  # one stage's light and field giving way to the next
@@ -93,6 +111,19 @@ PAN_TIME = 3.4  # following the stream to the 3D MOT
 def temperature_tag(key):
     return MathTex(COOL_TEMPERATURE_TEX[key], font_size=FONT_TEMPERATURE,
                    color=lighten(GUIDE_COLOR)).move_to(COOL_TEMPERATURE_AT)
+
+
+def gradient_tag(key, coils):
+    """The field gradient, beside the upper coil it is drawn with."""
+    return MathTex(COOL_GRADIENT_TEX[key], font_size=FONT_LEGEND,
+                   color=COIL_COLOR).next_to(coils.loops[0], RIGHT,
+                                             buff=COOL_GRADIENT_BUFF)
+
+
+def duration_tag(key, block):
+    """How long a stage runs, over its block of the timeline."""
+    return MathTex(COOL_DURATION_TEX[key], font_size=FONT_LEGEND,
+                   color=PLOT_FOREGROUND).next_to(block, UP, buff=COOL_DURATION_BUFF)
 
 
 class CoolingSequence(MovingCameraScene):
@@ -124,14 +155,16 @@ class CoolingSequence(MovingCameraScene):
         # --- 2D MOT, fed from the oven ---
         push_stream = self.upstream()
         # ...and follow the stream right, the 3D MOT coming up as it arrives
-        heading = stage_heading(stages[0]).move_to(COOL_HEADING_CORNER, aligned_edge=UL)
+        heading = self.heading(0)
         tag = temperature_tag("blue_mot")
+        gradient = gradient_tag("blue_mot", coils)
         self.play(self.camera.frame.animate.move_to(ORIGIN), FadeIn(levels),
                   FadeIn(timeline), Create(coils), FadeIn(blue), run_time=PAN_TIME)
         self.remove(*self.upstream_mobjects)  # out of shot now
 
         # --- blue MOT ---
         self.play(*timeline.activate(0), *levels.drive("461"), FadeIn(heading),
+                  FadeIn(gradient), FadeIn(duration_tag("blue_mot", timeline.blocks[0])),
                   run_time=COOL_SWITCH_TIME)
         self.add(cloud)
         self.play(cloud.arrived.animate.set_value(1), rate_func=linear,
@@ -147,9 +180,11 @@ class CoolingSequence(MovingCameraScene):
         self.stage_break()
 
         # --- modulated red MOT ---
+        weak = gradient_tag("modulated_red_mot", coils)
         heading = self.next_stage(timeline, 1, heading, [
             *levels.drive(), fan.shown.animate.set_value(1),
             FadeOut(blue), FadeIn(red), coils.animate.set_gradient(COIL_WEAK_WIDTH),
+            FadeTransform(gradient, weak),
             cloud.glow.animate.set_value(1),
         ])
         tag = self.cool(cloud, "modulated_red_mot", tag, run_time=COOL_SWEEP_TIME)
@@ -209,12 +244,23 @@ class CoolingSequence(MovingCameraScene):
         self.wait(PUSH_LEAD)
         return push_stream
 
+    def heading(self, i):
+        """Stage ``i``'s heading, in the upper left; the modulated red MOT's
+        carries the depth of its sweep under the transition it drives."""
+        heading = stage_heading(STAGES[i])
+        if STAGES[i].key == "modulated_red_mot":
+            heading.add(MathTex(
+                COOL_MODULATION_TEX, font_size=FONT_LEGEND, color=TRANSITION_689_COLOR,
+            ).next_to(heading[1], DOWN, buff=0.2))
+        return heading.move_to(COOL_HEADING_CORNER, aligned_edge=UL)
+
     def next_stage(self, timeline, i, heading, anims):
         """Move the timeline and heading on to stage ``i``, alongside
-        ``anims``; returns the new heading."""
-        new_heading = stage_heading(STAGES[i]).move_to(COOL_HEADING_CORNER, aligned_edge=UL)
+        ``anims``, and put up its duration; returns the new heading."""
+        new_heading = self.heading(i)
         self.play(
             *timeline.activate(i), *anims,
+            FadeIn(duration_tag(STAGES[i].key, timeline.blocks[i])),
             # out, then in: two headings crossing each other can't be read
             Succession(FadeOut(heading, shift=UP * 0.2), FadeIn(new_heading, shift=UP * 0.2)),
             run_time=COOL_SWITCH_TIME,
