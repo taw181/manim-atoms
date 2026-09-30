@@ -73,6 +73,18 @@ TRACE_T = (GW_ON - 0.6, GW_OFF + 0.6)  # the stretch of lab time the trace spans
 RETURN_Y = 1.0  # the two returning beams, overlaid
 RETURN_AMPLITUDE = 0.3
 SUM_Y = -0.75  # what reaches the detector
+# LIGOMichelson's own layout of the column right of the x arm, which it has
+# to itself: h(t) across the top, grown and brought down, and the equations
+# grown into the middle. The drawing's own coordinates above stay as they are
+# because MergerOnSensitivityPlot places its panels by them.
+COLUMN_X = 4.45  # the column's centre
+MICHELSON_TRACE_SCALE = 1.2
+MICHELSON_TRACE_Y = 2.1  # where the trace's zero line goes
+MICHELSON_TRACE_AMPLITUDE = 0.55  # before the panel's scale
+MICHELSON_EQUATION_Y = -0.5  # the two lines of the equation, centred
+MICHELSON_EQUATION_SCALE = 1.4
+MICHELSON_SCALE_Y = -2.75  # the line of real numbers under it
+MICHELSON_SCALE_SCALE = 1.1
 INSET_WAVELENGTH = 1.3
 K_INSET = TAU / INSET_WAVELENGTH
 OMEGA_INSET = K_INSET * LIGHT_SPEED
@@ -124,6 +136,10 @@ class Panel:
 
 
 FULL_FRAME = Panel()
+MICHELSON_TRACE = Panel.at(
+    MICHELSON_TRACE_SCALE, [np.mean(PANEL_X), TRACE_Y],
+    [COLUMN_X, MICHELSON_TRACE_Y],
+)
 
 
 # Everything the wave drives takes the strain as `h`, a function of lab time
@@ -221,9 +237,11 @@ def detector_glow(now, h=strain):
     ).move_to(DETECTOR)
 
 
-def make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME):
+def make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME,
+                      amplitude=TRACE_AMPLITUDE):
     """h(t) drawn out as it arrives, with a dot on the present; the panel
-    spans the stretch `span` of lab time."""
+    spans the stretch `span` of lab time. `amplitude` is the peak's height
+    before the panel scales it."""
     zero = DashedLine(
         [PANEL_X[0], TRACE_Y, 0], [PANEL_X[1], TRACE_Y, 0], **GUIDE_STYLE
     )
@@ -233,7 +251,7 @@ def make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME):
 
     def at(t):
         x = interpolate(*PANEL_X, (t - span[0]) / (span[1] - span[0]))
-        return [x, TRACE_Y + TRACE_AMPLITUDE * h(t), 0]
+        return [x, TRACE_Y + amplitude * h(t), 0]
 
     def curve():
         t_now = float(np.clip(now.get_value(), *span))
@@ -471,13 +489,19 @@ class LIGOMichelson(Scene):
         self.beat()
 
         # --- a wave passes ---
-        trace_axes, trace = make_strain_trace(now)
+        trace_axes, trace = make_strain_trace(
+            now, panel=MICHELSON_TRACE, amplitude=MICHELSON_TRACE_AMPLITUDE
+        )
         run(
             self, now, GW_ON, FadeOut(dark_note),
             FadeIn(trace_axes), FadeIn(trace),
         )
 
         readout, in_h, scale = make_equation()
+        VGroup(readout, in_h).scale(MICHELSON_EQUATION_SCALE).move_to(
+            [COLUMN_X, MICHELSON_EQUATION_Y, 0]
+        )
+        scale.scale(MICHELSON_SCALE_SCALE).move_to([COLUMN_X, MICHELSON_SCALE_Y, 0])
         run(self, now, GW_ON + 1.5, FadeIn(readout))
         run(self, now, GW_ON + 3.5, FadeIn(in_h))
         run(self, now, GW_OFF)
