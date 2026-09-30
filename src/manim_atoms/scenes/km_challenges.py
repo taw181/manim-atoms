@@ -17,6 +17,8 @@ from aionanim.style import *
 from aionanim.physics.km_scale import (
     BEST_SR_LMT,
     KM_BASELINE,
+    KM_CLOUD_FRACTION,
+    KM_CLOUD_SIZE,
     KM_CLOUD_SPREAD,
     KM_FIDELITY,
     KM_FLUX,
@@ -26,6 +28,7 @@ from aionanim.physics.km_scale import (
     KM_POWER,
     KM_PULSES,
     KM_T,
+    KM_TEMPERATURE,
     KM_WAIST,
     PROTO_ATOMS,
     PROTO_BASELINE,
@@ -42,9 +45,9 @@ from aionanim.tools.layout import slide_title
 # The left edge of each column, and the heading row's height; rows stack down
 # from under the headings, a rule between each.
 KC_COLUMNS = (-6.75, -2.0, 2.15)
-KC_HEADING_Y = 2.8
-KC_ROW_BUFF = 0.16  # between a row and the rule on either side of it
-KC_LINE_BUFF = 0.1  # between the lines within a cell
+KC_HEADING_Y = 3.0
+KC_ROW_BUFF = 0.12  # between a row and the rule on either side of it
+KC_LINE_BUFF = 0.07  # between the lines within a cell
 
 
 def _sci(x, digits=0):
@@ -105,14 +108,26 @@ KC_ROWS = (
     ),
     (
         [r"Long free fall"],
-        [r"atoms spread; the whole", r"baseline in vacuum, shielded"],
+        [r"the whole baseline in", r"vacuum and shielded"],
         [
             rf"$T = {PROTO_T * 1e6:.0f}\,\mu$s over ${PROTO_BASELINE * 1e3:.0f}\,$mm",
         ],
         [
-            rf"$T = {KM_T:.0f}\,$s: a ${PROTO_TEMPERATURE * 1e6:.0f}\,\mu$K cloud grows"
-            rf" ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm",
-            rf"${_km(KM_BASELINE)}$ of UHV and magnetic shield",
+            rf"$T = {KM_T:.0f}\,$s over ${_km(KM_BASELINE)}$ of UHV",
+            r"and magnetic shield",
+        ],
+    ),
+    (
+        [r"Colder atoms"],
+        [r"the cloud must stay small", r"against the beam for $2T$"],
+        [
+            rf"${PROTO_TEMPERATURE * 1e6:.0f}\,\mu$K: grows"
+            rf" ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm in ${2 * KM_T:.0f}\,$s",
+        ],
+        [
+            rf"$\lesssim{KM_TEMPERATURE * 1e9:.1f}\,$nK to stay"
+            rf" $\lesssim{KM_CLOUD_SIZE * 1e3:.0f}\,$mm ($w_0/{1 / KM_CLOUD_FRACTION:.0f}$)",
+            r"(delta-kick collimation)",
         ],
     ),
 )
@@ -169,8 +184,11 @@ class KmScaleChallenges(Scene):
             rows.append(row)
             rules.append(rule().set_y(row.get_bottom()[1] - KC_ROW_BUFF))
 
+        # a row comes up with the rule above it: none under the last, which
+        # would sit on the citations
         self.play(FadeIn(title), FadeIn(headings), Create(rules[0]), run_time=0.8)
-        for row, below in zip(rows, rules[1:]):
+        for i, row in enumerate(rows):
             self.beat()
-            self.play(FadeIn(row, shift=UP * 0.15), Create(below), run_time=0.7)
+            above = [Create(rules[i])] if i else []
+            self.play(FadeIn(row, shift=UP * 0.15), *above, run_time=0.7)
         self.wait(0.5)
