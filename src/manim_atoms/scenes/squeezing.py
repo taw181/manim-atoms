@@ -3,10 +3,11 @@
 Right, the collective spin of N atoms: a Bloch sphere with the mean spin on
 its equator, and the patch round its tip zoomed in on, J_z = (N_e - N_g)/2
 up and the phase across. The coherent state's noise disc, 1/sqrt(N) wide, is the standard
-quantum limit. Left, the atoms in an optical cavity, probed far off the
-689 nm line: the atoms in |g> pull the cavity's resonance, the transmitted
-light reads off how far, and so counts them without flipping any -- a
-quantum non-demolition measurement of J_z. Knowing J_z squeezes the disc
+quantum limit. Left, the atoms in an optical cavity tuned to the 689 nm
+line: coupled to the atoms in |g>, its line splits in two, 2 g sqrt(N_g)
+apart -- the vacuum Rabi splitting -- and measuring the splitting counts
+them without flipping any, a quantum non-demolition measurement of J_z
+(Chen et al., PRL 106, 133601 (2011)). Knowing J_z squeezes the disc
 along it; a rotation about the mean spin turns the squeezing onto the phase.
 
     uv run manim -qh src/aionanim/scenes/squeezing.py SpinSqueezing
@@ -22,7 +23,7 @@ from aionanim.style import *
 from aionanim.tools.layout import slide_title
 from aionanim.tools.squeezing import (
     cavity_atoms,
-    lorentzian,
+    rabi_transmission,
     make_bloch,
     make_cavity,
     noise_blob,
@@ -30,19 +31,20 @@ from aionanim.tools.squeezing import (
 
 # --- spin-squeezing geometry ------------------------------------------------
 # Left column: the cavity, and its transmission under it.
-SQ_CAVITY = np.array([-3.8, 1.65, 0.0])
+SQ_CAVITY = np.array([-3.8, 1.8, 0.0])
 SQ_CAVITY_LENGTH = 3.0
 SQ_MIRROR_HEIGHT = 1.4
 SQ_MODE_WIDTH = 0.9
 SQ_LEAD_IN = 1.3
 SQ_LEAD_OUT = 0.9
 SQ_CLOUD_RADIUS = 0.3
-SQ_PLOT = np.array([-3.6, -0.95, 0.0])  # centre of the transmission axes
+SQ_PLOT = np.array([-3.6, -0.85, 0.0])  # centre of the transmission axes
 SQ_PLOT_SIZE = (4.6, 1.8)
 SQ_PLOT_SPAN = 4.0  # probe frequency across the axes, in the plot's units
-SQ_EMPTY = 1.3  # the empty cavity's resonance, on that scale
-SQ_LINE_WIDTH = 0.3  # the cavity line's half-width
-SQ_PULL = 1.3  # how far the atoms pull the resonance
+SQ_EMPTY = SQ_PLOT_SPAN / 2  # the cavity's resonance, and the atoms'
+SQ_KAPPA = 0.25  # the cavity line's half-width
+SQ_GAMMA = 0.03  # the atoms': 689 nm's 7.5 kHz is far narrower than any cavity's
+SQ_COUPLING = 1.1  # g sqrt(N_g): the normal modes sit this far either side
 
 # Right column: the patch round the tip of the collective spin, zoomed in,
 # and the Bloch sphere it comes from on its right, the spin pointing back
@@ -154,16 +156,19 @@ class SpinSqueezing(Scene):
         y_label.rotate(PI / 2).next_to(plot.y_axis, LEFT, buff=0.15)
 
         empty = DashedVMobject(
-            plot.plot(lambda x: lorentzian(x, SQ_EMPTY, SQ_LINE_WIDTH), x_range=span),
+            plot.plot(lambda x: rabi_transmission(x, SQ_EMPTY, SQ_KAPPA, SQ_GAMMA, 0),
+                      x_range=span),
             num_dashes=40,
         ).set_stroke(**EMPTY_CAVITY_STROKE)
-        pull = ValueTracker(0.0)
+        coupling = ValueTracker(0.0)
         loaded = always_redraw(lambda: plot.plot(
-            lambda x: lorentzian(x, SQ_EMPTY + pull.get_value(), SQ_LINE_WIDTH),
-            x_range=span, color=PROBE_COLOR, stroke_width=TRANSMISSION_WIDTH,
+            lambda x: rabi_transmission(x, SQ_EMPTY, SQ_KAPPA, SQ_GAMMA,
+                                        coupling.get_value()),
+            x_range=[0, SQ_PLOT_SPAN, 0.01], color=PROBE_COLOR,
+            stroke_width=TRANSMISSION_WIDTH,
         ))
         empty_label = Tex(r"empty", font_size=FONT_TICK, color=lighten(GUIDE_COLOR))
-        empty_label.next_to(plot.c2p(SQ_EMPTY, 1), LEFT, buff=0.3)
+        empty_label.next_to(plot.c2p(SQ_EMPTY + 0.2, 0.75), RIGHT, buff=0.1)
 
         self.play(
             FadeIn(mirrors), FadeIn(mode), FadeIn(detector), GrowArrow(probe[0]),
@@ -174,22 +179,24 @@ class SpinSqueezing(Scene):
         )
         self.add(loaded)
         self.play(
-            FadeIn(atoms, lag_ratio=0.05), pull.animate.set_value(SQ_PULL),
+            FadeIn(atoms, lag_ratio=0.05), coupling.animate.set_value(SQ_COUPLING),
             run_time=1.5,
         )
+        # over the empty cavity's peak, from one normal mode to the other
         shift = DoubleArrow(
-            plot.c2p(SQ_EMPTY, 1.08), plot.c2p(SQ_EMPTY + SQ_PULL, 1.08), buff=0, stroke_width=3,
+            plot.c2p(SQ_EMPTY - SQ_COUPLING, 1.1), plot.c2p(SQ_EMPTY + SQ_COUPLING, 1.1),
+            buff=0, stroke_width=3,
             color=lighten(PROBE_COLOR), tip_length=0.15,
             max_tip_length_to_length_ratio=0.3,
         )
-        shift_label = MathTex(r"\propto N_g", font_size=FONT_LEGEND,
+        shift_label = MathTex(r"2g\sqrt{N_g}", font_size=FONT_LEGEND,
                               color=lighten(PROBE_COLOR))
-        shift_label.next_to(shift, RIGHT, buff=0.12)
+        shift_label.next_to(shift, UP, buff=0.08)
         qnd = Tex(
-            r"far off resonance: the light counts the $|g\rangle$ atoms\\"
-            r"without flipping them -- a non-demolition measurement",
+            r"vacuum Rabi splitting: the $|g\rangle$ atoms split the cavity line;\\"
+            r"reading the splitting counts them without flipping any",
             font_size=FONT_TICK, color=lighten(GUIDE_COLOR),
-        ).next_to(x_label, DOWN, buff=0.25)
+        ).next_to(x_label, DOWN, buff=0.18)
         self.play(GrowFromCenter(shift), FadeIn(shift_label), FadeIn(qnd), run_time=0.8)
         self.beat()
 

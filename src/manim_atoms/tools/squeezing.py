@@ -7,11 +7,14 @@ is blurred by a disc of quantum noise, Delta J_z = sqrt(N)/2 wide: the
 coherent spin state, whose phase resolution 1/sqrt(N) is the standard quantum
 limit.
 
-Put the atoms in an optical cavity and probe it far off the 689 nm line: the
-atoms in |g> pull the cavity's resonance by an amount proportional to how many
-there are, and the light scatters almost nothing, so it counts N_g -- which,
-with N known, is J_z = (N_e - N_g)/2 -- without flipping an atom or spoiling
-the superposition. That is a quantum non-demolition measurement. Once J_z is
+Put the atoms in an optical cavity tuned to the 689 nm line, which only |g>
+drives (Chen et al., PRL 106, 133601 (2011), did this on Rb's D2 line). The
+atoms in |g> share one excitation with the cavity mode, and that collective
+coupling splits the cavity's line into two normal modes 2 g sqrt(N_g) apart:
+the vacuum Rabi splitting. Measuring the splitting counts N_g -- which, with
+N known, is J_z = (N_e - N_g)/2 -- and a probe on the split modes sits
+g sqrt(N_g) off the atoms, so it scatters little and flips no atom: a
+quantum non-demolition measurement. Once J_z is
 known better than sqrt(N)/2, the disc is squeezed along J_z and stretched
 along the phase; a rotation about the mean spin turns the narrow direction
 onto the phase, and the interferometer resolves it to xi / sqrt(N), xi < 1.
@@ -28,10 +31,15 @@ from aionanim.tools.dipole import gaussian_band
 from aionanim.tools.primitives import make_cloud, state_label
 
 
-def lorentzian(x, center, width):
-    """The cavity's transmission at probe frequency x: peak 1 at ``center``,
-    half-width ``width``."""
-    return 1 / (1 + ((x - center) / width) ** 2)
+def rabi_transmission(x, center, kappa, gamma, coupling):
+    """The cavity's transmission at probe frequency x, with the cavity and the
+    atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2
+    at detuning D, for cavity and atomic half-widths kappa and gamma and
+    collective coupling G = g sqrt(N_g). One peak of height 1 for an empty
+    cavity (G = 0); two, near center +- G, once G outgrows the widths."""
+    d = np.asarray(x) - center
+    t = kappa / (kappa - 1j * d + coupling**2 / (gamma - 1j * d))
+    return np.abs(t) ** 2
 
 
 def noise_blob(radius, color=COHERENT_COLOR):
