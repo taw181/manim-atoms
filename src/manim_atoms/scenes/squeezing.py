@@ -176,14 +176,12 @@ class SpinSqueezing(Scene):
             x_range=[0, SQ_PLOT_SPAN, 0.01], color=PROBE_COLOR,
             stroke_width=TRANSMISSION_WIDTH,
         ))
-        empty_label = Tex(r"empty", font_size=FONT_TICK, color=lighten(GUIDE_COLOR))
-        empty_label.next_to(plot.c2p(SQ_EMPTY + 0.2, 0.75), RIGHT, buff=0.1)
 
         self.play(
             FadeIn(mirrors), FadeIn(mode), FadeIn(detector), GrowArrow(probe[0]),
             GrowArrow(probe[1]), FadeIn(probe_label), FadeIn(cavity_label),
             FadeIn(plot), FadeIn(x_label), FadeIn(y_label), FadeIn(empty),
-            FadeIn(empty_label), FadeIn(loaded),
+            FadeIn(loaded),
             run_time=0.8,
         )
         self.add(loaded)
