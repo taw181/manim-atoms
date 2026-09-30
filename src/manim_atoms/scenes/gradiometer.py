@@ -70,8 +70,10 @@ from aionanim.tools.spacetime import (
 GR_EFFECT_SPAN = (0.25, 0.75)  # of the second leg
 GR_EFFECT_PAD = 0.2  # the boxes' reach above and below each interferometer
 # On top of the laser's 1.3 rad, which leaves both with |g> ports of ~63%:
-# the lower one ends near an even split (~44%), the upper one nearly all in |e>.
-GR_EFFECT_PHASE = {"low": 0.4, "up": 1.8}
+# the lower one ends near an even split (~44%), the upper one mostly in |e>
+# (~17%) -- but not all of it: a |g> port emptied out is drawn as a dashed
+# guide, and on screen that reads as the port vanishing, not as a split.
+GR_EFFECT_PHASE = {"low": 0.4, "up": 1.0}
 GR_EFFECT_TIME = 2.5
 
 
