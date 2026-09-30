@@ -10,7 +10,7 @@ the same phase, the ports are two smooth blobs, and one shot gives a single
 number, P_e = (1 - C cos Phi) / 2 -- blind to the sign of Phi and mixed up
 with the contrast. Tilt the pulse by theta and the wavefronts cross the cloud
 Lambda = lambda / theta apart: the hands fan out across it, the ports come
-out striped, and a fit to the stripes gives Phi from the one image.
+out striped, and where the stripes sit gives Phi from the one image.
 
     uv run manim -qh src/aionanim/scenes/phase_shear.py PhaseShearReadout
 """
@@ -60,11 +60,11 @@ PLOT_ORIGIN_Y = -3.0
 PLOT_HEIGHT = 2.2
 N_BINS = 25
 
-PHI = 1.2  # the interferometer phase the fit reads back
+PHI = 1.2  # the interferometer phase
 
 
 class PhaseShearReadout(Scene):
-    """The last pulse square on, then tilted, then the phase read off the fringes."""
+    """The last pulse square on, then tilted: the fringes it writes on the cloud."""
 
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version."""
@@ -205,9 +205,9 @@ class PhaseShearReadout(Scene):
         theta_label.move_to(CLOUD + (ANGLE_RADIUS + 0.35) * rotate_vector(DOWN, -TILT / 2))
         theta_label.set_stroke(PLOT_BACKGROUND, width=5, background=True)
         self.play(Create(arc), FadeIn(theta_label), run_time=0.6)
-        self.beat()
 
         # --- 4. the fringe period: where the wavefronts cross the cloud -----
+        # straight on from the tilt, in the same click
         # between the two wavefronts that cross the row at its centre and at
         # its right-hand end, just under it
         span = DoubleArrow(
@@ -224,14 +224,4 @@ class PhaseShearReadout(Scene):
             font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR),
         ).next_to(tilted_caption, DOWN, buff=0.15, aligned_edge=LEFT)
         self.play(GrowFromCenter(span), FadeIn(span_label), FadeIn(scale), run_time=0.8)
-        self.beat()
-
-        # --- 5. what the fit to the fringes gives back ---------------------
-        readout = VGroup(
-            MathTex(r"\text{fit: }\Phi =", font_size=FONT_ANNOTATION),
-            DecimalNumber(PHI, num_decimal_places=2, font_size=FONT_ANNOTATION),
-            MathTex(r"\,\text{rad}", font_size=FONT_ANNOTATION),
-        ).arrange(RIGHT, buff=0.12)
-        readout.next_to(axes, DOWN, buff=0.25).align_to(axes, RIGHT)
-        self.play(FadeIn(readout), run_time=0.6)
         self.wait(1.5)
