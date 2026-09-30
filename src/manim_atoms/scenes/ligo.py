@@ -283,12 +283,20 @@ def returning_waves(now, h=strain, panel=FULL_FRAME):
     zero_sum = DashedLine(
         [PANEL_X[0], SUM_Y, 0], [PANEL_X[1], SUM_Y, 0], **GUIDE_STYLE
     )
-    # Unlabelled: the arm colours already say which beam is which, and the
-    # sum is the one in the detector's white.
+    key = VGroup(
+        MathTex(r"\text{from } L_x", font_size=FONT_LEGEND, color=lighten(X_ARM_COLOR)),
+        MathTex(r"\text{from } L_y", font_size=FONT_LEGEND, color=lighten(Y_ARM_COLOR)),
+    ).arrange(RIGHT, buff=0.6).move_to(
+        [np.mean(PANEL_X), RETURN_Y + RETURN_AMPLITUDE + 0.35, 0]
+    )
+    sum_tag = Tex(
+        "at the detector", font_size=FONT_LEGEND, color=OUTPUT_COLOR
+    ).move_to([np.mean(PANEL_X), SUM_Y + 2 * RETURN_AMPLITUDE + 0.3, 0])
+
     return (
-        panel(VGroup(zero_return)),
+        panel(VGroup(zero_return, key)),
         VGroup(row(RETURN_Y, e_x, X_ARM_COLOR), row(RETURN_Y, e_y, Y_ARM_COLOR)),
-        panel(VGroup(zero_sum)),
+        panel(VGroup(zero_sum, sum_tag)),
         row(SUM_Y, lambda u, t: e_x(u, t) + e_y(u, t), OUTPUT_COLOR, 4),
     )
 
@@ -451,17 +459,14 @@ class LIGOMichelson(Scene):
         run(self, now, T_ARMS, lit_arm.animate.set_value(1), FadeIn(arm_tags))
 
         # --- equal arms: the returning beams cancel ---
-        return_axes, return_waves, sum_axes, sum_wave = returning_waves(now)
+        # Said, not drawn: the returning waves (returning_waves) are left to
+        # the scenes that set this beside something else.
         detector_tag = optics[3][2]
         dark_note = Tex(
             "equal arms: the beams cancel", font_size=FONT_LEGEND,
             color=lighten(GUIDE_COLOR),
         ).next_to(detector_tag, UP, buff=0.3).align_to(detector_tag, LEFT)
-        run(
-            self, now, T_READOUT,
-            FadeIn(return_axes), FadeIn(return_waves),
-            FadeIn(sum_axes), FadeIn(sum_wave),
-        )
+        run(self, now, T_READOUT)
         run(self, now, T_DARK, FadeIn(dark_note))
         self.beat()
 
