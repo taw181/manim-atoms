@@ -622,4 +622,3 @@ FONT_TABLE_NAME = 28
 FONT_TABLE_NOTE = 22
 FONT_TABLE_CELL = 24
 TABLE_RULE_STYLE = dict(stroke_width=1.5, color=GUIDE_COLOR, stroke_opacity=0.5)
-MET_COLOR = GREEN_C  # the tick on a challenge the prototype has already met

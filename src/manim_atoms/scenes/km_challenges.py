@@ -20,10 +20,8 @@ from aionanim.physics.km_scale import (
     KM_CLOUD_SPREAD,
     KM_FIDELITY,
     KM_FLUX,
-    KM_LASER_PHASE,
     KM_LMT,
     KM_PHASE_NOISE,
-    KM_POWER,
     KM_PULSES,
     KM_T,
     KM_WAIST,
@@ -42,9 +40,9 @@ from aionanim.tools.layout import slide_title
 # The left edge of each column, and the heading row's height; rows stack down
 # from under the headings, a rule between each.
 KC_COLUMNS = (-6.75, -2.0, 2.15)
-KC_HEADING_Y = 3.0
-KC_ROW_BUFF = 0.12  # between a row and the rule on either side of it
-KC_LINE_BUFF = 0.07  # between the lines within a cell
+KC_HEADING_Y = 2.8
+KC_ROW_BUFF = 0.16  # between a row and the rule on either side of it
+KC_LINE_BUFF = 0.1  # between the lines within a cell
 
 
 def _sci(x, digits=0):
@@ -69,7 +67,7 @@ KC_ROWS = (
         [rf"$w_0 = {PROTO_WAIST * 1e3:.1f}\,$mm, ${PROTO_POWER * 1e3:.0f}\,$mW"],
         [
             rf"$w_0 \gtrsim {KM_WAIST * 1e2:.0f}\,$cm to stay collimated over ${_km(KM_BASELINE)}$",
-            rf"$\approx{round(KM_POWER, -2):.0f}\,$W for the same $\pi$ pulse",
+            r"$\sim$kW laser power",
         ],
     ),
     (
@@ -77,18 +75,9 @@ KC_ROWS = (
         [r"signal $\propto n$; every pulse", r"must be near-lossless"],
         [r"$n = 1$", rf"(best in Sr: ${BEST_SR_LMT}\,\hbar k$)"],
         [
-            rf"$n = {_sci(KM_LMT)}$: ${_sci(KM_PULSES, 1)}$ pulses,",
+            rf"$n = {_sci(KM_LMT)}$: $\sim10^{{{np.log10(KM_PULSES):.0f}}}$ pulses,",
             # rounded down: what each pulse must at least reach
-            rf"each $\gtrsim{np.floor(KM_FIDELITY * 1e5) / 1e3:.3f}\%$ efficient",
-        ],
-    ),
-    (
-        [r"Laser phase noise"],
-        [r"imprinted $n$ times on", r"each interferometer"],
-        [r"$4\pi$ rad injected per shot:", r"cancelled"],
-        [
-            rf"$\approx{KM_LASER_PHASE:.1f}\,$rad per shot at $T = {KM_T:.0f}\,$s,",
-            r"$\times\,n$: fully randomised",
+            rf"each $\gtrsim{np.floor(KM_FIDELITY * 1e5) / 1e3:.3f}\%$ fidelity",
         ],
     ),
     (
@@ -118,17 +107,14 @@ KC_ROWS = (
         [r"Colder atoms"],
         [r"the cloud must stay small", r"against the beam for $2T$"],
         [
-            rf"${PROTO_TEMPERATURE * 1e6:.0f}\,\mu$K: grows"
-            rf" ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm in ${2 * KM_T:.0f}\,$s",
+            rf"${PROTO_TEMPERATURE * 1e6:.0f}\,\mu$K before velocity slicing",
+            rf"(grows ${KM_CLOUD_SPREAD * 1e2:.0f}\,$cm in ${2 * KM_T:.0f}\,$s)",
         ],
         [
             r"$<1\,$nK, so the cloud barely spreads",
-            r"(delta-kick collimation)",
         ],
     ),
 )
-# The one the prototype has already met, ticked in its column.
-KC_MET_ROW = 2
 
 
 def _cell(lines, font_size, color):
@@ -137,16 +123,13 @@ def _cell(lines, font_size, color):
     )
 
 
-def challenge_row(challenge, why, prototype, target, met=False):
+def challenge_row(challenge, why, prototype, target):
     """One row of the table, its cells left-aligned on the columns, tops level."""
     name = VGroup(
         _cell(challenge, FONT_TABLE_NAME, WHITE),
         _cell(why, FONT_TABLE_NOTE, lighten(GUIDE_COLOR)),
     ).arrange(DOWN, aligned_edge=LEFT, buff=KC_LINE_BUFF)
     proto = _cell(prototype, FONT_TABLE_CELL, lighten(GUIDE_COLOR))
-    if met:
-        tick = Tex(r"\checkmark", font_size=FONT_TABLE_NAME, color=MET_COLOR)
-        proto.add(tick.next_to(proto[-1], RIGHT, buff=0.15))
     km = _cell(target, FONT_TABLE_CELL, WHITE)
     row = VGroup(name, proto, km)
     for cell, x in zip(row, KC_COLUMNS):
@@ -174,8 +157,8 @@ class KmScaleChallenges(Scene):
         # each row under the rule below the last
         rows, rules = [], [rule().next_to(headings, DOWN, buff=KC_ROW_BUFF / 2)]
         rules[0].set_x(0)
-        for i, spec in enumerate(KC_ROWS):
-            row = challenge_row(*spec, met=i == KC_MET_ROW)
+        for spec in KC_ROWS:
+            row = challenge_row(*spec)
             row.shift(rules[-1].get_y() * UP - row.get_top()[1] * UP + DOWN * KC_ROW_BUFF)
             rows.append(row)
             rules.append(rule().set_y(row.get_bottom()[1] - KC_ROW_BUFF))
