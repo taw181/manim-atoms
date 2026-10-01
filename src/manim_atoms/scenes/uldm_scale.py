@@ -330,15 +330,10 @@ class DarkMatterScale(Scene):
 # DarkMatterScalePlot: the photon-coupling panel drawn full size, the axes'
 # lower-left corner and size. Its tick labels and rotated axis label take
 # ~1.3 units left of the axes, and the mass axis's ~0.9 below; its top stays
-# under the wave, which runs under the verdict, which goes under the title.
+# under the verdict, which goes under the title.
 SP_ORIGIN = np.array([-4.6, -2.4, 0.0])
 SP_WIDTH = 10.8
-SP_HEIGHT = 4.2
-# The field, across the top of the frame and off both edges: a display
-# wavelength, not to any scale, travelling at one period per DS_PERIOD.
-SP_WAVE_Y = 2.15
-SP_WAVE_AMPLITUDE = 0.18
-SP_WAVE_LENGTH = 2.4
+SP_HEIGHT = 4.6
 # name: (stem, label anchor (log m, log d_e), side), placed for this size: the
 # inset's would put AION-10's over the heavy end's mark.
 SP_STAGES = {
@@ -364,42 +359,23 @@ SP_SCALE_TOP = -11.6
 class DarkMatterScalePlot(Scene):
     """AION's reach in the photon coupling, full size, with three masses across
     its range marked and each labelled with the scale of its Compton
-    wavelength: the plot of DarkMatterScale's inset, without the fly-out. The
-    field runs across the top the whole time.
+    wavelength: the plot of DarkMatterScale's inset, without the fly-out.
 
     A stop once the plot is up, one per mass, and one for the verdict, through
-    beat(): one period of the wave, as hold() is in DarkMatterScale, so a
-    slide can loop each stop without a jump.
+    beat().
     """
 
     TITLE = r"Ultralight dark matter: a wave on astronomical scales"
 
     def beat(self):
-        """Let the wave run through one whole period."""
-        self.flow(run_time=DS_PERIOD)
-
-    def flow(self, *animations, run_time):
-        """Play `animations` with the wave running on under them."""
-        self.play(
-            *animations,
-            self.theta.animate.increment_value(TAU * run_time / DS_PERIOD),
-            rate_func=linear, run_time=run_time,
-        )
+        """A click on the slide version."""
+        self.wait(1.0)
 
     def construct(self):
         title = slide_title(self.TITLE)
         formula = MathTex(
             r"\lambda_C = \frac{h}{m_\phi c}", font_size=FONT_ANNOTATION, color=FIELD_COLOR,
         ).to_corner(UR).align_to(title, UP)
-
-        self.theta = ValueTracker(0.0)
-        wave_opacity = ValueTracker(0.0)
-        k = TAU / SP_WAVE_LENGTH
-        self.add(always_redraw(lambda: FunctionGraph(
-            lambda x: SP_WAVE_Y + SP_WAVE_AMPLITUDE * np.cos(k * x - self.theta.get_value()),
-            x_range=[*DS_X, 0.01],
-            color=FIELD_COLOR, stroke_width=FIELD_STROKE_WIDTH,
-        ).set_stroke(opacity=wave_opacity.get_value())))
 
         axes, frame = sensitivity_axes(
             ULDM_LOG_M, ULDM_LOG_D, SP_ORIGIN, SP_WIDTH, SP_HEIGHT,
@@ -414,13 +390,11 @@ class DarkMatterScalePlot(Scene):
         ))
         excluded = excluded_region(axes)
         excluded_name = excluded_label(axes, FONT_TICK, SP_EXCLUDED_LABEL, ORIGIN)
-        self.flow(
+        self.play(
             FadeIn(title), FadeIn(formula), FadeIn(frame), FadeIn(excluded),
             *(Create(c) for c in curves.values()), FadeIn(labels), FadeIn(excluded_name),
-            wave_opacity.animate.set_value(1.0),
-            run_time=DS_PERIOD / 2,
+            run_time=1.2,
         )
-        self.flow(run_time=DS_PERIOD / 2)
         self.beat()
 
         for mass, wavelength, scale in SP_SCALES:
@@ -431,14 +405,12 @@ class DarkMatterScalePlot(Scene):
             ).arrange(DOWN, buff=0.1)
             text.move_to(plot_point(axes, np.log10(mass), SP_SCALE_TOP), aligned_edge=UP)
             text.set_stroke(**ULDM_LABEL_OUTLINE, background=True)
-            self.flow(FadeIn(mark), FadeIn(text, shift=UP * 0.1), run_time=DS_PERIOD / 2)
-            self.flow(run_time=DS_PERIOD / 2)
+            self.play(FadeIn(mark), FadeIn(text, shift=UP * 0.1), run_time=0.8)
             self.beat()
 
         verdict = Tex(
             r"any lab sits inside one wavelength: it sees only $\phi(t)$",
             font_size=FONT_ANNOTATION,
-        ).next_to(title, DOWN, buff=0.3).align_to(title, LEFT)
-        self.flow(FadeIn(verdict, shift=UP * 0.15), run_time=DS_PERIOD / 2)
-        self.flow(run_time=DS_PERIOD / 2)
-        self.beat()
+        ).next_to(title, DOWN, buff=0.35).align_to(title, LEFT)
+        self.play(FadeIn(verdict, shift=UP * 0.15), run_time=0.8)
+        self.wait(1.0)
