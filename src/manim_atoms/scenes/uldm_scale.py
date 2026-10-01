@@ -125,9 +125,17 @@ class DarkMatterScale(Scene):
 
         def body(metres, radius, color):
             r = max(radius / 10 ** self.log_scale.get_value(), BODY_MIN_RADIUS)
+            x, y = self.screen_x(metres), self.earth_y.get_value()
+            # Wholly off the frame, it is not drawn at all: in the Earth view
+            # the Sun sits ~1e5 units out, ~1e7 pixels at 1080p, which
+            # overflows cairo's fixed-point coordinates and floods the frame
+            # with its colour.
+            if (abs(x) - r > config.frame_x_radius
+                    or abs(y) - r > config.frame_y_radius):
+                return VMobject()
             return Circle(
                 radius=r, stroke_width=0, fill_color=color, fill_opacity=BODY_OPACITY,
-            ).move_to([self.screen_x(metres), self.earth_y.get_value(), 0])
+            ).move_to([x, y, 0])
 
         def moon():
             m = body(EARTH_MOON, MOON_RADIUS, MOON_COLOR)
