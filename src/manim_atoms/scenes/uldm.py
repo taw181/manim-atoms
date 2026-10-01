@@ -658,6 +658,13 @@ class DarkMatterField(Scene):
         def marker():
             return Dot(at(now.get_value()), radius=0.08, color=lighten(KICKED_COLOR))
 
+        # The usual range: the light end is fuzzy dark matter's bound from
+        # dwarf galaxies, and past the heavy end the occupation number per
+        # de Broglie volume drops too low for the field to be a classical wave.
+        masses = MathTex(
+            r"10^{-22}\,\text{eV} \lesssim m_\phi \lesssim 1\,\text{eV}",
+            font_size=FONT_ANNOTATION,
+        )
         field = MathTex(
             r"\phi(t) = \phi_0 \cos\!\left(m_\phi c^2 t/\hbar\right)",
             font_size=FONT_ANNOTATION,
@@ -668,7 +675,9 @@ class DarkMatterField(Scene):
             font_size=FONT_LEGEND,
             color=lighten(GUIDE_COLOR),
         )
-        wave_text = VGroup(field, wave_note).arrange(DOWN, buff=0.3, aligned_edge=LEFT)
+        wave_text = VGroup(masses, field, wave_note).arrange(
+            DOWN, buff=0.3, aligned_edge=LEFT
+        )
         wave_text.move_to(DF_TEXT, aligned_edge=UL)
 
         # Faded in as a still and swapped for the live trace, as the level
