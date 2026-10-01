@@ -8,7 +8,8 @@ arms integrate omega_A over different stretches of the oscillation, the hands
 come back to different angles and the two output ports split. Same instrument
 as the gravitational-wave scenes, pointed at a different source.
 
-DarkMatterField comes before either, and before DarkMatterScale: the field
+DarkMatterField comes before either, and before DarkMatterScalePlot (or
+DarkMatterScale): the field
 on its own as a scrolling trace, and the clock transition it walks up and
 down, with no interferometer yet. Its pauses go through hold(), one whole oscillation, so a slide can loop
 them without a jump.

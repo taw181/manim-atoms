@@ -15,6 +15,10 @@ inset on the right, with the mass of each step marked across it: the mark
 slides along the mass axis as the camera pulls back. The formula and each
 step's numbers make a column down the left.
 
+DarkMatterScalePlot says the same without the camera: the panel drawn full
+size, the three masses marked across it, and each labelled with how long its
+wave is.
+
 The wave is drawn moving at c, so what it shows is lambda_C, as the caption
 says. The field itself is coherent over its de Broglie wavelength, about
 c / v ~ 1e3 times longer, since galactic dark matter moves at v ~ 1e-3 c.
@@ -24,7 +28,20 @@ import numpy as np
 from manim import *
 
 from aionanim.style import *
-from aionanim.tools.uldm_plot import mass_label, mass_mark, uldm_inset
+from aionanim.tools.gw_plot import plot_point, sensitivity_axes
+from aionanim.tools.layout import slide_title
+from aionanim.tools.uldm_plot import (
+    ULDM_INSET_STEMS,
+    ULDM_LABEL_EVERY,
+    ULDM_LOG_D,
+    ULDM_LOG_M,
+    excluded_label,
+    excluded_region,
+    mass_label,
+    mass_mark,
+    uldm_curves,
+    uldm_inset,
+)
 
 
 # --- the numbers ------------------------------------------------------------
@@ -307,3 +324,91 @@ class DarkMatterScale(Scene):
             self.theta.animate.increment_value(TAU * 0.5),
             rate_func=linear, run_time=DS_PERIOD / 2,
         )
+
+
+# --- the same three masses, on the plot -----------------------------------------
+# DarkMatterScalePlot: the photon-coupling panel drawn full size, the axes'
+# lower-left corner and size. Its tick labels and rotated axis label take
+# ~1.3 units left of the axes, and the mass axis's ~0.9 below; its top stays
+# under the verdict, which goes under the title.
+SP_ORIGIN = np.array([-4.6, -2.4, 0.0])
+SP_WIDTH = 10.8
+SP_HEIGHT = 4.6
+# name: (stem, label anchor (log m, log d_e), side), placed for this size: the
+# inset's would put AION-10's over the heavy end's mark.
+SP_STAGES = {
+    "AION-10": ("aion10_goal", (-15.7, -1.9), ORIGIN),
+    "AION-100": ("aion100_goal", (-15.8, -5.6), ORIGIN),
+    "AION-km": ("aion_km", (-13.2, -9.0), RIGHT),
+}
+SP_EXCLUDED_LABEL = (-15.4, -0.65)
+# mass, the scale its lambda_C is, and what that is: heavy to light, so each
+# step is a bigger scale than the last
+SP_SCALES = (
+    (AION_MASSES[1], r"\lambda_C \approx 1200\ \text{km}", r"a tenth of the Earth"),
+    (MOON_MASS, r"\lambda_C \approx 3.8\times10^{5}\ \text{km}", r"Earth to Moon"),
+    (AION_MASSES[0], r"\lambda_C \approx 0.8\ \text{AU}", r"Earth to Sun"),
+)
+# Each label stands on its mark's line in the empty band under every curve,
+# its top at this coupling: under the lowest the curves come, about 1e-11.
+SP_SCALE_TOP = -11.6
+
+
+class DarkMatterScalePlot(Scene):
+    """AION's reach in the photon coupling, full size, with three masses across
+    its range marked and each labelled with the scale of its Compton
+    wavelength: the plot of DarkMatterScale's inset, without the fly-out.
+
+    A stop once the plot is up, one per mass, and one for the verdict, through
+    beat().
+    """
+
+    TITLE = r"Ultralight dark matter: a wave on astronomical scales"
+
+    def beat(self):
+        """A click on the slide version."""
+        self.wait(1.0)
+
+    def construct(self):
+        title = slide_title(self.TITLE)
+        formula = MathTex(
+            r"\lambda_C = \frac{h}{m_\phi c}", font_size=FONT_ANNOTATION, color=FIELD_COLOR,
+        ).to_corner(UR).align_to(title, UP)
+
+        axes, frame = sensitivity_axes(
+            ULDM_LOG_M, ULDM_LOG_D, SP_ORIGIN, SP_WIDTH, SP_HEIGHT,
+            x_label=r"$m_\phi$ / eV", y_label=r"photon coupling $|d_e|$",
+            label_every=ULDM_LABEL_EVERY,
+        )
+        curves = uldm_curves(axes, ULDM_INSET_STEMS)
+        labels = VGroup(*(
+            Tex(name, font_size=FONT_TICK, color=ULDM_COLORS[stem])
+            .next_to(plot_point(axes, *at), side, buff=0)
+            for name, (stem, at, side) in SP_STAGES.items()
+        ))
+        excluded = excluded_region(axes)
+        excluded_name = excluded_label(axes, FONT_TICK, SP_EXCLUDED_LABEL, ORIGIN)
+        self.play(
+            FadeIn(title), FadeIn(formula), FadeIn(frame), FadeIn(excluded),
+            *(Create(c) for c in curves.values()), FadeIn(labels), FadeIn(excluded_name),
+            run_time=1.2,
+        )
+        self.beat()
+
+        for mass, wavelength, scale in SP_SCALES:
+            mark = mass_mark(axes, mass, label=None)
+            text = VGroup(
+                MathTex(wavelength, font_size=FONT_LEGEND, color=FIELD_COLOR),
+                Tex(scale, font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR)),
+            ).arrange(DOWN, buff=0.1)
+            text.move_to(plot_point(axes, np.log10(mass), SP_SCALE_TOP), aligned_edge=UP)
+            text.set_stroke(**ULDM_LABEL_OUTLINE, background=True)
+            self.play(FadeIn(mark), FadeIn(text, shift=UP * 0.1), run_time=0.8)
+            self.beat()
+
+        verdict = Tex(
+            r"any lab sits inside one wavelength: it sees only $\phi(t)$",
+            font_size=FONT_ANNOTATION,
+        ).next_to(title, DOWN, buff=0.35).align_to(title, LEFT)
+        self.play(FadeIn(verdict, shift=UP * 0.15), run_time=0.8)
+        self.wait(1.0)
