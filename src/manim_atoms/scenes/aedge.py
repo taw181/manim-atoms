@@ -96,6 +96,8 @@ class AEDGESensitivity(Scene):
     """The talk's two sensitivity plots, then AEDGE on both."""
 
     TITLE = r"AEDGE: Atom interferometry in space"
+    # what AEDGE is, up with the title, at the other end of its line
+    SUBTITLE = r"two satellites in mid-Earth orbit"
 
     def beat(self):
         """The pause before AEDGE: a click on the slide version."""
@@ -103,6 +105,8 @@ class AEDGESensitivity(Scene):
 
     def construct(self):
         title = slide_title(self.TITLE)
+        subtitle = Tex(self.SUBTITLE, font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR))
+        subtitle.to_corner(UR).align_to(title, DOWN)
 
         # --- gravitational waves ------------------------------------------
         gw_axes, gw_frame = sensitivity_axes(
@@ -134,7 +138,7 @@ class AEDGESensitivity(Scene):
             excluded_name,  # over the curves
         ]
         self.play(
-            FadeIn(title), FadeIn(gw_frame), FadeIn(gw_title),
+            FadeIn(title), FadeIn(subtitle), FadeIn(gw_frame), FadeIn(gw_title),
             FadeIn(dm_frame), FadeIn(dm_title), *(FadeIn(m) for m in before),
             run_time=1.0,
         )
