@@ -629,13 +629,16 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
     def show_signal(self, clock):
         if self.beside_ligo:
             self.show_ligo(clock)
-        else:
+        elif self.WITH_LIGO:
             self.show_plot(clock)
+        # without LIGO, the plot came in with the sheet
 
     def entrance(self, clock):
-        """LIGO on the right, lit, standing still until the clock runs."""
+        """LIGO on the right, lit, standing still until the clock runs; or,
+        without it, the plot, up from the start with the source waiting at
+        the low end of its track."""
         if not self.WITH_LIGO:
-            return []
+            return self.plot_entrance(clock)
         labels, optics, arm_tags = make_apparatus(clock, ligo_strain, LIGO_APPARATUS)
         labels.remove(labels[0])  # its title: the scene's own says enough
         on = ValueTracker(1.0)  # the beams are lit all the way from the start
@@ -662,6 +665,11 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
         self.play(FadeIn(self.trace), run_time=0.8)
 
     def show_plot(self, clock):
+        self.play(*self.plot_entrance(clock))
+
+    def plot_entrance(self, clock):
+        """The sensitivity plot and the chirp strip, added fixed in frame;
+        returns the animations that fade them in."""
         axes, frame = sensitivity_axes(
             LOG_F_RANGE, LOG_H_RANGE, SENS_ORIGIN, SENS_WIDTH, SENS_HEIGHT
         )
@@ -735,7 +743,7 @@ class MergerOnSensitivityPlot(BlackHoleMerger):
         plot = VGroup(region, frame, ligo, ligo_label, ahead, source_label)
         live = VGroup(lit, source, heading, readout, self.trace)
         self.add_fixed_in_frame_mobjects(plot, live)
-        self.play(FadeIn(plot), FadeIn(live), run_time=1.0)
+        return [FadeIn(plot, run_time=1.0), FadeIn(live, run_time=1.0)]
 
     def after_ringdown(self, spacetime):
         pixels = np.asarray(Image.open(LIGO_DATA_IMAGE).convert("RGB"))
