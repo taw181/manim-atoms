@@ -489,6 +489,17 @@ BAFFLE_COLOR = OPTIC_COLOR
 BAFFLE_WIDTH = 8
 HOT_ATOM_COLOR = GUIDE_COLOR
 
+# A long-baseline detector in cartoon (tools/baseline.py): the vacuum shaft
+# and the atom sources on its side are hardware, in the optics grey; the clock
+# laser runs the shaft's length in the laser red, and the clouds it drives
+# are the ground-state blue.
+SHAFT_COLOR = OPTIC_COLOR
+SHAFT_WALL_WIDTH = 6
+SOURCE_STROKE_WIDTH = 3
+BASELINE_BEAM_OPACITY = 0.55
+LAUNCH_STROKE_WIDTH = 2.5
+FONT_SOURCE = FONT_LEGEND
+
 
 # --- dipole traps ---------------------------------------------------------
 # The trap beams are far off every resonance, so they drive nothing on the
