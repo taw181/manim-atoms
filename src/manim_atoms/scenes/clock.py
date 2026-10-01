@@ -49,6 +49,9 @@ from aionanim.tools.primitives import (
 # where the budget goes: the open band between the note and
 # the interferometer, left of the dial
 CP_TERMS = np.array([-2.3, 2.0, 0.0])
+# and the readout under it, so the relation and what it is read out by sit
+# together; the budget's labels go above it to leave the room
+CP_READOUT_BELOW = CP_TERMS + DOWN * 0.9
 # The arms' states, with the phase each has picked up by the end of the leg:
 # +phi_n on absorbing pulse n's photon, -phi_n on emitting into it, and
 # -omega_A T for a leg spent in |e>. Smaller than the Mach-Zehnder's, since
@@ -223,9 +226,8 @@ class ClockPhase(Scene):
         sweep, gap = phase_sweep(CP_DIAL, kicked_first, kicked_last)
         self.play(FadeIn(sweep), run_time=0.6)
         ports = draw_ports(self, c, CP_OUT, 0.5 * (1 + np.cos(gap)))
-        # bottom right, as the Mach-Zehnder has it: the bottom left is the
-        # pulses' captions
-        self.play(Write(readout_equation().to_corner(DR)), run_time=1.0)
+        # where the phase it reads out is written next
+        self.play(Write(readout_equation(CP_READOUT_BELOW)), run_time=1.0)
         self.beat()
 
         # What the ports have just read out: so far, only the laser's phase.
@@ -320,6 +322,7 @@ class ClockPhaseTerms(ClockPhase):
         # since the terms' own labels land in the same band.
         self.play(FadeOut(self.effect_label), run_time=0.4)
         show_phase_budget(
-            self, CP_TERMS, laser_struck=False, laser_label=r"noisy", eq=budget
+            self, CP_TERMS, laser_struck=False, laser_label=r"noisy", eq=budget,
+            label_side=UP,
         )
         self.wait(2.5)

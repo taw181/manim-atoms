@@ -403,7 +403,8 @@ def readout_equation(center=CP_READOUT):
 
 
 def show_phase_budget(scene, center, laser_struck, laser_label,
-                      difference_lhs=None, max_width=None, eq=None):
+                      difference_lhs=None, max_width=None, eq=None,
+                      label_side=DOWN):
     """Phi split into its two terms, each marked with what it is worth.
 
     The separation phase is the third term of the usual decomposition and is
@@ -422,7 +423,8 @@ def show_phase_budget(scene, center, laser_struck, laser_label,
     as well, because that is where subtracting the two budgets puts it.
     `max_width` is the clear span the result has to fit into. `eq` is a
     budget already on screen, to be marked where it stands rather than written
-    again.
+    again. `label_side` is where the labels hang, for when something else
+    already sits below the budget.
     """
     if eq is None:
         eq = budget_equation(r"\Phi").move_to(center)
@@ -440,7 +442,7 @@ def show_phase_budget(scene, center, laser_struck, laser_label,
     def label(text, color, term):
         return Tex(
             text, font_size=FONT_LEGEND, color=color
-        ).next_to(eq, DOWN, buff=0.5).set_x(term.get_x())
+        ).next_to(eq, label_side, buff=0.5).set_x(term.get_x())
 
     def strike(term):
         # Corner to corner of the term itself: any larger and the tips reach
