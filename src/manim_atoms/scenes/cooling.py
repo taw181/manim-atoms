@@ -50,7 +50,10 @@ COOL_NARROWBAND_INTENSITY = 0.85  # of the beams' starting brightness
 # One frame and a bit to the left of the 3D MOT, on the same beam line, so
 # the camera pans straight along the stream.
 TWOD_CENTER = COOL_MOT_CENTER + LEFT * 12.0
-TWOD_CAMERA = TWOD_CENTER + [2.0, 0.35, 0]  # where the camera starts
+# Where the camera starts: right of the 2D MOT by enough that the baffle
+# clears the level scheme, which is up from the start in its usual corner.
+TWOD_CAMERA_OFFSET = 3.6
+TWOD_CAMERA = TWOD_CENTER + [TWOD_CAMERA_OFFSET, 0.35, 0]
 TWOD_HEADING_CORNER = TWOD_CAMERA + COOL_HEADING_CORNER
 # Two pairs at 45 degrees in the plane across the push axis: up/down and in/out
 # of the page, so they cool the atoms across the stream and leave them free
@@ -59,7 +62,7 @@ TWOD_DIRECTIONS = (np.array([0, 1, 1]) / np.sqrt(2), np.array([0, 1, -1]) / np.s
 TWOD_BEAM_REACH = 1.6
 TWOD_NOZZLE = TWOD_CENTER + DOWN * 2.1
 TWOD_BAFFLE = TWOD_CENTER + RIGHT * 4.5
-TWOD_PUSH_FROM = TWOD_CENTER + LEFT * (config.frame_x_radius - 2.0)  # the frame's left edge
+TWOD_PUSH_FROM = TWOD_CENTER + LEFT * (config.frame_x_radius - TWOD_CAMERA_OFFSET)  # the frame's left edge
 TWOD_CLOUD = dict(n=70, radius=0.45, temperature=0.3, stretch=(2.2, 0.5))
 OVEN_BEAM = dict(speed=2.5, rate=14, spread=0.06, divergence=0.12)
 PUSH_BEAM = dict(speed=3.5, rate=12, spread=0.05, divergence=0.01)
@@ -153,12 +156,14 @@ class CoolingSequence(MovingCameraScene):
         cloud.arrived.set_value(0)
 
         # --- 2D MOT, fed from the oven ---
-        push_stream = self.upstream()
-        # ...and follow the stream right, the 3D MOT coming up as it arrives
+        push_stream = self.upstream(levels)
+        # ...and follow the stream right, the 3D MOT coming up as it arrives;
+        # the level scheme rides with the camera, so it holds its corner
         heading = self.heading(0)
         tag = temperature_tag("blue_mot")
         gradient = gradient_tag("blue_mot", coils)
-        self.play(self.camera.frame.animate.move_to(ORIGIN), FadeIn(levels),
+        self.play(self.camera.frame.animate.move_to(ORIGIN),
+                  levels.animate.move_to(COOL_LEVELS_CENTER),
                   FadeIn(timeline), Create(coils), FadeIn(blue), run_time=PAN_TIME)
         self.remove(*self.upstream_mobjects)  # out of shot now
 
@@ -200,10 +205,16 @@ class CoolingSequence(MovingCameraScene):
                         run_time=COOL_RAMP_TIME)
         self.stage_break()
 
-    def upstream(self):
+    def upstream(self, levels):
         """The oven filling the 2D MOT, then the push beam switching on and
-        the stream setting off for the 3D MOT; returns that stream."""
+        the stream setting off for the 3D MOT; returns that stream.
+
+        ``levels`` comes up here already driving the 461 nm line, the 2D
+        MOT's light, in the corner of the frame it holds for the 3D MOT."""
         self.camera.frame.move_to(TWOD_CAMERA)
+        levels.move_to(TWOD_CAMERA + COOL_LEVELS_CENTER)
+        for key, group in levels.active.items():
+            group.set_opacity(1 if key == "461" else 0)
         heading = stage_heading(TWOD_STAGE).move_to(TWOD_HEADING_CORNER, aligned_edge=UL)
         oven = Oven(TWOD_NOZZLE)
         oven_label = Tex(r"Sr oven", font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR))
@@ -231,7 +242,8 @@ class CoolingSequence(MovingCameraScene):
                                   push, push_label, cloud, oven_stream]
 
         self.play(FadeIn(heading), FadeIn(oven), FadeIn(oven_label), FadeIn(beams),
-                  FadeIn(baffle), FadeIn(baffle_label), run_time=COOL_SWITCH_TIME)
+                  FadeIn(baffle), FadeIn(baffle_label), FadeIn(levels),
+                  run_time=COOL_SWITCH_TIME)
         self.add(oven_stream, cloud)
         oven_stream.flow.set_value(1)
         self.play(cloud.arrived.animate.set_value(1), rate_func=linear,
