@@ -274,6 +274,12 @@ PLOT_BACKGROUND = "#101010"  # manim.cfg's background_color
 PLOT_FOREGROUND = "#dddddd"  # axes, ticks and labels
 LOWER_CLOUD_COLOR = CREST_COLOR
 UPPER_CLOUD_COLOR = HORIZON_GLOW
+# The differential dark-matter slide's marks on the field, where each pulse
+# reaches each cloud, and its dials' captions, which key them. The upper
+# cloud's is the data's; the lower's cannot be, as that is the field's own
+# colour and its marks would sink into the curve.
+LOWER_PULSE_MARK_COLOR = WHITE
+UPPER_PULSE_MARK_COLOR = UPPER_CLOUD_COLOR
 LLN_COLOR = ManimColor("#44dd88")
 HLN_COLOR = NOISE_COLOR
 # The standard quantum limit the two runs' Allan deviations are held against

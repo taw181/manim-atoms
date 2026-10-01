@@ -435,6 +435,10 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerGW):
         trace, _, dots = make_field_trace(
             [], DG_TRACE_Z, DG_TRACE_AMPLITUDE, DG_TRACE_X, DG_T0, DG_PULSES
         )
+        # DG_PULSES alternates near cloud, far cloud: one colour per
+        # interferometer, so the pairs read as the two clouds L/c apart
+        for dot, color in zip(dots, [LOWER_PULSE_MARK_COLOR, UPPER_PULSE_MARK_COLOR] * 3):
+            dot.set_color(color)
         self.play(FadeIn(trace[0]), Create(trace[1]), FadeIn(trace[2]), run_time=1.2)
 
         low = vertices(GR_LOWER_Z, 0.0)
@@ -446,6 +450,7 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerGW):
         # in the scene ahead of the hands that read them (see DarkMatterPhase)
         self.add(*[t for pair in phase.values() for t in pair])
 
+        # captioned in their clouds' mark colours, which is the key to the trace
         dials = VGroup(*[
             make_dial(GR_DIALS[c], cap, GR_DIAL_RADIUS)
             for c, cap in (
@@ -453,6 +458,8 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerGW):
                 ("up", r"$\Phi_{\text{upper}}$"),
             )
         ])
+        dials[0][1].set_color(LOWER_PULSE_MARK_COLOR)
+        dials[1][1].set_color(UPPER_PULSE_MARK_COLOR)
         self.play(FadeIn(dials), run_time=0.6)
 
         atoms = {
