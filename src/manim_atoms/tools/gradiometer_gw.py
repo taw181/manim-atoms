@@ -100,6 +100,11 @@ def gw_displacement(t, z0):
     return (z0 - GR_LASER_Z) * GW_STRETCH_GAIN * strain(t)
 
 
+def trace_point(t):
+    """Where lab time t sits on the strain trace."""
+    return [t, GW_TRACE_Z + GW_TRACE_AMPLITUDE * strain(t), 0]
+
+
 def make_strain_trace(label=r"h(t)"):
     """The wave above the diagram, on the diagram's own time axis.
 
@@ -113,22 +118,33 @@ def make_strain_trace(label=r"h(t)"):
     read off against the pulse that caught it. Returns the curve and its three pulse
     markers separately, so a scene can light each marker as that pulse fires.
     """
-    def at(t):
-        return [t, GW_TRACE_Z + GW_TRACE_AMPLITUDE * strain(t), 0]
-
     zero = DashedLine(
         [GW_TRACE_X[0], GW_TRACE_Z, 0], [GW_TRACE_X[1], GW_TRACE_Z, 0],
         **GUIDE_STYLE,
     )
     curve = ParametricFunction(
-        at, t_range=[*GW_TRACE_X, 0.02],
+        trace_point, t_range=[*GW_TRACE_X, 0.02],
         color=STRAIN_COLOR, stroke_width=STRAIN_STROKE_WIDTH,
     )
     tag = MathTex(
         label, font_size=FONT_LEGEND, color=STRAIN_COLOR
     ).next_to(curve, LEFT, buff=0.18)
-    dots = VGroup(*[Dot(at(t), radius=0.07, color=LASER_COLOR) for t in GW_PULSES])
+    dots = VGroup(*[Dot(trace_point(t), radius=0.07, color=LASER_COLOR) for t in GW_PULSES])
     return VGroup(zero, curve, tag), dots
+
+
+def arrival_dots(near_times, far_times):
+    """A pair of markers per pulse on the trace, where it reaches the near
+    cloud and where it reaches the far, as the dark-matter gradiometer marks
+    its field: each in its cloud's mark colour, near then far for each pulse.
+    The gap in each pair is the light travel time the wave is changing."""
+    dots = VGroup()
+    for near, far in zip(near_times, far_times):
+        dots.add(
+            Dot(trace_point(near), radius=0.07, color=LOWER_PULSE_MARK_COLOR),
+            Dot(trace_point(far), radius=0.07, color=UPPER_PULSE_MARK_COLOR),
+        )
+    return dots
 
 
 def strain_marker(clock):

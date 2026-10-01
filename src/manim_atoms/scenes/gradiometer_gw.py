@@ -65,6 +65,7 @@ from aionanim.tools.gradiometer_gw import (
     quiet_arrival,
     gw_displacement,
     make_strain_trace,
+    arrival_dots,
     strain_marker,
     gw_vertices,
     arrival_note,
@@ -231,6 +232,15 @@ class GradiometerGW(Scene):
     def crossing(self, cloud, k):
         """Where the cloud is when pulse k reaches it."""
         return self.nominal(cloud)
+
+    def dot_times(self):
+        """The lab time each trace marker stands for, in self.dots' order:
+        here one per pulse, at its firing."""
+        return GW_PULSES
+
+    def pulse_dots(self, k):
+        """The trace markers that belong to pulse k."""
+        return [self.dots[k]]
 
     def pulse_note(self, k):
         """What pulse k is captioned with, if anything.
@@ -458,9 +468,9 @@ class RunsContinuously:
         # thing the scene does is send it.
         clock = self.clock = ValueTracker(GW_PULSES[0])
         self.add(clock, strain_marker(clock))
-        for k, dot in enumerate(self.dots):
-            dot.add_updater(lambda m, k=k: m.set_opacity(
-                1.0 if clock.get_value() >= GW_PULSES[k] else 0.0
+        for dot, t in zip(self.dots, self.dot_times()):
+            dot.add_updater(lambda m, t=t: m.set_opacity(
+                1.0 if clock.get_value() >= t - 1e-6 else 0.0
             ))
         self.add(self.dots)
 
@@ -563,6 +573,12 @@ class GradiometerGWStretch(GradiometerGW):
             r"$L$ stretches and squeezes", font_size=FONT_LEGEND, color=STRAIN_COLOR
         ).next_to([self.up[0][0], GR_UPPER_Z, 0], DOWN, buff=0.2).shift(RIGHT * 0.9)
 
+    def dot_times(self):
+        return self.arrivals
+
+    def pulse_dots(self, k):
+        return [self.dots[2 * k], self.dots[2 * k + 1]]
+
     def port_slope(self, cloud):
         """The kicked leg's slope with the bow taken back out.
 
@@ -605,6 +621,13 @@ class GradiometerGWStretch(GradiometerGW):
         up_lags = gw_arrival_lags(GR_UPPER_Z)
         low = gw_vertices(GR_LOWER_Z, low_lags)
         up = gw_vertices(GR_UPPER_Z, up_lags)
+        # The trace marks each pulse twice, as it reaches each cloud, so the
+        # two interferometers' samples of the wave sit L/c apart on it.
+        self.arrivals = [
+            t for k in range(3)
+            for t in (GW_PULSES[k] + low_lags[k], GW_PULSES[k] + up_lags[k])
+        ]
+        dots = arrival_dots(self.arrivals[0::2], self.arrivals[1::2])
         # Corners ride the wave; the legs between them bow to match.
         low = tuple(v + UP * low_disp(v[0]) for v in low)
         up = tuple(v + UP * up_disp(v[0]) for v in up)
@@ -627,6 +650,9 @@ class GradiometerGWStretch(GradiometerGW):
                 ("up", r"$\Phi_{\text{upper}}$"),
             )
         ])
+        # captioned in their clouds' mark colours: the key to the trace
+        dials[0][1].set_color(LOWER_PULSE_MARK_COLOR)
+        dials[1][1].set_color(UPPER_PULSE_MARK_COLOR)
         self.play(FadeIn(dials), run_time=0.6)
 
         atoms = {
@@ -731,7 +757,7 @@ class GradiometerGWStretch(GradiometerGW):
         low_disp, up_disp = self.displacement("low"), self.displacement("up")
 
         def shoot(k, flash, note=None):
-            self.play(FadeIn(self.dots[k], scale=0.4), run_time=0.3)
+            self.play(*[FadeIn(d, scale=0.4) for d in self.pulse_dots(k)], run_time=0.3)
             fire_pulse(
                 self, GW_PULSES[k] + self.low_lags[k], flash=flash, lag=lags[k],
                 note=note,
