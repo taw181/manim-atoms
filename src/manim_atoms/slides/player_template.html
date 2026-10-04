@@ -1,0 +1,422 @@
+<meta charset="utf-8">
+<title>/*TITLE*/Slides</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* One look on purpose: the deck is drawn on #101010, so the player is too. */
+  :root {
+    color-scheme: dark;
+    --ground: #0b0c0e;
+    --screen: #101010;
+    --panel: #15171b;
+    --line: #262a31;
+    --ink: #e7e5e0;
+    --muted: #8d929b;
+    --atom: #29abca;      /* |g>: the deck's ground-state blue */
+    --kicked: #b189c6;    /* |e>: the deck's excited-state purple */
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font: 15px/1.4 var(--sans);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .app {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "top" "stage" "bar";
+  }
+  .top { grid-area: top; }
+  .stage { grid-area: stage; }
+  .bar { grid-area: bar; }
+
+  /* --- top line: where in the talk ---------------------------------- */
+  .top {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+    border-bottom: 1px solid var(--line);
+  }
+  .section {
+    flex: 1; min-width: 0;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .count { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+  .count b { color: var(--ink); font-weight: 500; }
+
+  /* --- the screen ---------------------------------------------------- */
+  .stage {
+    position: relative; min-height: 0;
+    container-type: size;
+    display: grid; place-items: center;
+    touch-action: pan-y;
+    cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+  }
+  .screen {
+    position: relative;
+    width: min(100cqw, 100cqh * 16 / 9);
+    aspect-ratio: 16 / 9;
+    background: var(--screen);
+    overflow: hidden;
+  }
+  .screen video {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; background: var(--screen);
+    opacity: 0; pointer-events: none;
+  }
+  .screen video.on { opacity: 1; }
+
+  .veil {
+    position: absolute; inset: 0;
+    display: grid; place-items: center; align-content: center; gap: 10px;
+    background: rgba(11, 12, 14, 0.72);
+    font-weight: 500; text-align: center; padding-inline: 16px;
+  }
+  .veil .big {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid var(--ink); display: grid; place-items: center;
+  }
+  .hint {
+    position: absolute; inset-inline: 0; bottom: 12%;
+    display: flex; justify-content: center; pointer-events: none;
+    transition: opacity 0.6s;
+  }
+  .hint span {
+    background: rgba(21, 23, 27, 0.9); border: 1px solid var(--line);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; color: var(--ink);
+  }
+  .hint.gone { opacity: 0; }
+  .stage { align-content: center; gap: 14px; }
+  .turn { display: none; margin: 0; font-size: 13px; color: var(--muted); text-align: center; padding-inline: 16px; }
+  @media (orientation: portrait) and (pointer: coarse) { .turn { display: block; } }
+
+  /* --- controls ------------------------------------------------------ */
+  .bar {
+    display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px;
+    padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left));
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+  }
+  button {
+    font: inherit; color: var(--ink); background: transparent;
+    border: 1px solid var(--line); border-radius: 10px;
+    min-width: 44px; height: 44px; padding: 0 12px;
+    display: inline-grid; place-items: center; cursor: pointer;
+  }
+  button:hover { border-color: var(--muted); }
+  button:focus-visible { outline: 2px solid var(--atom); outline-offset: 2px; }
+  button:disabled { opacity: 0.35; cursor: default; }
+  button.next { background: var(--atom); border-color: var(--atom); color: #06232b; font-weight: 600; }
+  svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .now { min-width: 0; display: grid; gap: 6px; justify-items: center; }
+  .name {
+    max-width: 100%; font-weight: 500; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .stops { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; min-height: 6px; }
+  .stops i {
+    width: 14px; height: 4px; border-radius: 2px; background: var(--line);
+  }
+  .stops i.done { background: var(--muted); }
+  .stops i.here { background: var(--kicked); }
+  .tools { display: flex; gap: 8px; }
+
+  /* --- the contents drawer ------------------------------------------ */
+  .menu {
+    position: fixed; inset: 0; z-index: 5;
+    background: rgba(5, 6, 7, 0.6);
+    display: flex; justify-content: flex-end;
+  }
+  .menu nav {
+    width: min(360px, 100%); height: 100%; overflow-y: auto;
+    background: var(--panel); border-left: 1px solid var(--line);
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .menu h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .menu h3 {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin: 18px 0 6px;
+  }
+  .menu ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .menu a {
+    display: grid; grid-template-columns: 2.2em 1fr; gap: 8px; align-items: baseline;
+    padding: 9px 10px; border-radius: 8px; color: var(--ink); text-decoration: none;
+  }
+  .menu a span { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .menu a:hover, .menu a:focus-visible { background: var(--line); outline: none; }
+  .menu a[aria-current="true"] { background: rgba(41, 171, 202, 0.14); }
+  .menu a[aria-current="true"] span { color: var(--atom); }
+
+  /* A phone on its side: every pixel of height to the screen. */
+  @media (orientation: landscape) and (max-height: 520px) {
+    .app { grid-template-rows: 1fr auto; grid-template-areas: "stage" "bar"; }
+    .top { display: none; }
+    .bar { padding-block: 6px calc(6px + env(safe-area-inset-bottom, 0px)); }
+    button { height: 38px; min-width: 40px; }
+    .stops { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hint { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="section" id="section">Intro</div>
+    <div class="count" aria-live="polite"><b id="num">1</b> / <span id="total">35</span></div>
+  </header>
+
+  <main class="stage" id="stage" aria-label="Slide. Tap the right of the screen to go on, the left to go back.">
+    <div class="screen" id="screen">
+      <div class="veil" id="veil" hidden>
+        <div class="big"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg></div>
+        <div>Tap to start</div>
+      </div>
+      <div class="hint gone" id="hint"><span>Tap right to go on · tap left to go back</span></div>
+    </div>
+    <p class="turn">Turn your phone sideways for a bigger picture.</p>
+  </main>
+
+  <footer class="bar">
+    <button id="prev" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="now">
+      <div class="name" id="name">Title</div>
+      <div class="stops" id="stops" aria-hidden="true"></div>
+    </div>
+    <div class="tools">
+      <button id="menuBtn" aria-label="Contents"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+      <button id="fsBtn" aria-label="Full screen" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+    <button id="next" class="next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  </footer>
+</div>
+
+<div class="menu" id="menu" hidden>
+  <nav aria-label="Contents">
+    <header>
+      <h2>Contents</h2>
+      <button id="menuClose" aria-label="Close contents"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </header>
+    <div id="toc"></div>
+  </nav>
+</div>
+
+<script>
+const DECK = /*MANIFEST*/null;
+const segs = DECK.segments, slides = DECK.slides, n = segs.length;
+const $ = (id) => document.getElementById(id);
+const screen = $("screen");
+
+// A segment is a stop unless it runs straight on into the next (auto_next):
+// a plain segment rests on its last frame, a looping one loops, until the tap.
+const isStop = (i) => !segs[i].auto;
+
+let cur = -1;
+const cache = new Map();
+
+function video(i) {
+  let v = cache.get(i);
+  if (v) return v;
+  v = document.createElement("video");
+  v.muted = true;
+  v.playsInline = true;
+  v.setAttribute("playsinline", "");
+  v.setAttribute("muted", "");
+  v.preload = "auto";
+  v.loop = segs[i].loop;
+  v.src = segs[i].src;
+  v.addEventListener("ended", () => {
+    if (i === cur && segs[i].auto && i + 1 < n) go(i + 1, "play");
+  });
+  screen.insertBefore(v, $("veil"));
+  cache.set(i, v);
+  return v;
+}
+
+// Keep a few segments either side ready and let the rest go, so a phone is
+// not holding two hundred decoders.
+function tidy(i) {
+  for (let k = i + 1; k <= Math.min(n - 1, i + 3); k++) video(k);
+  for (const [k, v] of cache) {
+    if (k < i - 2 || k > i + 3) {
+      v.pause(); v.removeAttribute("src"); v.load(); v.remove();
+      cache.delete(k);
+    }
+  }
+}
+
+function reveal(v) {
+  const swap = () => {
+    if (v !== cache.get(cur)) return;
+    for (const other of cache.values()) {
+      if (other !== v) { other.classList.remove("on"); other.pause(); }
+    }
+    v.classList.add("on");
+  };
+  // Setting currentTime starts a seek, which can drop readyState below
+  // "has a frame" on a video that loaded long ago: wait for whichever
+  // event says a frame is there now.
+  if (v.readyState >= 2 && !v.seeking) return swap();
+  for (const ev of ["loadeddata", "seeked", "playing", "canplay"]) {
+    v.addEventListener(ev, swap, { once: true });
+  }
+}
+
+function atEnd(v) {
+  const seek = () => {
+    const end = Math.max(0, v.duration - 0.04);
+    if (v.seekable.length && v.seekable.end(0) >= end) {
+      v.pause();
+      v.currentTime = end;
+    } else {
+      // A host that will not serve byte ranges cannot seek: run to the end fast.
+      v.playbackRate = 16;
+      v.addEventListener("ended", () => { v.playbackRate = 1; }, { once: true });
+      v.play().catch(() => {});
+    }
+  };
+  if (v.readyState >= 1) seek(); else v.addEventListener("loadedmetadata", seek, { once: true });
+}
+
+function play(v) {
+  const p = v.play();
+  if (p) p.then(() => { $("veil").hidden = true; }).catch(() => { $("veil").hidden = false; });
+}
+
+// mode "play": from the start. mode "rest": as the tap left it, i.e. the
+// last frame of a plain segment, or a looping segment looping.
+function go(i, mode) {
+  i = Math.max(0, Math.min(n - 1, i));
+  cur = i;
+  const v = video(i);
+  if (mode === "play" || segs[i].loop) { v.playbackRate = 1; v.currentTime = 0; play(v); }
+  else atEnd(v);
+  reveal(v);
+  tidy(i);
+  ui();
+}
+
+function playing(v) { return v && !v.paused && !v.ended && !v.loop && v.playbackRate === 1; }
+
+function next() {
+  const v = cache.get(cur);
+  if (playing(v)) {
+    // Mid-animation: finish it rather than skip it.
+    if (segs[cur].auto && cur + 1 < n) go(cur + 1, "play"); else atEnd(v);
+    return;
+  }
+  if (cur + 1 < n) go(cur + 1, "play");
+}
+
+function prev() {
+  for (let j = cur - 1; j >= 0; j--) if (isStop(j)) return go(j, "rest");
+  go(0, "play");
+}
+
+function jump(slide) { go(slides[slide].first, "play"); closeMenu(); }
+
+// --- the words around the screen ---------------------------------------
+$("total").textContent = slides.length;
+let shownSlide = -1;
+function ui() {
+  const s = segs[cur].slide, slide = slides[s];
+  $("num").textContent = s + 1;
+  $("section").textContent = slide.section;
+  $("name").textContent = slide.name;
+  $("prev").disabled = cur === 0;
+  $("next").disabled = cur === n - 1;
+  const stops = [];
+  for (let k = slide.first; k < slide.first + slide.count; k++) if (isStop(k)) stops.push(k);
+  const here = stops.find((k) => k >= cur);
+  $("stops").innerHTML = stops.length > 1
+    ? stops.map((k) => `<i class="${k === here ? "here" : k < cur ? "done" : ""}"></i>`).join("")
+    : "";
+  if (s !== shownSlide) {
+    shownSlide = s;
+    try { history.replaceState(null, "", "#" + (s + 1)); } catch (e) {}
+    document.querySelectorAll(".menu a").forEach((a) =>
+      a.setAttribute("aria-current", String(+a.dataset.slide === s)));
+  }
+}
+
+// --- contents ----------------------------------------------------------
+(function buildToc() {
+  let html = "", section = null;
+  slides.forEach((slide, s) => {
+    if (slide.section !== section) {
+      if (section !== null) html += "</ol>";
+      section = slide.section;
+      html += `<h3>${section}</h3><ol>`;
+    }
+    html += `<li><a href="#${s + 1}" data-slide="${s}"><span>${s + 1}</span>${slide.name}</a></li>`;
+  });
+  $("toc").innerHTML = html + "</ol>";
+  $("toc").addEventListener("click", (e) => {
+    const a = e.target.closest("a");
+    if (!a) return;
+    e.preventDefault();
+    jump(+a.dataset.slide);
+  });
+})();
+function openMenu() { $("menu").hidden = false; $("menuClose").focus(); }
+function closeMenu() { $("menu").hidden = true; }
+$("menuBtn").onclick = openMenu;
+$("menuClose").onclick = closeMenu;
+$("menu").addEventListener("click", (e) => { if (e.target === $("menu")) closeMenu(); });
+
+// --- input -------------------------------------------------------------
+$("next").onclick = next;
+$("prev").onclick = prev;
+
+let touch = null;
+$("stage").addEventListener("pointerdown", (e) => { touch = { x: e.clientX, y: e.clientY }; });
+$("stage").addEventListener("pointerup", (e) => {
+  if (!touch) return;
+  const dx = e.clientX - touch.x, dy = e.clientY - touch.y;
+  touch = null;
+  hideHint();
+  if (!$("veil").hidden) { play(cache.get(cur)); return; }
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) return dx < 0 ? next() : prev();
+  if (Math.abs(dx) > 12 || Math.abs(dy) > 12) return;
+  const box = $("stage").getBoundingClientRect();
+  (e.clientX - box.left < box.width / 3) ? prev() : next();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!$("menu").hidden) { if (e.key === "Escape") closeMenu(); return; }
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === "Home") go(0, "play");
+  else if (e.key === "End") go(n - 1, "rest");
+  else if (e.key === "f") fullscreen();
+});
+
+function fullscreen() {
+  const el = document.documentElement;
+  if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  else el.requestFullscreen?.().catch(() => {});
+}
+if (document.fullscreenEnabled) { $("fsBtn").hidden = false; $("fsBtn").onclick = fullscreen; }
+
+try { navigator.wakeLock?.request("screen").catch(() => {}); } catch (e) {}
+
+let hintTimer;
+function hideHint() { clearTimeout(hintTimer); $("hint").classList.add("gone"); }
+if (matchMedia("(pointer: coarse)").matches) {
+  $("hint").classList.remove("gone");
+  hintTimer = setTimeout(hideHint, 4000);
+}
+
+// --- start: at the slide the link names, else the title ------------------
+const wanted = parseInt(location.hash.slice(1), 10);
+go(wanted >= 1 && wanted <= slides.length ? slides[wanted - 1].first : 0, "play");
+</script>

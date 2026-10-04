@@ -13,6 +13,9 @@ dependencies = [
 slides = ["manim-slides[pyside6]>=5.7.0"]
 plots = ["matplotlib>=3.11.2"]
 
+[project.scripts]
+manim-atoms-deck = "manim_atoms.slides.cli:main"
+
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12"]
 build-backend = "uv_build"
