@@ -21,7 +21,7 @@ from types import SimpleNamespace
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 
 
 def shear_phase(x, theta, phi, spacing):

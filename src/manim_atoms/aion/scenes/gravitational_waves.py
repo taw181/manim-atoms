@@ -44,7 +44,7 @@ from manim_atoms.aion.scenes.ligo import (
     make_strain_trace,
     returning_waves,
 )
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 
 # --- sheet geometry -------------------------------------------------------
 # The sheet is a wireframe rather than a Surface: a Surface rebuilds thousands

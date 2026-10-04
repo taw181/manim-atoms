@@ -18,7 +18,7 @@ their own velocities.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 
 
 # --- the physics, in units of the Rabi frequency --------------------------

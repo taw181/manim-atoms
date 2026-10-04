@@ -17,7 +17,7 @@ The one pause, before AEDGE arrives, goes through beat().
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.aion.tools.gw_plot import detector_region, plot_point, sensitivity_axes
 from manim_atoms.core.layout import slide_title
 from manim_atoms.aion.tools.uldm_plot import (

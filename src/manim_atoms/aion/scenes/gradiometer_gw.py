@@ -16,7 +16,7 @@ light-shift scenes reuse it.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.core.primitives import (
     draw_legs,
     make_atom,

@@ -24,7 +24,7 @@ from manim_atoms.aion.physics.uldm_sensitivity import (
     ULDM_SCENARIOS,
     load_uldm_sensitivity,
 )
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.aion.tools.gw_plot import plot_point, sensitivity_axes
 
 # The paper's mass range, and its coupling range cut at 1, above which

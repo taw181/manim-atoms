@@ -16,7 +16,7 @@ term the gradiometer exists to cancel.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.clock import (
     CP_ARM,
     CP_DIAL,

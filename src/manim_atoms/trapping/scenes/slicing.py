@@ -15,7 +15,7 @@ light that is on and the timeline says where in the shot this is.
 
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.core.shapes import gaussian_band
 from manim_atoms.species.strontium import SrLevels
 from manim_atoms.trapping.tools.sequence import STAGES, Timeline, stage_heading

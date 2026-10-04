@@ -10,7 +10,7 @@ replaces.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.lmt import (
     LMT_KICKS,
     LMT_T0,

@@ -11,7 +11,7 @@ arms are drawn in.
 
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import (
     absorb,
     arm_ket,

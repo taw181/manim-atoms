@@ -35,7 +35,7 @@ from matplotlib.collections import PathCollection
 import numpy as np
 
 from manim_atoms.resources import data_path
-from manim_atoms.style import (
+from manim_atoms.aion.style import (
     IMPRINTED_SIGNAL_COLOR,
     LOWER_CLOUD_COLOR,
     PLOT_BACKGROUND,

@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-from manim_atoms.style import (
+from manim_atoms.aion.style import (
     GW_DETECTOR_COLORS,
     GW_MERGER_TIME_COLORS,
     GW_REGION_OPACITY,

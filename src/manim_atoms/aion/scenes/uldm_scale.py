@@ -27,7 +27,7 @@ c / v ~ 1e3 times longer, since galactic dark matter moves at v ~ 1e-3 c.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.aion.tools.gw_plot import plot_point, sensitivity_axes
 from manim_atoms.core.layout import slide_title
 from manim_atoms.aion.tools.uldm_plot import (

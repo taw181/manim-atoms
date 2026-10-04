@@ -14,7 +14,7 @@ from dataclasses import dataclass
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.species.strontium import TRANSITIONS
 
 

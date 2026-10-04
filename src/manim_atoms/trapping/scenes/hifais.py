@@ -15,7 +15,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.physics.mot_loading import load_loading_curves, load_loading_fits
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.trapping.tools.hifais import (
     CHAMBER_SIDE,
     CHAMBER_TOP,

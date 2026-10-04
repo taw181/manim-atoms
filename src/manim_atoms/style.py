@@ -1,10 +1,15 @@
-"""Visual style for the talk's manim animations.
+"""The house style shared by every manim_atoms figure.
 
 One place for the colour scheme, line styles, type sizes and pacing, so that
-every animation in the talk reads as one set of figures:
+every animation reads as one set of figures:
 
     from manim import *
     from manim_atoms.style import *
+
+A topic with a palette of its own adds it in ``<topic>/style.py``, which
+star-imports this one; that topic's modules star-import their own style
+instead (``from manim_atoms.trapping.style import *``). A colour goes in a
+style module, never inline.
 
 The ``*_STYLE`` bundles are dicts meant to be splatted into a mobject's
 constructor, e.g. ``DashedLine(a, b, **GUIDE_STYLE)``.
@@ -179,17 +184,6 @@ LIGHT_SHIFT_STYLE = dict(
     fill_opacity=0.16,
 )
 
-# --- phase, drawn as a clock hand -----------------------------------------
-# A hand is only legible on an atom about twice the usual size, which crowds a
-# figure, so only the atoms that actually carry one are grown. The hand is
-# white because it has to read against both state colours.
-CLOCK_ATOM_RADIUS = 0.32
-CLOCK_HAND_COLOR = WHITE
-CLOCK_HAND_WIDTH = 3
-CLOCK_HAND_RATIO = 0.8  # of the atom's radius
-CLOCK_DIAL_RADIUS = 0.95
-CLOCK_SWEEP_OPACITY = 0.4
-
 # --- the phase budget -----------------------------------------------------
 # Breaking Phi into its terms sorts them into two kinds, and the colour does
 # the sorting: white for the term the measurement is after, and the usual
@@ -204,15 +198,6 @@ CROSS_STROKE_WIDTH = 4
 NOISE_COLOR = LASER_COLOR
 RING_STROKE_WIDTH = 3
 RING_BUFF = 0.18  # how far a ring stands off the term it circles
-
-# --- output ports ---------------------------------------------------------
-# What the last pulse actually produces: two states, each holding a fraction
-# of the atoms fixed by the phase. A port that got none of them is still drawn
-# -- as a dashed guide with a dimmed label -- because the null only reads as
-# "all of them came out here" if the side they did not come out of is visible.
-PORT_EMPTY = 0.02  # below this share, a port is drawn as an empty one
-PORT_EMPTY_OPACITY = 0.4  # how far an empty port's label is dimmed
-
 
 # --- energy levels --------------------------------------------------------
 # A two-level system drawn beside an interferometer doubles as its key, so the
@@ -456,51 +441,6 @@ VIDEO_BORDER_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
 FONT_VIDEO_CLOCK = 24
 
 
-# --- laser cooling --------------------------------------------------------
-# The MOT stages drawn as a cartoon beside the level scheme. The beams take
-# the colour of the transition they drive, so the cartoon and the diagram
-# agree on which light is on; they are wide translucent bands, because a MOT
-# beam is a fat collimated beam rather than a pulse, and the band's opacity
-# stands for its intensity. The coils are furniture, grey like the other
-# optics, and how heavily they are drawn stands for the field gradient.
-MOT_BEAM_WIDTH = 0.42
-MOT_BEAM_OPACITY = 0.2  # fill, at full intensity
-MOT_BEAM_EDGE_OPACITY = 0.8  # the arrowhead chevrons, at full intensity
-MOT_BEAM_EDGE_WIDTH = 3
-COIL_COLOR = OPTIC_COLOR
-COIL_STRONG_WIDTH = 7  # the blue MOT's gradient
-COIL_WEAK_WIDTH = 3  # the red MOTs', some ten times weaker
-# An atom in a MOT glows in the colour of the light it scatters; one that has
-# fallen into a state no beam addresses is dark.
-CLOUD_DOT_RADIUS = 0.045
-DARK_ATOM_COLOR = GUIDE_COLOR
-DARK_ATOM_OPACITY = 0.8
-FONT_TEMPERATURE = FONT_ANNOTATION
-# Upstream of the MOT: the oven, the 2D MOT it feeds, and the push beam that
-# sends a stream of atoms from there through the vacuum baffle. The oven and
-# the baffle are hardware, so they take the optics grey; the oven gets a warm
-# wash inside, in the holes' rim-light orange, because what it does is get hot.
-# An atom straight out of the oven has met no light yet and is drawn grey,
-# turning the 461 blue as it is caught.
-OVEN_COLOR = OPTIC_COLOR
-OVEN_HEAT_COLOR = HORIZON_GLOW
-OVEN_HEAT_OPACITY = 0.3
-BAFFLE_COLOR = OPTIC_COLOR
-BAFFLE_WIDTH = 8
-HOT_ATOM_COLOR = GUIDE_COLOR
-
-# A long-baseline detector in cartoon (tools/baseline.py): the vacuum shaft
-# and the atom sources on its side are hardware, in the optics grey; the clock
-# laser runs the shaft's length in the laser red, and the clouds it drives
-# are the ground-state blue.
-SHAFT_COLOR = OPTIC_COLOR
-SHAFT_WALL_WIDTH = 6
-SOURCE_STROKE_WIDTH = 3
-BASELINE_BEAM_OPACITY = 0.55
-LAUNCH_STROKE_WIDTH = 2.5
-FONT_SOURCE = FONT_LEGEND
-
-
 # --- dipole traps ---------------------------------------------------------
 # The trap beams are far off every resonance, so they drive nothing on the
 # level scheme and take no transition colour: a pale warm white, the colour
@@ -514,19 +454,6 @@ TRANSPARENCY_OPACITY = 0.35
 MOT_GLOW_OPACITY = 0.22  # the red MOT's light, at its centre, beside the traps
 MOT_GLOW_LAYERS = 8
 FONT_CAPTION = FONT_LEGEND  # the step within a stage, under its heading
-
-
-# --- velocity slicing -----------------------------------------------------
-# The velocity distribution is stacked by internal state, but what the scene
-# is about is temperature, so the bands are coloured hot and cold: red for the
-# thermal cloud left in |g>, blue for the cold slice the pulse moves to |e>.
-# Translucent, so the pulse's line shape shows through them. The line shape is
-# the clock laser's, so it takes the 698 nm red; the hot red is a deeper one,
-# so the two stay apart where the line shape crosses the band.
-SLICE_HOT_COLOR = ManimColor("#d8322a")
-SLICE_COLD_COLOR = BLUE_D
-SLICE_FILL_OPACITY = 0.55
-SLICE_PROFILE_WIDTH = 3.5
 
 
 # --- static slides --------------------------------------------------------
@@ -579,93 +506,3 @@ CITATION_OUTLINE = dict(color=PLOT_BACKGROUND, width=7, opacity=0.9)
 PLACEHOLDER_STYLE = dict(
     dash_length=0.15, stroke_width=2, stroke_opacity=0.6, color=GUIDE_COLOR
 )
-
-
-# --- a high-flux atom source (HiFAIS) -------------------------------------
-# The source's CAD renders, labelled on the page rather than in the image so
-# the labels read on the dark background: plot-foreground text, with a thin
-# leader in the lightened construction grey ending on a dot at the part.
-CHAMBER_LABEL_COLOR = PLOT_FOREGROUND
-CHAMBER_LEADER_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
-CHAMBER_LEADER_DOT_RADIUS = 0.045
-FONT_CHAMBER_LABEL = FONT_AXIS
-FONT_CHAMBER_CAPTION = FONT_TICK
-# The MOT loading curves (Fig. 5 inset), one per oven temperature, coolest to
-# hottest on the cool-to-hot ramp the merger tracks' time dots already use --
-# its last four stops, which all sample clear of the dark background.
-OVEN_TEMPERATURE_COLORS = [ManimColor(c) for c in GW_MERGER_TIME_COLORS[1:]]
-LOADING_DOT_RADIUS = 0.04
-LOADING_ERROR_WIDTH = 2
-LOADING_FIT_WIDTH = 2.5
-# A fit carried on past the points it was fitted to is dashed: it is the
-# model's prediction there, which the data are held against, not a fit.
-LOADING_EXTRAPOLATION_DASH = 0.09
-# The atom number the fits stop at: a reference, not data, like a band edge.
-LOADING_CUTOFF_STYLE = GW_BAND_EDGE_STYLE
-# A dimension drawn across a render: in the photo labels' yellow, which holds
-# up against the CAD's greys and blues, outlined dark behind its line and text.
-DIMENSION_COLOR = PHOTO_LABEL_COLOR
-DIMENSION_STROKE_WIDTH = 3
-DIMENSION_TIP_LENGTH = 0.16
-DIMENSION_TICK = 0.12  # half the length of the bar across each end
-DIMENSION_OUTLINE = dict(color=PLOT_BACKGROUND, width=6, opacity=0.85)
-FONT_DIMENSION = FONT_CHAMBER_LABEL
-
-
-# --- phase-shear readout --------------------------------------------------
-# The last pulse drawn as a broad beam rather than a wavepacket, because what
-# matters here is its wavefronts: lines of equal laser phase, in the laser red,
-# over a faint band of the same red that fades out above the atoms, so it
-# reads as light passing on up rather than a slab that stops.
-SHEAR_BEAM_OPACITY = 0.14
-SHEAR_WAVEFRONT_STYLE = dict(stroke_width=2.5, color=LASER_COLOR, stroke_opacity=0.75)
-SHEAR_AXIS_STYLE = dict(dash_length=0.1, stroke_width=2, stroke_opacity=0.6,
-                        color=LASER_COLOR)
-# A camera image of one output port: the port's state colour, bright where
-# the atoms are, framed like the videos. Measured fringes are never full
-# contrast, so neither are these.
-SHEAR_IMAGE_BORDER_STYLE = VIDEO_BORDER_STYLE
-SHEAR_CONTRAST = 0.85
-SHEAR_PROFILE_WIDTH = 3.5  # the fitted fringe
-SHEAR_DATA_DOT_RADIUS = 0.05  # the binned profile it is fitted to
-
-
-# --- km-scale challenges table --------------------------------------------
-# A table of text: the challenge in white with why it bites under it in the
-# guide grey, the prototype's figures in the grey too (where we are), and
-# AION-km's in white (where we need to be). A thin grey rule between rows.
-FONT_TABLE_HEADING = FONT_LEGEND
-FONT_TABLE_NAME = 28
-FONT_TABLE_NOTE = 22
-FONT_TABLE_CELL = 24
-TABLE_RULE_STYLE = dict(stroke_width=1.5, color=GUIDE_COLOR, stroke_opacity=0.5)
-
-
-# --- spin squeezing -------------------------------------------------------
-# The quantum-noise blob of the collective spin. The coherent state is the
-# standard quantum limit, which the talk already draws in the guide grey (the
-# SQL band on the Allan plot); it stays up as a dashed outline once squeezed,
-# as the reference the squeezed state is held against. The squeezed state
-# takes the quiet run's green from the same plot: below the grey is where the
-# green sat there too.
-COHERENT_COLOR = SQL_COLOR
-SQUEEZED_COLOR = LLN_COLOR
-NOISE_BLOB_OPACITY = 0.3
-NOISE_BLOB_STROKE_WIDTH = 3
-# (set_stroke() keywords: both are dashed curves, not DashedLines)
-COHERENT_OUTLINE_STROKE = dict(color=COHERENT_COLOR, width=2, opacity=0.7)
-# The cavity probe counts the atoms in |g> on the 689 nm line, so the probe,
-# the cavity mode and the transmission it reads out all take the 689 red; the
-# measured value, marked on the spin's noise plane, is that reading too.
-PROBE_COLOR = TRANSITION_689_COLOR
-CAVITY_MODE_OPACITY = 0.45
-MIRROR_STROKE_WIDTH = 7
-PROBE_STROKE_WIDTH = 3
-MEASURED_WIDTH = 2.5  # the ring of fixed J_z the measurement pins the spin to
-EMPTY_CAVITY_STROKE = dict(color=GUIDE_COLOR, width=2.5, opacity=0.8)
-TRANSMISSION_WIDTH = 3.5
-# The Bloch sphere: furniture, in the lightened construction grey, with its
-# axis through the poles a faint dashed guide.
-BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
-BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
-                        color=GUIDE_COLOR)

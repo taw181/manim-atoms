@@ -10,7 +10,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.aion.physics.gw_signals import load_sensitivity
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 
 
 def sensitivity_axes(log_f_range, log_h_range, origin, width, height,

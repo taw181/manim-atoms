@@ -21,7 +21,7 @@ depth of the red MOT's sweep, and the temperature the cloud ends at.
 
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.trapping.tools.cooling import (
     AtomBeam,
     AtomCloud,

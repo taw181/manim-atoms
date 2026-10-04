@@ -12,7 +12,7 @@ beam entering from both ends.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.trapping.tools.cooling import chevron
 from manim_atoms.core.primitives import make_cloud
 

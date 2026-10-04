@@ -15,7 +15,7 @@ from manim import *
 
 from manim_atoms.trapping.physics.mot_loading import FIT_CUTOFF, loading_model
 from manim_atoms.resources import data_path
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.core.layout import image_point, load_image
 
 CHAMBER_TOP = data_path("images", "hifais_chamber_top.png")  # 1317 x 1153 px

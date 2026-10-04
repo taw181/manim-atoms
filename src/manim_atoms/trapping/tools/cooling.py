@@ -12,7 +12,7 @@ make_push_beam and make_baffle draw where its atoms come from.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.species.strontium import LV_3P, LV_3P_X, TRANSITIONS
 
 

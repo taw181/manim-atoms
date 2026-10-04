@@ -18,7 +18,7 @@ out striped, and where the stripes sit gives Phi from the one image.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.clock import make_clock_hand
 from manim_atoms.interferometry.tools.phase_shear import (
     PortImage,

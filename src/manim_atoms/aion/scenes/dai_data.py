@@ -38,7 +38,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.resources import data_path
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 
 DATA_DIR = data_path("dai_fringes")
 

@@ -14,7 +14,7 @@ stopped once the lower trap has loaded, and the video in the middle.
 from manim import *
 
 from manim_atoms.resources import data_path
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.species.strontium import SrLevels
 from manim_atoms.trapping.tools.sequence import (
     IMAGING_CROP,

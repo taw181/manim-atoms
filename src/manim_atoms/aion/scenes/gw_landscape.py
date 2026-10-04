@@ -25,7 +25,7 @@ from manim import *
 from manim_atoms.aion.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
 from manim_atoms.core.layout import slide_title
 from manim_atoms.aion.physics.gw_signals import mass_tex, merger_track, phenom_a_frequencies
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 
 # --- layout ---------------------------------------------------------------
 # The source figure's frame: 1e-6 to 1e4 Hz, 1e-24 to ~3e-15.

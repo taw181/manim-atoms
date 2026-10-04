@@ -13,7 +13,7 @@ The headings come up with the title; each row is then one beat().
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.aion.physics.km_scale import (
     BEST_SR_LMT,
     KM_ATOMS,

@@ -20,7 +20,7 @@ the rotation onto the phase.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.core.layout import slide_title
 from manim_atoms.core.primitives import state_label
 from manim_atoms.interferometry.tools.squeezing import (

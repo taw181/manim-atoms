@@ -21,7 +21,7 @@ upper one only.
 
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.core.shapes import gaussian_band, gaussian_spot
 from manim_atoms.species.strontium import SrLevels
 from manim_atoms.trapping.tools.cooling import SweepFan

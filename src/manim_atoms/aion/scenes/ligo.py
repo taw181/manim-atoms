@@ -20,7 +20,7 @@ they can be laid out afresh (MergerOnSensitivityPlot does all of this).
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.core.primitives import make_guide
 
 # --- the apparatus --------------------------------------------------------

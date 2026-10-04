@@ -8,7 +8,7 @@ manim_atoms.style.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import (
     make_atom,
     momentum_arrow,

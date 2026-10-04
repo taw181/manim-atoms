@@ -10,7 +10,7 @@ that follows, and a pointer marks where the MOT's field zero is.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.trapping.style import *
 from manim_atoms.core.shapes import gaussian_spot
 from manim_atoms.trapping.tools.cooling import MOT_AXES, chevron
 

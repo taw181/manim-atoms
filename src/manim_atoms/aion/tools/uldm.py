@@ -7,7 +7,7 @@ diagram, and the two-level diagram whose upper level rides that trace.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.aion.style import *
 from manim_atoms.interferometry.tools.clock import (
     CP_T,
     CP_T0,

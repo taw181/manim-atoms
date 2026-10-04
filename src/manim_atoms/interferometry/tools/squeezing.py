@@ -27,7 +27,7 @@ line shape it reads.
 import numpy as np
 from manim import *
 
-from manim_atoms.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.core.shapes import gaussian_band
 from manim_atoms.core.primitives import make_cloud
 
