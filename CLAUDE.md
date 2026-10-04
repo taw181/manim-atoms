@@ -2,7 +2,7 @@
 
 commit and push frequently as you go.
 
-Manim animations of atomic physics, as an installable package (`src/manim_atoms/`, `uv sync --all-extras` installs it editable): light-pulse atom interferometry, laser cooling and trapping, AION's science (single-photon gradiometer, gravitational waves, ultralight dark matter), and a layer that turns any scene into a manim-slides slide. It began as the animation half of a talk (`github.com/taw181/qsim_visit`), which now depends on it.
+Manim animations of atomic physics, as an installable package (`src/manim_atoms/`, `uv sync --all-extras` installs it editable): light-pulse atom interferometry, laser cooling and trapping, AION's science (gravitational waves and ultralight dark matter through a single-photon gradiometer, the prototype's signal injection and data), and a layer that turns any scene into a manim-slides slide. It began as the animation half of a talk (`github.com/taw181/qsim_visit`), which now depends on it.
 
 ## Layout
 
@@ -12,7 +12,7 @@ Topics depend one way only, `core` → `species` → {`interferometry`, `trappin
 - `core/` — building blocks: `primitives` (atoms, pulses, recoil, legs), `spacetime` (worldlines on one lab clock), `shapes` (Gaussian beams), `layout` (static-slide furniture), `citations`, `video`.
 - `species/` — level schemes: `two_level` (a generic clock transition beside a figure), `strontium` (Sr levels and lines, `SrLevels`).
 - `interferometry/`, `trapping/`, `aion/` — each has `tools/<module>.py` (helpers and the geometry they use; defaults bind at def time) and `scenes/<module>.py` (Scene classes and layout only they use), and where it has them `physics/` (numbers, no manim) and `plots/` (matplotlib figure builders).
-  - The gradiometer family (`Gradiometer`, `GradiometerGW`, light shift, ULDM gradiometer) lives in `aion`: `Gradiometer` subclasses `GradiometerGW` for its machinery, and `RunsContinuously` (in `aion/scenes/gradiometer_gw.py`) serves the light-shift and ULDM scenes too.
+  - The gradiometer is generic interferometry: `interferometry/scenes/gradiometer.py` holds `GradiometerBase` (two clouds, their arms, hands, dials and ports), `RunsContinuously` (the same on one lab clock) and the quiet `Gradiometer`. The AION scenes build on them: `GradiometerGW` (with `WaveRunsContinuously` for the wave-driven pulse timing), `LightShiftSignal`, `DarkMatterGradiometer`; `SignalInjection` is the prototype's lab picture behind the light-shift one.
 - `slides/` — the only place `manim_slides` is imported (the `slides` extra): `deck.py` (`DeckSlide`, the `Clicks` / `RunsOnIntoLoops` / `LoopingStages` mixins, the deck file), `cli.py` (`manim-atoms-deck`), `player.py` (web player).
 - `data/` — CSVs, images, video, read via `manim_atoms.resources.data_path`; sources and licences in `data/README.md`. `data_scripts/` regenerates them.
 - `bibliography.py` — BibTeX entries formatted under a `CiteFormat` (`FULL`, `SHORT`, `AUTHOR_YEAR`; vary with `dataclasses.replace`); `core/citations.py` makes one a footer line.

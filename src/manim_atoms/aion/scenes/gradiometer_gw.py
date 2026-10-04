@@ -9,14 +9,16 @@ people carry. The same h(t) runs along the top of both, they take their pulse
 timing from the same place, and so their dials read the same phase.
 
 The *Continuous variants run the whole diagram on one lab clock (see
-manim_atoms.core.spacetime); RunsContinuously is the mixin that does it, and the
-light-shift scenes reuse it.
+manim_atoms.core.spacetime), through WaveRunsContinuously: the gradiometer's
+RunsContinuously with the pulses fired where the wave has them arriving.
+Both scenes are GradiometerBases (manim_atoms.interferometry.scenes.gradiometer).
 """
 
 import numpy as np
 from manim import *
 
 from manim_atoms.aion.style import *
+from manim_atoms.interferometry.scenes.gradiometer import GradiometerBase, RunsContinuously
 from manim_atoms.core.primitives import (
     draw_legs,
     make_atom,
@@ -24,7 +26,6 @@ from manim_atoms.core.primitives import (
     state_colors,
 )
 from manim_atoms.core.spacetime import (
-    no_displacement,
     run_to,
     worldline,
     wound,
@@ -32,12 +33,11 @@ from manim_atoms.core.spacetime import (
     growing_trail,
     draw_wavy_legs,
 )
-from manim_atoms.aion.tools.gradiometer import (
+from manim_atoms.interferometry.tools.gradiometer import (
     GR_T,
     GR_LOWER_Z,
     GR_UPPER_Z,
     GR_MID_Z,
-    GR_OUT,
     gradiometer_frame,
     fire_pulse,
     GR_TERMS_WIDTH,
@@ -48,14 +48,8 @@ from manim_atoms.aion.tools.gradiometer import (
 )
 from manim_atoms.interferometry.tools.clock import (
     clock_rate,
-    make_clock_hand,
     make_dial,
-    dial_hand,
     phase_sweep,
-    ground_share,
-    draw_ports,
-    fly_ports,
-    leg_slope,
 )
 from manim_atoms.aion.tools.gradiometer_gw import (
     GW_PULSES,
@@ -72,7 +66,7 @@ from manim_atoms.aion.tools.gradiometer_gw import (
 )
 
 
-class GradiometerGW(Scene):
+class GradiometerGW(GradiometerBase):
     """A wave modulates the light travel time, so the pulses arrive early or late.
 
     The honest picture of what AION measures. The atoms are freely falling test
@@ -80,14 +74,6 @@ class GradiometerGW(Scene):
     the wave changes is L/c, and with it the retarded time at which the laser
     writes its phase into the upper interferometer.
     """
-
-    def beat(self):
-        """The pause after each step: nothing here, a click on the slide version.
-
-        Called from construct and from the stop-start fly, never from close:
-        the continuous variants replace close and fly, and a pause in the
-        middle of their one running clock would undo what they are for.
-        """
 
     def construct(self):
         gradiometer_frame(
@@ -209,21 +195,10 @@ class GradiometerGW(Scene):
     # The wave in this scene changes the light travel time and nothing else,
     # so the clouds sit still on the baseline and every pulse crosses them
     # where the baseline says. GradiometerGWStretch draws the other half of
-    # the same wave -- it moves the clouds -- and overrides exactly these
-    # three, which is the whole difference between the two pictures once the
-    # pulse timing is shared.
+    # the same wave -- it moves the clouds -- and overrides exactly these,
+    # with GradiometerBase's displacement, which is the whole difference
+    # between the two pictures once the pulse timing is shared.
     REFERENCE = True  # the dashed quiet-baseline ghost beside each pulse
-
-    def vertices(self, cloud):
-        return self.low if cloud == "low" else self.up
-
-    def nominal(self, cloud):
-        """Where on the baseline a cloud belongs."""
-        return GR_LOWER_Z if cloud == "low" else GR_UPPER_Z
-
-    def displacement(self, cloud):
-        """How the wave bows this cloud's worldline. Not at all, here."""
-        return no_displacement
 
     def rest(self, cloud):
         """Where the cloud is when lab time starts."""
@@ -260,58 +235,6 @@ class GradiometerGW(Scene):
         if k == 1:
             return arrival_note(self.up[1], self.lags[1])
         return None
-
-    def open_arms(self, cloud):
-        """One cloud's seed becomes two arms, each carrying a hand.
-
-        Per cloud rather than for both at once, because the pulse does not
-        reach them at the same time: the far cloud is split L/c after the near
-        one, which is the whole quantity this figure is about.
-        """
-        v = self.vertices(cloud)
-        for atom in self.atoms[cloud]:
-            atom.set_opacity(SUPERPOSITION_OPACITY).move_to(v[0])
-        self.remove(self.seeds[cloud])
-        self.add(*self.atoms[cloud])
-        # index 0 is the arm kicked at the mirror, index 1 the arm kicked now
-        hands = [
-            make_clock_hand(self.atoms[cloud][k], self.phase[cloud][k])
-            for k in (0, 1)
-        ]
-        self.hands.extend(hands)
-        self.add(*hands)
-        big = VGroup(
-            dial_hand(
-                GR_DIALS[cloud], self.phase[cloud][0], lighten(ATOM_COLOR),
-                GR_DIAL_RADIUS,
-            ),
-            dial_hand(
-                GR_DIALS[cloud], self.phase[cloud][1], lighten(KICKED_COLOR),
-                GR_DIAL_RADIUS,
-            ),
-        )
-        self.big.add(*big)
-        self.add(big)
-
-    def port_extra(self):
-        """What rides along with the output ports. Nothing, unless lab time does."""
-        return ()
-
-    def port_slope(self, cloud):
-        """The slope a cloud's excited port leaves at: its kicked leg's."""
-        v = self.low if cloud == "low" else self.up
-        return leg_slope(v[1], v[3])
-
-    def close(self, sweeps):
-        """Read both dials, then let each pair of ports fly."""
-        self.play(*[FadeIn(m) for m in sweeps], run_time=0.7)
-        for cloud, v in (("low", self.low), ("up", self.up)):
-            draw_ports(
-                self, v[3], GR_OUT,
-                ground_share(self.phase[cloud][1], self.phase[cloud][0]),
-                slope=self.port_slope(cloud), labels=False,
-                extra=self.port_extra(),
-            )
 
     def fly(self):
         """Three pulses and two legs, one at a time.
@@ -381,85 +304,10 @@ class GradiometerGW(Scene):
         )
 
 
-class RunsContinuously:
-    """Mixin: a gradiometer scene whose lab time never stops.
-
-    Only the pulse-and-leg sequence differs between a stop-start scene and a
-    continuous one, and it differs the same way for both pictures of the wave.
-    So it is written once here and mixed in ahead of whichever scene it is
-    running, which is what lets the stretched baseline have a continuous
-    variant for free. Everything it needs -- the vertices, where each cloud is
-    when a pulse crosses it, how its worldlines bow -- it asks the scene for.
-
-    What the mixin buys these scenes in particular: the one quantity a
-    gradiometer figure exists to show -- that the far cloud is split, mirrored
-    and recombined L/c after the near one -- is a statement about *when*
-    things happen to each of them. Stopping the atoms to draw a pulse makes it
-    unshowable, so the stop-start scenes say it in words: a caption reading
-    "arrives late" beside a dashed ghost. Here the pulse climbs while the
-    atoms fly, the near cloud splits, and the far cloud is still a single seed
-    for L/c afterwards. The caption becomes a label on something the frame is
-    doing.
-
-    The price is that the pulses are quick. Run at V a late pulse crosses the
-    frame in under a second and the early one, whose light travel time the
-    wave has largely closed up, in a fraction of that -- which is not a defect
-    but the measurement: the two are drawn at the ratio the wave put between
-    them rather than dilated to the same length and annotated.
-    """
-
-    def port_extra(self):
-        # By the same amount the ports run, not to the same place: the last
-        # pulse has carried lab time a little past the final corner, and what
-        # has to match is the rate, so the wave keeps step with the atoms.
-        return [self.clock.animate.set_value(self.clock.get_value() + GR_OUT)]
-
-    def close(self, sweeps):
-        """The sectors arrive while the ports fly, not before them.
-
-        Same reason the pulses do not stop the atoms: what leaves the last
-        vertex is still the interferometer running on in its own time. And the
-        angle between a pair of hands and the split between a pair of ports
-        are one fact, so they belong in one beat rather than two.
-        """
-        fly_ports(
-            self,
-            [
-                (
-                    v[3],
-                    ground_share(self.phase[cloud][1], self.phase[cloud][0]),
-                    self.port_slope(cloud),
-                )
-                for cloud, v in (("low", self.low), ("up", self.up))
-            ],
-            GR_OUT, labels=False,
-            extra=[*self.port_extra(), *[FadeIn(m) for m in sweeps]],
-        )
-
-    def open_arms(self, cloud):
-        v, clock = self.vertices(cloud), self.clock
-        # Trails before atoms, so an atom is never drawn under the line it is
-        # drawing. One per leg rather than per arm: the two arms swap states
-        # at the mirror, so the colour belongs to the leg.
-        self.add(
-            growing_trail([v[0], v[1]], ATOM_COLOR, clock, self.displacement(cloud)),
-            growing_trail([v[1], v[3]], KICKED_COLOR, clock, self.displacement(cloud)),
-            growing_trail([v[0], v[2]], KICKED_COLOR, clock, self.displacement(cloud)),
-            growing_trail([v[2], v[3]], ATOM_COLOR, clock, self.displacement(cloud)),
-        )
-        super().open_arms(cloud)
-        pair = self.atoms[cloud]
-        carry(pair[0], worldline([v[0], v[1], v[3]], self.displacement(cloud)), clock)
-        carry(pair[1], worldline([v[0], v[2], v[3]], self.displacement(cloud)), clock)
-
-    def mirror(self, cloud):
-        """The pulse hands the excitation over, on the instant it arrives."""
-        pair = self.atoms[cloud]
-        pair[0][0].set_fill(KICKED_COLOR).set_stroke(lighten(KICKED_COLOR))
-        pair[1][0].set_fill(ATOM_COLOR).set_stroke(lighten(ATOM_COLOR))
-        k = 0 if cloud == "low" else 2
-        self.big[k].set_color(lighten(KICKED_COLOR))
-        self.big[k + 1].set_color(lighten(ATOM_COLOR))
+class WaveRunsContinuously(RunsContinuously):
+    """RunsContinuously for the scenes with a wave passing through: lab time
+    starts as the first pulse leaves the laser, the strain trace's marker
+    rides on it, and every pulse is fired where the wave has it arriving."""
 
     def fly(self):
         low, up, lags = self.low, self.up, self.lags
@@ -527,7 +375,7 @@ class RunsContinuously:
         )
 
 
-class GradiometerGWContinuous(RunsContinuously, GradiometerGW):
+class GradiometerGWContinuous(WaveRunsContinuously, GradiometerGW):
     """GradiometerGW with the pulses climbing while the atoms fly."""
 
 
@@ -805,7 +653,7 @@ class GradiometerGWStretch(GradiometerGW):
         shoot(2, [atoms["low"][0], atoms["up"][0]])
 
 
-class GradiometerGWStretchContinuous(RunsContinuously, GradiometerGWStretch):
+class GradiometerGWStretchContinuous(WaveRunsContinuously, GradiometerGWStretch):
     """GradiometerGWStretch with the pulses climbing while the atoms fly.
 
     Free, once the continuous sequence is a mixin and this picture's two

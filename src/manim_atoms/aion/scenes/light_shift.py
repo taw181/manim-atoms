@@ -10,7 +10,7 @@ from manim_atoms.interferometry.tools.clock import (
     make_dial,
     phase_sweep,
 )
-from manim_atoms.aion.tools.gradiometer import (
+from manim_atoms.interferometry.tools.gradiometer import (
     GR_ARM,
     GR_DIALS,
     GR_DIAL_RADIUS,
@@ -45,8 +45,8 @@ from manim_atoms.core.spacetime import (
     wound,
     wound_with_shift,
 )
-from manim_atoms.aion.scenes.gradiometer_gw import (
-    GradiometerGW,
+from manim_atoms.interferometry.scenes.gradiometer import (
+    GradiometerBase,
     RunsContinuously,
 )
 
@@ -113,7 +113,7 @@ def along_port(origin, rise, x):
     return origin + (x - origin[0]) * (RIGHT + UP * rise)
 
 
-class LightShiftSignal(GradiometerGW):
+class LightShiftSignal(GradiometerBase):
     """A signal put in on purpose, to see whether the gradiometer catches it.
 
     Gradiometer ends on a null: nothing is passing through, both clocks read
@@ -126,10 +126,10 @@ class LightShiftSignal(GradiometerGW):
     the worldlines has moved. The only new thing on the page is a band of
     light over one of the two interferometers.
 
-    A subclass of GradiometerGW for its machinery and not for its wave: the
-    two clouds, the hands they carry, the dials and the ports are the same
-    apparatus whatever is being measured with it, and inheriting them is also
-    what lets RunsContinuously drive this scene without knowing about it.
+    A GradiometerBase, as GradiometerGW is: the two clouds, the hands they
+    carry, the dials and the ports are the same apparatus whatever is being
+    measured with it, and inheriting them is also what lets RunsContinuously
+    drive this scene without knowing about it.
     """
 
     def construct(self):

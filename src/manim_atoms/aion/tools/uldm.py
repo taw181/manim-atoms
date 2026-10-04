@@ -12,7 +12,7 @@ from manim_atoms.interferometry.tools.clock import (
     CP_T,
     CP_T0,
 )
-from manim_atoms.aion.tools.gradiometer import (
+from manim_atoms.interferometry.tools.gradiometer import (
     GR_LAG,
     GR_T,
     GR_T0,

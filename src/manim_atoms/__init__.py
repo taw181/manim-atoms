@@ -8,14 +8,14 @@
 - ``manim_atoms.species``: level schemes: a generic two-level diagram and
   strontium's levels and lines.
 - ``manim_atoms.interferometry``: light-pulse atom interferometry --
-  Mach-Zehnder sequences, clock-phase readout, large momentum transfer,
-  phase-shear readout, spin squeezing.
+  Mach-Zehnder sequences, clock-phase readout, the gradiometer, large
+  momentum transfer, phase-shear readout, spin squeezing.
 - ``manim_atoms.trapping``: laser cooling and trapping -- the MOT stages,
   dipole traps, velocity slicing, a high-flux source, one shot of an
   experiment.
-- ``manim_atoms.aion``: AION's science -- the single-photon gradiometer,
-  gravitational waves, ultralight dark matter, AEDGE, the km-scale detector,
-  and the prototype's measured data.
+- ``manim_atoms.aion``: AION's science -- gravitational waves and
+  ultralight dark matter through the gradiometer, AEDGE, the km-scale
+  detector, and the prototype's signal injection and measured data.
 - ``manim_atoms.slides``: any of the scenes as a manim-slides deck (needs the
   ``slides`` extra).
 

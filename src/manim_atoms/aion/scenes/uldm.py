@@ -36,9 +36,12 @@ from manim_atoms.interferometry.tools.clock import (
     readout_equation,
     strobe_pulse,
 )
-from manim_atoms.aion.scenes.gradiometer import launch_time
-from manim_atoms.aion.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
-from manim_atoms.aion.tools.gradiometer import (
+from manim_atoms.interferometry.scenes.gradiometer import (
+    GradiometerBase,
+    RunsContinuously,
+    launch_time,
+)
+from manim_atoms.interferometry.tools.gradiometer import (
     GR_DIAL_RADIUS,
     GR_DIALS,
     GR_LAG,
@@ -408,7 +411,7 @@ class DarkMatterPhaseContinuous(DarkMatterPhase):
         strobe_pulse(self, now, c[0], top=c[1], flash_at=[c])
 
 
-class DarkMatterGradiometer(RunsContinuously, GradiometerGW):
+class DarkMatterGradiometer(RunsContinuously, GradiometerBase):
     """The field through the gradiometer: where the differential phase comes from.
 
     DarkMatterPhase ends on one clock whose hands the field has pulled apart.

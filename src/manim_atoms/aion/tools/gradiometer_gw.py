@@ -9,7 +9,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.aion.style import *
-from manim_atoms.aion.tools.gradiometer import (
+from manim_atoms.interferometry.tools.gradiometer import (
     GR_ARM,
     GR_BASELINE,
     GR_LAG,

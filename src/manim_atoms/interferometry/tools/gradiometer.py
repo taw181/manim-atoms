@@ -18,7 +18,7 @@ L/c is ~0.3 us against an interrogation time T of order a second.
 import numpy as np
 from manim import *
 
-from manim_atoms.aion.style import *
+from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import make_guide
 from manim_atoms.core.spacetime import run_to
 

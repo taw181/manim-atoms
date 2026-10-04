@@ -4,9 +4,9 @@
 
 | Topic | What's in it |
 |---|---|
-| `manim_atoms.interferometry` | Light-pulse atom interferometry: a single laser kick, Mach–Zehnder and single-photon sequences, the phase read off as a clock hand, large momentum transfer, phase-shear readout, spin squeezing |
+| `manim_atoms.interferometry` | Light-pulse atom interferometry: a single laser kick, Mach–Zehnder and single-photon sequences, the phase read off as a clock hand, the gradiometer (two interferometers, one laser), large momentum transfer, phase-shear readout, spin squeezing |
 | `manim_atoms.trapping` | Laser cooling and trapping of Sr: the blue and red MOT stages, dipole-trap loading and spin polarisation, velocity slicing, a high-flux atom source, one shot of an experiment |
-| `manim_atoms.aion` | AION: the single-photon gradiometer, a gravitational wave or an ultralight dark-matter field passing through it, LIGO, the GW sensitivity landscape, AEDGE, the km-scale detector, and the prototype's measured data |
+| `manim_atoms.aion` | AION: a gravitational wave or an ultralight dark-matter field passing through the gradiometer, signal injection by a light shift, LIGO, the GW sensitivity landscape, AEDGE, the km-scale detector, and the prototype's measured data |
 | `manim_atoms.slides` | Any scene as a [manim-slides](https://github.com/jeertmans/manim-slides) slide, decks of them, and a web player |
 
 Under them sit `manim_atoms.core` (atoms, pulses, worldlines, beams, layout, citations, video), `manim_atoms.species` (two-level and Sr level schemes) and `manim_atoms.style`.
