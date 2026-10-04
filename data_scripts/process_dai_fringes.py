@@ -9,7 +9,7 @@ That record is one 135 MB zip. The two files this talk needs are its
 shot of the interleaved low- and high-laser-noise runs, with the applied clock
 laser phase step and the excitation fraction of each interferometer. This
 script cuts them down to those columns and writes one CSV per run to
-``src/manim_atoms/data/dai_fringes/``, which is what ``manim_atoms.plots.dai_fringes``
+``src/manim_atoms/data/dai_fringes/``, which is what ``manim_atoms.aion.plots.dai_fringes``
 reads.
 
     .venv/bin/python data_scripts/process_dai_fringes.py [data_analysis.zip]

@@ -10,7 +10,7 @@ its Monte Carlo runs at the standard quantum limit, then writes what it plots
 to ``figures/Figure_4_data.xlsx``. This script copies that workbook's
 ``allan_deviation`` sheet, as it stands, to
 ``src/manim_atoms/data/dai_fringes/adev.csv``, which is what
-``manim_atoms.plots.dai_fringes`` reads.
+``manim_atoms.aion.plots.dai_fringes`` reads.
 
 It also works out the figure's inset -- the scatter of the mean differential
 phase over each whole run, sigma_<dphi>, beside the standard quantum limit --

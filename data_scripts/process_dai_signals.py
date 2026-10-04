@@ -14,7 +14,7 @@ Lomb-Scargle periodogram of the light-shift drive itself
 the same reduction -- the window of +-5 FWHM round each peak, each curve
 normalised to unit height -- and writes both curves to
 ``src/manim_atoms/data/dai_fringes/signals.csv``, which is what
-``manim_atoms.plots.dai_fringes`` reads.
+``manim_atoms.aion.plots.dai_fringes`` reads.
 
 The notebook's own ``Figure_5a_data.xlsx`` isn't used: it writes the
 periodogram against the fit's frequencies rather than its own.

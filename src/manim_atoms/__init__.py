@@ -1,17 +1,31 @@
-"""Manim animations of atom interferometry, AION and the gravitational-wave
-sources it looks for.
+"""Manim animations of atomic physics.
 
-- ``manim_atoms.style``: the house style -- colours, type sizes, line styles and
-  pacing -- that every figure draws from.
-- ``manim_atoms.physics``: the numbers behind the figures, with no manim in them.
-- ``manim_atoms.tools``: drawing and animation helpers, one module per topic.
-- ``manim_atoms.scenes``: the scenes themselves. Render one by its file path:
+- ``manim_atoms.style``: the house style -- colours, type sizes, line styles
+  and pacing -- that every figure draws from.
+- ``manim_atoms.core``: building blocks every topic draws with: atoms, laser
+  pulses, worldlines on a lab clock, Gaussian beams, slide layout, citations,
+  video frames.
+- ``manim_atoms.species``: level schemes: a generic two-level diagram and
+  strontium's levels and lines.
+- ``manim_atoms.interferometry``: light-pulse atom interferometry --
+  Mach-Zehnder sequences, clock-phase readout, large momentum transfer,
+  phase-shear readout, spin squeezing.
+- ``manim_atoms.trapping``: laser cooling and trapping -- the MOT stages,
+  dipole traps, velocity slicing, a high-flux source, one shot of an
+  experiment.
+- ``manim_atoms.aion``: AION's science -- the single-photon gradiometer,
+  gravitational waves, ultralight dark matter, AEDGE, the km-scale detector,
+  and the prototype's measured data.
+- ``manim_atoms.slides``: any of the scenes as a manim-slides deck (needs the
+  ``slides`` extra).
 
-      uv run manim -ql src/manim_atoms/scenes/gradiometer_gw.py GradiometerGW
+Each topic keeps ``tools/`` (helpers and the geometry they use), ``scenes/``
+(Scene classes, rendered by file path) and, where it has numbers or static
+figures, ``physics/`` and ``plots/``:
 
-- ``manim_atoms.plots``: the same data drawn as static matplotlib figures.
+    uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder
 
-This file deliberately imports nothing: manim loads a scene file by path,
-under a module name of its own, and anything imported here would be loaded a
-second time under the package's name.
+This file, and every package ``__init__.py``, deliberately imports nothing:
+manim loads a scene file by path, under a module name of its own, and anything
+imported here would be loaded a second time under the package's name.
 """

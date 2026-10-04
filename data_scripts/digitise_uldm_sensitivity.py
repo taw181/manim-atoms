@@ -11,7 +11,7 @@ is vector graphics in the journal PDF (page 13, journal page 10), so the
 curves are read straight off the PDF's paths rather than traced from pixels.
 
 Writes src/manim_atoms/data/uldm_sensitivity/*.csv, which
-manim_atoms.physics.uldm_sensitivity reads:
+manim_atoms.aion.physics.uldm_sensitivity reads:
 
 - one per scenario: the SOLID curve only (the paper: "the solid line shows
   the sensitivity above 0.3 Hz, while the dotted line shows the sensitivity
