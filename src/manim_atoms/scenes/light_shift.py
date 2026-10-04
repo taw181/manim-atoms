@@ -3,14 +3,14 @@
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import (
     clock_rate,
     ground_share,
     make_dial,
     phase_sweep,
 )
-from aionanim.tools.gradiometer import (
+from manim_atoms.tools.gradiometer import (
     GR_ARM,
     GR_DIALS,
     GR_DIAL_RADIUS,
@@ -29,14 +29,14 @@ from aionanim.tools.gradiometer import (
     sweep_pulse,
     vertices,
 )
-from aionanim.tools.primitives import (
+from manim_atoms.tools.primitives import (
     draw_legs,
     fluoresce,
     fluorescence,
     make_atom,
     state_colors,
 )
-from aionanim.tools.spacetime import (
+from manim_atoms.tools.spacetime import (
     carry,
     growing_band,
     growing_trail,
@@ -45,7 +45,7 @@ from aionanim.tools.spacetime import (
     wound,
     wound_with_shift,
 )
-from aionanim.scenes.gradiometer_gw import (
+from manim_atoms.scenes.gradiometer_gw import (
     GradiometerGW,
     RunsContinuously,
 )

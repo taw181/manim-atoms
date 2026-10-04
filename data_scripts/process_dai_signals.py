@@ -13,8 +13,8 @@ Lomb-Scargle periodogram of the light-shift drive itself
 (``data/precomputed_true_signals/signal_extraction_*.npz``). This script does
 the same reduction -- the window of +-5 FWHM round each peak, each curve
 normalised to unit height -- and writes both curves to
-``src/aionanim/data/dai_fringes/signals.csv``, which is what
-``aionanim.plots.dai_fringes`` reads.
+``src/manim_atoms/data/dai_fringes/signals.csv``, which is what
+``manim_atoms.plots.dai_fringes`` reads.
 
 The notebook's own ``Figure_5a_data.xlsx`` isn't used: it writes the
 periodogram against the fit's frequencies rather than its own.

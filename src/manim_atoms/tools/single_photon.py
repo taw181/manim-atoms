@@ -3,8 +3,8 @@
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import (
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import (
     state_label,
 )
 

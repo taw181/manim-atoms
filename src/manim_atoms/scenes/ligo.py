@@ -9,7 +9,7 @@ it squeezes the other; the returning beams slide out of step, stop
 cancelling, and light reaches the detector.
 
 Everything runs off one lab clock, `now`, so the light keeps flowing through
-every beat of the scene. Everything visual comes from aionanim.style.
+every beat of the scene. Everything visual comes from manim_atoms.style.
 
 The builders take the wave as `h` and a `panel` to draw into, so another
 scene can set the interferometer, already lit, in part of its own frame and
@@ -20,8 +20,8 @@ they can be laid out afresh (MergerOnSensitivityPlot does all of this).
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import make_guide
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import make_guide
 
 # --- the apparatus --------------------------------------------------------
 # The beam splitter sits left of centre so the right third of the frame is

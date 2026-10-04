@@ -21,8 +21,8 @@ depth of the red MOT's sweep, and the temperature the cloud ends at.
 
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.cooling import (
+from manim_atoms.style import *
+from manim_atoms.tools.cooling import (
     AtomBeam,
     AtomCloud,
     Coils,
@@ -34,7 +34,7 @@ from aionanim.tools.cooling import (
     make_up_beam,
     oblique_ring,
 )
-from aionanim.tools.sequence import STAGES, SrLevels, Stage, Timeline, stage_heading
+from manim_atoms.tools.sequence import STAGES, SrLevels, Stage, Timeline, stage_heading
 
 # --- cooling layout -------------------------------------------------------
 COOL_MOT_CENTER = np.array([-3.0, -0.35, 0])

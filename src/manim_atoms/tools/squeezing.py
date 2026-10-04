@@ -27,9 +27,9 @@ line shape it reads.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.dipole import gaussian_band
-from aionanim.tools.primitives import make_cloud
+from manim_atoms.style import *
+from manim_atoms.tools.dipole import gaussian_band
+from manim_atoms.tools.primitives import make_cloud
 
 
 def rabi_transmission(x, center, kappa, gamma, coupling):

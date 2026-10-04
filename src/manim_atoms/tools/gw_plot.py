@@ -9,8 +9,8 @@ Axes carries its own log ranges, so every helper takes just the axes.
 import numpy as np
 from manim import *
 
-from aionanim.physics.gw_signals import load_sensitivity
-from aionanim.style import *
+from manim_atoms.physics.gw_signals import load_sensitivity
+from manim_atoms.style import *
 
 
 def sensitivity_axes(log_f_range, log_h_range, origin, width, height,

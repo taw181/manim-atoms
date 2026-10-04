@@ -8,8 +8,8 @@ along the top of the diagram on the diagram's own time axis.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.gradiometer import (
+from manim_atoms.style import *
+from manim_atoms.tools.gradiometer import (
     GR_ARM,
     GR_BASELINE,
     GR_LAG,

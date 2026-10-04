@@ -4,14 +4,14 @@ The curves of Badurina et al., JCAP 05 (2020) 011 (arXiv:1911.11755), Fig. 3
 middle panel -- the photon coupling |d_e| each scenario reaches at SNR 1 in
 1e8 s, against the scalar's mass m_phi -- and the lower edge of the region
 already excluded, read off the PDF's vector paths into
-aionanim/data/uldm_sensitivity/ by data_scripts/digitise_uldm_sensitivity.py.
+manim_atoms/data/uldm_sensitivity/ by data_scripts/digitise_uldm_sensitivity.py.
 
 Masses are in eV; a field of mass m oscillates at f = m c^2 / h.
 """
 
 import numpy as np
 
-from aionanim.resources import data_path
+from manim_atoms.resources import data_path
 
 DATA_DIR = data_path("uldm_sensitivity")
 
@@ -95,7 +95,7 @@ def _read(stem):
 
 
 def load_uldm_sensitivity(stem, extend=True):
-    """(m_phi / eV, |d_e|) arrays from aionanim/data/uldm_sensitivity/<stem>.csv.
+    """(m_phi / eV, |d_e|) arrays from manim_atoms/data/uldm_sensitivity/<stem>.csv.
 
     An AION stage is carried on below the paper's 0.3 Hz down to
     ULDM_EXTEND_TO by model_reach, scaled to meet the digitised curve;

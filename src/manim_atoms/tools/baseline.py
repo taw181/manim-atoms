@@ -12,9 +12,9 @@ beam entering from both ends.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.cooling import chevron
-from aionanim.tools.primitives import make_cloud
+from manim_atoms.style import *
+from manim_atoms.tools.cooling import chevron
+from manim_atoms.tools.primitives import make_cloud
 
 BL_SHAFT_WIDTH = 0.75  # between the walls' centres
 BL_BEAM_WIDTH = 0.42

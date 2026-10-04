@@ -9,21 +9,21 @@ people carry. The same h(t) runs along the top of both, they take their pulse
 timing from the same place, and so their dials read the same phase.
 
 The *Continuous variants run the whole diagram on one lab clock (see
-aionanim.tools.spacetime); RunsContinuously is the mixin that does it, and the
+manim_atoms.tools.spacetime); RunsContinuously is the mixin that does it, and the
 light-shift scenes reuse it.
 """
 
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import (
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import (
     draw_legs,
     make_atom,
     make_guide,
     state_colors,
 )
-from aionanim.tools.spacetime import (
+from manim_atoms.tools.spacetime import (
     no_displacement,
     run_to,
     worldline,
@@ -32,7 +32,7 @@ from aionanim.tools.spacetime import (
     growing_trail,
     draw_wavy_legs,
 )
-from aionanim.tools.gradiometer import (
+from manim_atoms.tools.gradiometer import (
     GR_T,
     GR_LOWER_Z,
     GR_UPPER_Z,
@@ -46,7 +46,7 @@ from aionanim.tools.gradiometer import (
     GR_DIALS,
     sweep_pulse,
 )
-from aionanim.tools.clock import (
+from manim_atoms.tools.clock import (
     clock_rate,
     make_clock_hand,
     make_dial,
@@ -57,7 +57,7 @@ from aionanim.tools.clock import (
     fly_ports,
     leg_slope,
 )
-from aionanim.tools.gradiometer_gw import (
+from manim_atoms.tools.gradiometer_gw import (
     GW_PULSES,
     GW_TRACE_X,
     gw_lag,

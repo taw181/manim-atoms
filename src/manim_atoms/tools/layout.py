@@ -9,7 +9,7 @@ import numpy as np
 from manim import *
 from PIL import Image
 
-from aionanim.style import *
+from manim_atoms.style import *
 
 
 def slide_title(text):

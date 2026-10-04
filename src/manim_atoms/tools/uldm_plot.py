@@ -19,13 +19,13 @@ from functools import lru_cache
 import numpy as np
 from manim import *
 
-from aionanim.physics.uldm_sensitivity import (
+from manim_atoms.physics.uldm_sensitivity import (
     EXCLUDED,
     ULDM_SCENARIOS,
     load_uldm_sensitivity,
 )
-from aionanim.style import *
-from aionanim.tools.gw_plot import plot_point, sensitivity_axes
+from manim_atoms.style import *
+from manim_atoms.tools.gw_plot import plot_point, sensitivity_axes
 
 # The paper's mass range, and its coupling range cut at 1, above which
 # everything is excluded. The bottom stays at the paper's 1e-16, two decades

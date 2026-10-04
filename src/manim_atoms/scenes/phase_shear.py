@@ -12,22 +12,22 @@ with the contrast. Tilt the pulse by theta and the wavefronts cross the cloud
 Lambda = lambda / theta apart: the hands fan out across it, the ports come
 out striped, and where the stripes sit gives Phi from the one image.
 
-    uv run manim -qh src/aionanim/scenes/phase_shear.py PhaseShearReadout
+    uv run manim -qh src/manim_atoms/scenes/phase_shear.py PhaseShearReadout
 """
 
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import make_clock_hand
-from aionanim.tools.phase_shear import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import make_clock_hand
+from manim_atoms.tools.phase_shear import (
     PortImage,
     excited_fraction,
     make_beam,
     phase_reading,
     shear_phase,
 )
-from aionanim.tools.primitives import make_atom, make_k_arrow, state_label
+from manim_atoms.tools.primitives import make_atom, make_k_arrow, state_label
 
 # --- phase-shear geometry -------------------------------------------------
 # Left half: the cloud, a row of atoms at CLOUD, and the beam rising to it.

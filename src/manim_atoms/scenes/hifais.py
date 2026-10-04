@@ -8,15 +8,15 @@ over to make room for the loading curves of Fig. 5's inset, with the 2D and
 nozzle to 2D MOT, and 2D MOT to 3D MOT. Last, the initial slope of the
 hottest run: the 4e10 atoms/s of the title.
 
-    uv run manim -qh src/aionanim/scenes/hifais.py HighFluxLoading
+    uv run manim -qh src/manim_atoms/scenes/hifais.py HighFluxLoading
 """
 
 import numpy as np
 from manim import *
 
-from aionanim.physics.mot_loading import load_loading_curves, load_loading_fits
-from aionanim.style import *
-from aionanim.tools.hifais import (
+from manim_atoms.physics.mot_loading import load_loading_curves, load_loading_fits
+from manim_atoms.style import *
+from manim_atoms.tools.hifais import (
     CHAMBER_SIDE,
     CHAMBER_TOP,
     FRAME_MM,

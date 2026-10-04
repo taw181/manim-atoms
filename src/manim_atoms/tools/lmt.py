@@ -4,7 +4,7 @@ every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c)."""
 import numpy as np
 from manim import *
 
-from aionanim.style import *
+from manim_atoms.style import *
 
 
 # --- large momentum transfer geometry -------------------------------------

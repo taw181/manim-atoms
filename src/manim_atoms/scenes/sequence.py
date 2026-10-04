@@ -13,9 +13,9 @@ stopped once the lower trap has loaded, and the video in the middle.
 
 from manim import *
 
-from aionanim.resources import data_path
-from aionanim.style import *
-from aionanim.tools.sequence import (
+from manim_atoms.resources import data_path
+from manim_atoms.style import *
+from manim_atoms.tools.sequence import (
     IMAGING_CROP,
     IMAGING_FRAMES_PER_SNAPSHOT,
     IMAGING_T0_MS,
@@ -29,7 +29,7 @@ from aionanim.tools.sequence import (
     snapshot_ms,
     stage_heading,
 )
-from aionanim.tools.video import VideoFrame, load_video_frames
+from manim_atoms.tools.video import VideoFrame, load_video_frames
 
 # --- experiment-sequence layout --------------------------------------------
 SEQ_VIDEO_SIZE = 3.9

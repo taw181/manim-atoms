@@ -11,7 +11,7 @@ them without flipping any, a quantum non-demolition measurement of J_z
 along it, onto a ring of fixed J_z; a rotation about the mean spin turns the
 squeezing, ring and all, onto the phase.
 
-    uv run manim -qh src/aionanim/scenes/squeezing.py SpinSqueezing
+    uv run manim -qh src/manim_atoms/scenes/squeezing.py SpinSqueezing
 
 Four beat()s: the coherent state, the cavity measurement, the squeezed state,
 the rotation onto the phase.
@@ -20,10 +20,10 @@ the rotation onto the phase.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.layout import slide_title
-from aionanim.tools.primitives import state_label
-from aionanim.tools.squeezing import (
+from manim_atoms.style import *
+from manim_atoms.tools.layout import slide_title
+from manim_atoms.tools.primitives import state_label
+from manim_atoms.tools.squeezing import (
     BlochView,
     cavity_atoms,
     make_cavity,

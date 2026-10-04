@@ -11,8 +11,8 @@ arms are drawn in.
 
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import (
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import (
     absorb,
     arm_ket,
     draw_legs,
@@ -24,11 +24,11 @@ from aionanim.tools.primitives import (
     state_colors,
     state_label,
 )
-from aionanim.tools.single_photon import (
+from manim_atoms.tools.single_photon import (
     make_level_diagram,
     transition_glow,
 )
-from aionanim.scenes.mach_zehnder import (
+from manim_atoms.scenes.mach_zehnder import (
     MZ_A,
     MZ_B,
     MZ_B_UP,

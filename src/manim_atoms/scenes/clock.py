@@ -16,8 +16,8 @@ term the gradiometer exists to cancel.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import (
     CP_ARM,
     CP_DIAL,
     CP_OUT,
@@ -37,8 +37,8 @@ from aionanim.tools.clock import (
     readout_equation,
     show_phase_budget,
 )
-from aionanim.scenes.mach_zehnder import MachZehnder
-from aionanim.tools.primitives import (
+from manim_atoms.scenes.mach_zehnder import MachZehnder
+from manim_atoms.tools.primitives import (
     arm_ket,
     draw_legs,
     make_atom,

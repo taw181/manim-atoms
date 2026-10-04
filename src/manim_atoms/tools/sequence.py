@@ -14,7 +14,7 @@ from dataclasses import dataclass
 import numpy as np
 from manim import *
 
-from aionanim.style import *
+from manim_atoms.style import *
 
 
 # --- the papers each part of the sequence is written up in ----------------

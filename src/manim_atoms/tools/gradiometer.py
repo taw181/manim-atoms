@@ -18,9 +18,9 @@ L/c is ~0.3 us against an interrogation time T of order a second.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import make_guide
-from aionanim.tools.spacetime import run_to
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import make_guide
+from manim_atoms.tools.spacetime import run_to
 
 
 # --- gradiometer geometry -------------------------------------------------

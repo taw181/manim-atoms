@@ -9,15 +9,15 @@ deviation of each run's differential phase, and the spread of the same over
 its Monte Carlo runs at the standard quantum limit, then writes what it plots
 to ``figures/Figure_4_data.xlsx``. This script copies that workbook's
 ``allan_deviation`` sheet, as it stands, to
-``src/aionanim/data/dai_fringes/adev.csv``, which is what
-``aionanim.plots.dai_fringes`` reads.
+``src/manim_atoms/data/dai_fringes/adev.csv``, which is what
+``manim_atoms.plots.dai_fringes`` reads.
 
 It also works out the figure's inset -- the scatter of the mean differential
 phase over each whole run, sigma_<dphi>, beside the standard quantum limit --
 as the same notebook does (its cells 26-30), from the bootstrapped per-block
 scatter in ``intermediate_data/sigma_delta_phi_*.npy``, the shot counts, and
 the paper's single-shot SQL of 43.5(1.6) mrad, and writes it to
-``src/aionanim/data/dai_fringes/sigma.csv``.
+``src/manim_atoms/data/dai_fringes/sigma.csv``.
 
     .venv/bin/python data_scripts/process_dai_adev.py [data_analysis.zip]
 

@@ -10,7 +10,7 @@ and trails carried along by it, and the phase each arm winds up on the way.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
+from manim_atoms.style import *
 
 
 # --- running the diagram continuously -------------------------------------

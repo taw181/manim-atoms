@@ -21,9 +21,9 @@ upper one only.
 
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.cooling import SweepFan
-from aionanim.tools.dipole import (
+from manim_atoms.style import *
+from manim_atoms.tools.cooling import SweepFan
+from manim_atoms.tools.dipole import (
     LoadingAtoms,
     SpinHistogram,
     gaussian_band,
@@ -31,7 +31,7 @@ from aionanim.tools.dipole import (
     make_field_zero,
     make_mot_glow,
 )
-from aionanim.tools.sequence import STAGES, SrLevels, Timeline, stage_heading
+from manim_atoms.tools.sequence import STAGES, SrLevels, Timeline, stage_heading
 
 # --- dipole-trap layout ---------------------------------------------------
 DT_X = -3.0  # the vertical beam

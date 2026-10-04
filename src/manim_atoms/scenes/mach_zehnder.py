@@ -1,15 +1,15 @@
 """A single beamsplitter kick, and the full Mach-Zehnder light-pulse sequence.
 
 Each scene keeps its own geometry block; the atoms and pulses they are drawn
-with come from aionanim.tools.primitives, and everything visual from
-aionanim.style.
+with come from manim_atoms.tools.primitives, and everything visual from
+manim_atoms.style.
 """
 
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import (
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import (
     make_atom,
     momentum_arrow,
     grow,

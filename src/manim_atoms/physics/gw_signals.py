@@ -1,10 +1,10 @@
 """Gravitational-wave signals and detector sensitivities, as numbers.
 
-Shared by aionanim.plots.gw_sensitivity (matplotlib) and the manim scenes
+Shared by manim_atoms.plots.gw_sensitivity (matplotlib) and the manim scenes
 that draw the same curves, so both put a merger in the same place:
 
 - ``load_sensitivity``: a detector's h_c curve digitised from
-  GW_exclusion_plot.svg into aionanim/data/gw_sensitivity/, with LISA's and
+  GW_exclusion_plot.svg into manim_atoms/data/gw_sensitivity/, with LISA's and
   AEDGE's jagged stretches smoothed (SMOOTHING).
 - ``merger_strain`` / ``merger_track``: a black-hole merger's characteristic
   strain, the PhenomA inspiral-merger-ringdown amplitude of Ajith et al.,
@@ -21,7 +21,7 @@ are detector-frame, in Hz.
 
 import numpy as np
 
-from aionanim.resources import data_path
+from manim_atoms.resources import data_path
 
 DATA_DIR = data_path("gw_sensitivity")
 
@@ -52,7 +52,7 @@ def mass_tex(M):
 
 
 def load_sensitivity(stem, smooth=True):
-    """(f, h_c) arrays from aionanim/data/gw_sensitivity/<stem>.csv,
+    """(f, h_c) arrays from manim_atoms/data/gw_sensitivity/<stem>.csv,
     smoothed as SMOOTHING says unless smooth=False."""
     with open(DATA_DIR / f"{stem}.csv") as f:
         rows = [line for line in f if not line.startswith(("#", "f_Hz"))]

@@ -2,7 +2,7 @@
 
 Walker et al., AVS Quantum Sci. 8, 033201 (2026), Fig. 5: the atom number in
 the science-chamber MOT against loading time, at four oven temperatures, and
-the paper's fit to each -- extracted into aionanim/data/hifais_loading/ by
+the paper's fit to each -- extracted into manim_atoms/data/hifais_loading/ by
 data_scripts/process_hifais_loading.py.
 
 Atom numbers are in units of 1e9, times in ms, rates in 1e9 atoms/s.
@@ -12,7 +12,7 @@ import csv
 
 import numpy as np
 
-from aionanim.resources import data_path
+from manim_atoms.resources import data_path
 
 DATA_DIR = data_path("hifais_loading")
 

@@ -8,11 +8,11 @@ the detectors that fill it, one step each, in order of sensitivity:
 AION-10, AION-100, AION-km and AEDGE, or whichever a subclass lists in
 GAP_FILLERS.
 
-The curves are the digitised ones in aionanim/data/gw_sensitivity/ and the tracks come
-from aionanim.physics.gw_signals, so this is the same figure as
-aionanim.plots.gw_sensitivity, on the source figure's axes.
+The curves are the digitised ones in manim_atoms/data/gw_sensitivity/ and the tracks come
+from manim_atoms.physics.gw_signals, so this is the same figure as
+manim_atoms.plots.gw_sensitivity, on the source figure's axes.
 
-    uv run manim -qh src/aionanim/scenes/gw_landscape.py SensitivityBuildUp
+    uv run manim -qh src/manim_atoms/scenes/gw_landscape.py SensitivityBuildUp
 
 Every pause between steps goes through beat(), so a manim-slides subclass
 that makes beat() a next_slide() turns it into one slide per step, advancing
@@ -22,10 +22,10 @@ on the presenter's click instead of a timed hold.
 import numpy as np
 from manim import *
 
-from aionanim.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
-from aionanim.tools.layout import slide_title
-from aionanim.physics.gw_signals import mass_tex, merger_track, phenom_a_frequencies
-from aionanim.style import *
+from manim_atoms.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from manim_atoms.tools.layout import slide_title
+from manim_atoms.physics.gw_signals import mass_tex, merger_track, phenom_a_frequencies
+from manim_atoms.style import *
 
 # --- layout ---------------------------------------------------------------
 # The source figure's frame: 1e-6 to 1e4 Hz, 1e-24 to ~3e-15.

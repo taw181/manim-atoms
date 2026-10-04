@@ -9,9 +9,9 @@ the phase budget that names which terms the measurement keeps.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.primitives import draw_legs, make_atom, make_guide
-from aionanim.tools.spacetime import run_to
+from manim_atoms.style import *
+from manim_atoms.tools.primitives import draw_legs, make_atom, make_guide
+from manim_atoms.tools.spacetime import run_to
 
 
 # --- phase, drawn as a clock hand -----------------------------------------

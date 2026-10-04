@@ -18,9 +18,9 @@ bounds, weights and cutoff:
 which the paper integrates numerically and this solves in closed form. It
 writes
 
-    src/aionanim/data/hifais_loading/curves.csv  -- every point, mean and SEM
-    src/aionanim/data/hifais_loading/fits.csv    -- R, L, t0, N0 per run
-    src/aionanim/data/images/hifais_chamber_{top,side}.png
+    src/manim_atoms/data/hifais_loading/curves.csv  -- every point, mean and SEM
+    src/manim_atoms/data/hifais_loading/fits.csv    -- R, L, t0, N0 per run
+    src/manim_atoms/data/images/hifais_chamber_{top,side}.png
 
 The renders are Fig. 1(c) and (d) without their labels (the raster images
 embedded in figures/Chamber_InkS_4pane.pdf, pulled out with poppler's
@@ -42,8 +42,8 @@ from scipy import ndimage
 from scipy.optimize import curve_fit
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "src" / "aionanim" / "data" / "hifais_loading"
-IMAGE_DIR = ROOT / "src" / "aionanim" / "data" / "images"
+OUT_DIR = ROOT / "src" / "manim_atoms" / "data" / "hifais_loading"
+IMAGE_DIR = ROOT / "src" / "manim_atoms" / "data" / "images"
 CITATION = (
     "# From Walker et al., AVS Quantum Sci. 8, 033201 (2026), "
     "doi:10.1116/5.0338570, Fig. 5 (inset)\n"

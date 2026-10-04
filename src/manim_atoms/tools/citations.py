@@ -1,6 +1,6 @@
 """A citation as a line on a slide.
 
-citation() turns references (aionanim.bibliography entries, or LaTeX
+citation() turns references (manim_atoms.bibliography entries, or LaTeX
 strings already formatted) into small grey lines, one per reference;
 place_citation() puts them in the footer, bottom left. A slide that wants its
 citation elsewhere, under a figure say, calls citation() and places it itself.
@@ -10,8 +10,8 @@ labelled_citation() is the compact form for a slide drawing on many papers:
 
 from manim import *
 
-from aionanim.bibliography import AUTHOR_YEAR, SHORT, Reference, format_reference
-from aionanim.style import *
+from manim_atoms.bibliography import AUTHOR_YEAR, SHORT, Reference, format_reference
+from manim_atoms.style import *
 
 
 def citation(*refs, fmt=SHORT, numbered=False, font_size=FONT_CITATION,

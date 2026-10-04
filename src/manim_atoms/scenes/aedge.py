@@ -9,7 +9,7 @@ A baseline of ~4e7 m between two satellites moves the gravitational-wave
 reach down in frequency, between LISA and the ground, and the dark-matter
 reach down in mass, where the ground stages do not go at all.
 
-    uv run manim -ql src/aionanim/scenes/aedge.py AEDGESensitivity
+    uv run manim -ql src/manim_atoms/scenes/aedge.py AEDGESensitivity
 
 The one pause, before AEDGE arrives, goes through beat().
 """
@@ -17,10 +17,10 @@ The one pause, before AEDGE arrives, goes through beat().
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.gw_plot import detector_region, plot_point, sensitivity_axes
-from aionanim.tools.layout import slide_title
-from aionanim.tools.uldm_plot import (
+from manim_atoms.style import *
+from manim_atoms.tools.gw_plot import detector_region, plot_point, sensitivity_axes
+from manim_atoms.tools.layout import slide_title
+from manim_atoms.tools.uldm_plot import (
     ULDM_LABEL_EVERY,
     ULDM_LOG_D,
     ULDM_LOG_M,

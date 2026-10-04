@@ -10,8 +10,8 @@ the linear photon coupling |d_e| against the scalar's mass m_phi. The figure
 is vector graphics in the journal PDF (page 13, journal page 10), so the
 curves are read straight off the PDF's paths rather than traced from pixels.
 
-Writes src/aionanim/data/uldm_sensitivity/*.csv, which
-aionanim.physics.uldm_sensitivity reads:
+Writes src/manim_atoms/data/uldm_sensitivity/*.csv, which
+manim_atoms.physics.uldm_sensitivity reads:
 
 - one per scenario: the SOLID curve only (the paper: "the solid line shows
   the sensitivity above 0.3 Hz, while the dotted line shows the sensitivity
@@ -38,7 +38,7 @@ PDF = Path.home() / (
     "Badurina et al. - 2020 - AION an atom interferometer observatory and network.pdf"
 )
 PAGE = 12  # 0-based: PDF page 13
-OUT_DIR = Path(__file__).resolve().parents[1] / "src/aionanim/data/uldm_sensitivity"
+OUT_DIR = Path(__file__).resolve().parents[1] / "src/manim_atoms/data/uldm_sensitivity"
 
 # --- calibration: the panel's frame and tick marks, PDF points, y down ------
 # Bottom-axis ticks every 12.3589 pt from the frame's left edge (x = 256.73,

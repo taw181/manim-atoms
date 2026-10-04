@@ -2,12 +2,12 @@
 AION-km and AEDGE, with black-hole merger tracks laid over them.
 
 All seven curves digitised from ``GW_exclusion_plot.svg`` into
-``aionanim/data/gw_sensitivity/`` (see each CSV's header for the shapes it came from),
+``manim_atoms/data/gw_sensitivity/`` (see each CSV's header for the shapes it came from),
 drawn together on the source figure's axes, each region shaded down to its
 curve and labelled beside it.
 
 The merger tracks are computed, not digitised, for any total mass and
-redshift in ``MERGERS``, by aionanim.physics.gw_signals (PhenomA at the
+redshift in ``MERGERS``, by manim_atoms.physics.gw_signals (PhenomA at the
 Planck 2018 luminosity distance; it reproduces the source figure's nine
 tracks to within 0.003 dex). Dots mark the time left to merger.
 
@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-from aionanim.style import (
+from manim_atoms.style import (
     GW_DETECTOR_COLORS,
     GW_MERGER_TIME_COLORS,
     GW_REGION_OPACITY,
@@ -27,7 +27,7 @@ from aionanim.style import (
     PLOT_FOREGROUND,
     merger_color,
 )
-from aionanim.physics.gw_signals import (
+from manim_atoms.physics.gw_signals import (
     TIME_MARKERS,
     TRACK_START,
     frequency_before_merger,

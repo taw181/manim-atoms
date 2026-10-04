@@ -2,7 +2,7 @@
 
 The chamber is the paper's own renders (Walker et al., AVS Quantum Sci. 8,
 033201 (2026), Fig. 1(c) top view and (d) side view), shipped without their
-labels as aionanim/data/images/hifais_chamber_{top,side}.png; the labels
+labels as manim_atoms/data/images/hifais_chamber_{top,side}.png; the labels
 and dimensions are drawn over them here, on points given in the render's own
 pixels so they stay put whatever size the image is drawn at.
 
@@ -13,10 +13,10 @@ its first part carried on over the rest.
 import numpy as np
 from manim import *
 
-from aionanim.physics.mot_loading import FIT_CUTOFF, loading_model
-from aionanim.resources import data_path
-from aionanim.style import *
-from aionanim.tools.layout import image_point, load_image
+from manim_atoms.physics.mot_loading import FIT_CUTOFF, loading_model
+from manim_atoms.resources import data_path
+from manim_atoms.style import *
+from manim_atoms.tools.layout import image_point, load_image
 
 CHAMBER_TOP = data_path("images", "hifais_chamber_top.png")  # 1317 x 1153 px
 CHAMBER_SIDE = data_path("images", "hifais_chamber_side.png")  # 1326 x 1105 px

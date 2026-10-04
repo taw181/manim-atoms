@@ -10,8 +10,8 @@ that follows, and a pointer marks where the MOT's field zero is.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.cooling import MOT_AXES, chevron
+from manim_atoms.style import *
+from manim_atoms.tools.cooling import MOT_AXES, chevron
 
 
 SPIN_HIST_WIDTH = 2.2

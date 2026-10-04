@@ -4,7 +4,7 @@ One place for the colour scheme, line styles, type sizes and pacing, so that
 every animation in the talk reads as one set of figures:
 
     from manim import *
-    from aionanim.style import *
+    from manim_atoms.style import *
 
 The ``*_STYLE`` bundles are dicts meant to be splatted into a mobject's
 constructor, e.g. ``DashedLine(a, b, **GUIDE_STYLE)``.

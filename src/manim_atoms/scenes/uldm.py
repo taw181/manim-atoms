@@ -18,8 +18,8 @@ them without a jump.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import (
     CP_ARM,
     CP_DIAL,
     CP_OUT,
@@ -36,9 +36,9 @@ from aionanim.tools.clock import (
     readout_equation,
     strobe_pulse,
 )
-from aionanim.scenes.gradiometer import launch_time
-from aionanim.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
-from aionanim.tools.gradiometer import (
+from manim_atoms.scenes.gradiometer import launch_time
+from manim_atoms.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
+from manim_atoms.tools.gradiometer import (
     GR_DIAL_RADIUS,
     GR_DIALS,
     GR_LAG,
@@ -52,19 +52,19 @@ from aionanim.tools.gradiometer import (
     sweep_pulse,
     vertices,
 )
-from aionanim.tools.primitives import (
+from manim_atoms.tools.primitives import (
     draw_legs,
     make_atom,
     state_colors,
 )
-from aionanim.tools.spacetime import (
+from manim_atoms.tools.spacetime import (
     carry,
     growing_band,
     growing_trail,
     run_to,
     worldline,
 )
-from aionanim.tools.uldm import (
+from manim_atoms.tools.uldm import (
     DG_PULSES,
     DG_T0,
     DG_TRACE_AMPLITUDE,

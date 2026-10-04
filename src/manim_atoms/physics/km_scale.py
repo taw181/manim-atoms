@@ -9,7 +9,7 @@ AION proposal's. Everything else here follows from those by textbook scaling
 
 import numpy as np
 
-from aionanim.physics.uldm_sensitivity import AION_PARAMETERS
+from manim_atoms.physics.uldm_sensitivity import AION_PARAMETERS
 
 # --- constants ---------------------------------------------------------------
 CLOCK_WAVELENGTH = 698.4e-9  # m, 1S0 -> 3P0

@@ -10,8 +10,8 @@ replaces.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.lmt import (
+from manim_atoms.style import *
+from manim_atoms.tools.lmt import (
     LMT_KICKS,
     LMT_T0,
     LMT_U,
@@ -29,7 +29,7 @@ from aionanim.tools.lmt import (
     lmt_points,
     lmz_pulses,
 )
-from aionanim.tools.primitives import (
+from manim_atoms.tools.primitives import (
     draw_legs,
     make_atom,
     state_colors,

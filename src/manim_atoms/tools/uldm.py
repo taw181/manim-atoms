@@ -7,17 +7,17 @@ diagram, and the two-level diagram whose upper level rides that trace.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import (
     CP_T,
     CP_T0,
 )
-from aionanim.tools.gradiometer import (
+from manim_atoms.tools.gradiometer import (
     GR_LAG,
     GR_T,
     GR_T0,
 )
-from aionanim.tools.primitives import (
+from manim_atoms.tools.primitives import (
     state_label,
 )
 

@@ -9,14 +9,14 @@ phi_n onto the hands as on the clock slide, so both dials end on the same
 laser sector, phi_1 - 2 phi_2 + phi_3.
 
 GradiometerContinuous runs the same figure on one lab clock (see
-aionanim.tools.spacetime), through GradiometerGW's RunsContinuously.
+manim_atoms.tools.spacetime), through GradiometerGW's RunsContinuously.
 """
 
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.clock import (
+from manim_atoms.style import *
+from manim_atoms.tools.clock import (
     clock_rate,
     dial_hand,
     draw_ports,
@@ -28,9 +28,9 @@ from aionanim.tools.clock import (
     phase_sweep,
     show_phase_budget,
 )
-from aionanim.scenes.clock import CP_LASER_PHASES
-from aionanim.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
-from aionanim.tools.gradiometer import (
+from manim_atoms.scenes.clock import CP_LASER_PHASES
+from manim_atoms.scenes.gradiometer_gw import GradiometerGW, RunsContinuously
+from manim_atoms.tools.gradiometer import (
     GR_ARM,
     GR_DIALS,
     GR_DIAL_RADIUS,
@@ -49,12 +49,12 @@ from aionanim.tools.gradiometer import (
     sweep_pulse,
     vertices,
 )
-from aionanim.tools.primitives import (
+from manim_atoms.tools.primitives import (
     draw_legs,
     make_atom,
     state_colors,
 )
-from aionanim.tools.spacetime import (
+from manim_atoms.tools.spacetime import (
     carry,
     growing_trail,
     run_to,

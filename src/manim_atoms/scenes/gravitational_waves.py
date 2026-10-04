@@ -10,23 +10,23 @@ is still showing the slow, weak waves emitted seconds earlier while the centre
 shows the fast, strong ones -- that contrast across the sheet *is* the chirp.
 
 MergerOnSensitivityPlot runs the merger beside LIGO's sensitivity curve, with a dot riding the source's characteristic-strain track in step with the
-sheet. The track is real (a 60 Msun binary at z = 0.1, from aionanim.physics.gw_signals);
+sheet. The track is real (a 60 Msun binary at z = 0.1, from manim_atoms.physics.gw_signals);
 the dot's timing is not -- ten years of inspiral are squeezed into the
 sheet's fourteen seconds, with a readout saying how long is really left.
 With WITH_LIGO it first runs the merger beside LIGO itself (the
-interferometer of aionanim.scenes.ligo, drawn into the right half, already
+interferometer of manim_atoms.scenes.ligo, drawn into the right half, already
 lit, its test masses swinging to this merger's own chirp), then flattens the
 sheet and runs it again beside the plot.
 
-Everything visual comes from aionanim.style.
+Everything visual comes from manim_atoms.style.
 """
 
 import numpy as np
 from manim import *
 from PIL import Image
 
-from aionanim.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
-from aionanim.physics.gw_signals import (
+from manim_atoms.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from manim_atoms.physics.gw_signals import (
     TRACK_START,
     YEAR,
     frequency_before_merger,
@@ -35,8 +35,8 @@ from aionanim.physics.gw_signals import (
     phenom_a_frequencies,
     time_before_merger,
 )
-from aionanim.resources import data_path
-from aionanim.scenes.ligo import (
+from manim_atoms.resources import data_path
+from manim_atoms.scenes.ligo import (
     Panel,
     make_apparatus,
     make_equation,
@@ -44,7 +44,7 @@ from aionanim.scenes.ligo import (
     make_strain_trace,
     returning_waves,
 )
-from aionanim.style import *
+from manim_atoms.style import *
 
 # --- sheet geometry -------------------------------------------------------
 # The sheet is a wireframe rather than a Surface: a Surface rebuilds thousands
@@ -497,7 +497,7 @@ LIGO_DATA_CENTER = np.array([SIDE_SHEET_X, -0.5, 0.0])
 LIGO_DATA_BEFORE_MERGER = 0.17
 
 # The first run of the merger plays beside LIGO: the interferometer of
-# aionanim.scenes.ligo in the right half, where the plot will go. It is up,
+# manim_atoms.scenes.ligo in the right half, where the plot will go. It is up,
 # already lit, from the first frame, and runs off the merger's clock, with the
 # merger's own h(t) as its wave, scaled so the peak takes the detector from
 # dark to fully bright. ligo.py draws for the whole frame, the readout in a

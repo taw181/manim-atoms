@@ -34,8 +34,8 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PathCollection
 import numpy as np
 
-from aionanim.resources import data_path
-from aionanim.style import (
+from manim_atoms.resources import data_path
+from manim_atoms.style import (
     IMPRINTED_SIGNAL_COLOR,
     LOWER_CLOUD_COLOR,
     PLOT_BACKGROUND,

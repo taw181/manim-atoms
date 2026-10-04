@@ -2,10 +2,10 @@
 
 A table, one challenge per row: what it is, what the prototype does, and
 what AION-km asks for. The numbers come from
-aionanim.physics.km_scale -- the prototype's own (Baynham et al. 2026),
+manim_atoms.physics.km_scale -- the prototype's own (Baynham et al. 2026),
 AION-km's Table 1 (Badurina et al. 2020), and what follows from them.
 
-    uv run manim -ql src/aionanim/scenes/km_challenges.py KmScaleChallenges
+    uv run manim -ql src/manim_atoms/scenes/km_challenges.py KmScaleChallenges
 
 The headings come up with the title; each row is then one beat().
 """
@@ -13,8 +13,8 @@ The headings come up with the title; each row is then one beat().
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.physics.km_scale import (
+from manim_atoms.style import *
+from manim_atoms.physics.km_scale import (
     BEST_SR_LMT,
     KM_ATOMS,
     KM_BASELINE,
@@ -29,7 +29,7 @@ from aionanim.physics.km_scale import (
     PROTO_TEMPERATURE,
     PROTO_WAIST,
 )
-from aionanim.tools.layout import slide_title
+from manim_atoms.tools.layout import slide_title
 
 # --- layout ---------------------------------------------------------------
 # The left edge of each column, and the heading row's height; rows stack down

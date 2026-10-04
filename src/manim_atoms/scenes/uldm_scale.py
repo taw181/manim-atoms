@@ -27,10 +27,10 @@ c / v ~ 1e3 times longer, since galactic dark matter moves at v ~ 1e-3 c.
 import numpy as np
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.gw_plot import plot_point, sensitivity_axes
-from aionanim.tools.layout import slide_title
-from aionanim.tools.uldm_plot import (
+from manim_atoms.style import *
+from manim_atoms.tools.gw_plot import plot_point, sensitivity_axes
+from manim_atoms.tools.layout import slide_title
+from manim_atoms.tools.uldm_plot import (
     ULDM_INSET_STEMS,
     ULDM_LABEL_EVERY,
     ULDM_LOG_D,

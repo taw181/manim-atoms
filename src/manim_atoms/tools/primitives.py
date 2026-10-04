@@ -8,7 +8,7 @@ pulse primitives (absorb, emit) and motion (draw_legs, state_colors).
 import numpy as np
 from manim import *
 
-from aionanim.style import *
+from manim_atoms.style import *
 
 
 def make_atom(color=ATOM_COLOR, radius=ATOM_RADIUS, opacity=1.0):

@@ -15,10 +15,10 @@ light that is on and the timeline says where in the shot this is.
 
 from manim import *
 
-from aionanim.style import *
-from aionanim.tools.dipole import gaussian_band
-from aionanim.tools.sequence import STAGES, SrLevels, Timeline, stage_heading
-from aionanim.tools.slicing import CLOUD_WIDTH, SlicingCloud, VelocityPlot
+from manim_atoms.style import *
+from manim_atoms.tools.dipole import gaussian_band
+from manim_atoms.tools.sequence import STAGES, SrLevels, Timeline, stage_heading
+from manim_atoms.tools.slicing import CLOUD_WIDTH, SlicingCloud, VelocityPlot
 
 # --- velocity-slicing layout ----------------------------------------------
 VS_STAGE = 6  # into STAGES
@@ -51,7 +51,7 @@ VS_HOLD = 1.5  # the pause after each step, where a slide stops instead
 # the clock line says 3.3 uK, or 2.9 uK with the 20 kHz Fourier width taken
 # out, but that width carries more than temperature), and a 44 us pulse
 # averaged over that spread excites 31 % -- the 0.3 measured. After, T is the
-# slice's (see aionanim.tools.slicing) and the fidelity the measured 90 %,
+# slice's (see manim_atoms.tools.slicing) and the fidelity the measured 90 %,
 # short of the ~98 % the Doppler spread alone would allow.
 VS_BEFORE = (r"2\,\mu\mathrm{K}", r"30\,\%")
 VS_AFTER = (r"10\,\mathrm{nK}", r"90\,\%")
