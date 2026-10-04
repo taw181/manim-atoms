@@ -1,5 +1,5 @@
 # LIGO (aLIGO design-style) characteristic-strain sensitivity curve, digitised from GW_exclusion_plot.svg
-# Source: GW_exclusion_plot.svg (qsim_visit project root), top-left panel; solid #c56e1a stroke path id="path519-3"
+# Source: data_scripts/GW_exclusion_plot.svg, top-left panel; solid #c56e1a stroke path id="path519-3"
 #   (shapes.pkl idx 1504). Cross-check: the bottom LIGO-only panel's stroke "path519-3-7-4-1-7" (idx 2054) is an exact
 #   translation (+13.507, +926.118) of it, and that panel's frame, tick marks and tick-label glyphs are translated by the
 #   same offset, so it gives identical values.

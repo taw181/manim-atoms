@@ -1,5 +1,5 @@
 """Digitise the AION-10 and AION-100 characteristic-strain curves from
-``GW_exclusion_plot.svg`` into ``src/manim_atoms/data/gw_sensitivity/``.
+``data_scripts/GW_exclusion_plot.svg`` into ``src/manim_atoms/data/gw_sensitivity/``.
 
 The two are solid strokes in the SVG's top-left panel, in the same colours
 and panel as the AION-km curve already shipped (``aion_km.csv``), so they are
@@ -23,7 +23,7 @@ import numpy as np
 import svgelements as se
 
 ROOT = Path(__file__).resolve().parent.parent
-SVG = ROOT / "GW_exclusion_plot.svg"
+SVG = Path(__file__).resolve().parent / "GW_exclusion_plot.svg"
 OUT = ROOT / "src/manim_atoms/data/gw_sensitivity"
 
 STEP = 9.8028 / 300  # aion_km.csv's spacing in log f, dex

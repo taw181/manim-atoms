@@ -1,5 +1,5 @@
 # Einstein Telescope (ET) sensitivity, characteristic strain h_c vs frequency
-# source: GW_exclusion_plot.svg (qsim_visit project), top-left panel, colour #ffbf00
+# source: data_scripts/GW_exclusion_plot.svg, top-left panel, colour #ffbf00
 # shape: stroke outline path517-7 (all 684 raw path vertices; matches lower edge of fill path516-5 exactly)
 # calibration (page coords, y down): log10(f/Hz) = -6 + (x - 102.2)/28.065 ; log10(h_c) = -15 - (y - 50.24)/18.258
 # decimation: 321 points uniform in log f (linear interp in log-log, exact since path segments are straight),

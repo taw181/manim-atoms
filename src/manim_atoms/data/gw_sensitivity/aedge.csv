@@ -1,5 +1,5 @@
 # AEDGE characteristic-strain sensitivity curve (lower boundary of the AEDGE region), digitised from GW_exclusion_plot.svg
-# Source: GW_exclusion_plot.svg (qsim_visit project root), top-left panel, colour #6685d9.
+# Source: data_scripts/GW_exclusion_plot.svg, top-left panel, colour #6685d9.
 # Shapes: the AEDGE region has one translucent fill (path506-2) and two #6685d9 strokes plus a 2-point lead-in:
 #   path507-1 - 2-point dashed lead-in continuing path508-0 leftwards past the frame edge (clipped at f = 1e-6 Hz here).
 #   path508-0 - DASHED curve over the whole band, 1e-6 Hz -> 3.39 Hz (689 segments). The fill's lower edge follows it exactly.

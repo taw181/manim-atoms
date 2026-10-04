@@ -1,6 +1,6 @@
 # AEDGE+ characteristic-strain sensitivity curve (lower boundary of the AEDGE+ region), digitised from GW_exclusion_plot.svg
 # NOTE: this is AEDGE+ (#5d9ec7), NOT AEDGE. Produced as a by-product of the AEDGE extraction with the identical method.
-# Source: GW_exclusion_plot.svg (qsim_visit project root), top-left panel, colour #5d9ec7.
+# Source: data_scripts/GW_exclusion_plot.svg, top-left panel, colour #5d9ec7.
 # Shapes: fill path510-2; strokes path511-5 (2-point dashed lead-in, entirely left of the frame, unused after clipping),
 #   path512-2 (DASHED, whole band; the fill's lower edge follows it exactly) and path513-1 (SOLID, 0.0100 Hz -> 3.39 Hz,
 #   same curve as path512-2 there at ~2x the vertex density; solid - dashed max 0.008 dex).

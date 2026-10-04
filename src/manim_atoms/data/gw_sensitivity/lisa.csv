@@ -1,5 +1,5 @@
 # LISA characteristic-strain sensitivity curve, digitised from GW_exclusion_plot.svg
-# Source: GW_exclusion_plot.svg (qsim_visit project root), top-left panel, stroke path id="path515-4"
+# Source: data_scripts/GW_exclusion_plot.svg, top-left panel, stroke path id="path515-4"
 #   (solid #8fb032 outline; the translucent fill path514-5 was not used - its extra edges are the frame clip at the top
 #   and vertical closing edges at the band limits).
 # Calibration (page coords, y down): log10(f/Hz) = -6 + (x - 102.2)/28.065 ; log10(h_c) = -15 - (y - 50.24)/18.258

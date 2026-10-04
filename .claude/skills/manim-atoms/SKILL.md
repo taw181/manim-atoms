@@ -1,36 +1,36 @@
 ---
-name: manim-atom-interferometry
-description: Create or edit manim animations for atom interferometry in the user's ~/talks/qsim_visit project — beamsplitter/mirror pulses, Mach–Zehnder geometries, photon recoil, interference fringes. Use this whenever the user asks for a manim animation, scene, or figure-in-motion for a talk, wants to add to or change an existing scene (a new pulse, output ports, a phase sweep), or mentions animating atoms, laser pulses, or an interferometer — even if they just say "animate X" or "make a scene showing Y" without naming manim. Also use it for any other manim work in this project, since the render-and-check loop and the shared style module apply regardless of subject.
+name: manim-atoms
+description: Create or edit manim animations in the manim-atoms package — atom interferometry (beamsplitter/mirror pulses, Mach–Zehnder geometries, photon recoil, clock-phase readout), laser cooling and trapping (MOTs, dipole traps), AION science (gradiometer, GW, ULDM), and the slides layer. Use this whenever the user asks for a manim animation, scene, or figure-in-motion, wants to add to or change an existing scene (a new pulse, output ports, a phase sweep), or mentions animating atoms, laser pulses, traps or an interferometer — even if they just say "animate X" or "make a scene showing Y" without naming manim. Also use it for any other manim work in this repo, since the render-and-check loop and the shared style modules apply regardless of subject.
 ---
 
-# Manim animations for atom interferometry
+# Manim animations of atomic physics
 
 ## Where things are
 
-The project is `~/talks/qsim_visit` (uv, manim 0.21, Python 3.13). Run manim
-**from the project root** so the root `manim.cfg` applies — it sets
-`media_dir=./media`, medium quality, and a `#101010` background.
+The project is the `manim-atoms` repo (uv, manim 0.21, Python 3.13), the
+package `src/manim_atoms/`. Run manim **from the repo root** so the root
+`manim.cfg` applies — it sets `media_dir=./media`, medium quality, and a
+`#101010` background. A talk that uses the package keeps its own `manim.cfg`
+and slide wrappers; CLAUDE.md has the layout.
 
-The general code is the installable package `src/aionanim/`; `talk/` holds
-only this talk's slide wrappers. Put new scenes and helpers in the package
-unless they only make sense in this deck (CLAUDE.md has the rule).
-
-- `src/aionanim/style.py` — the whole visual vocabulary: colour scheme,
+- `src/manim_atoms/style.py` — the core visual vocabulary: colour scheme,
   type sizes, `*_STYLE` dicts to splat into constructors, and pacing (`V`).
-- `src/aionanim/tools/primitives.py` — mobject helpers (`make_atom`,
+  `interferometry/`, `trapping/` and `aion/` each add their own palettes in
+  a `style.py` that star-imports it.
+- `src/manim_atoms/core/primitives.py` — mobject helpers (`make_atom`,
   `make_laser_pulse`, `momentum_arrow`, `make_guide`), pulse primitives
   (`absorb`, `emit`), motion (`draw_legs`, `state_colors`).
-- `src/aionanim/scenes/mach_zehnder.py` — `SingleLaserKick` and `MachZehnder`,
-  the simplest scenes built from them.
-- The rest of `tools/` is one module per topic (`spacetime`, `gradiometer`,
-  `clock`, `gradiometer_gw`, `uldm`, `single_photon`, `lmt`, `gw_plot`), each
-  paired with the `scenes/` module of the same name.
+- `src/manim_atoms/interferometry/scenes/mach_zehnder.py` — `SingleLaserKick`
+  and `MachZehnder`, the simplest scenes built from them.
+- Each topic (`interferometry`, `trapping`, `aion`) has `tools/` (helpers and
+  their geometry) and `scenes/` (Scene classes), paired by module name.
 
 Read style, primitives and mach_zehnder before writing anything — they are
 commented and explain what each piece is for. Everything below is what they
 *don't* say.
 
-Scene files start `from manim import *` then `from aionanim.style import *`,
+Scene files start `from manim import *` then their topic's style
+(`from manim_atoms.interferometry.style import *`),
 and import everything else by absolute name — relative imports break because
 manim loads a scene file by path.
 
@@ -41,8 +41,7 @@ matter, and Read the PNGs — never declare an animation good because it
 rendered without error.
 
 ```bash
-cd ~/talks/qsim_visit
-uv run manim -ql src/aionanim/scenes/mach_zehnder.py MachZehnder
+uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder
 .venv/bin/python <skill>/scripts/frames.py \
     media/videos/mach_zehnder/480p15/MachZehnder.mp4 \
     -t 3.6 7.8 9.3 --final -o /tmp/frames
@@ -95,12 +94,15 @@ in the code.
 ## Adding a scene
 
 Give it its own geometry block of named constants at module level (see the
-`# --- Mach-Zehnder geometry ---` block in `scenes/mach_zehnder.py`), derive
+`# --- Mach-Zehnder geometry ---` block in `interferometry/scenes/mach_zehnder.py`), derive
 every position from them so the shape can be retuned in one place, and reuse the existing helpers rather
-than building atoms or pulses by hand — that is what keeps the talk's
-animations looking like one set of figures. Pull anything visual from
-`aionanim/style.py`; if you need a new colour or width, add it there rather
-than inline. Helpers go in `tools/<topic>.py`, the scene and layout only it
-uses in `scenes/<topic>.py`.
+than building atoms or pulses by hand — that is what keeps the
+animations looking like one set of figures. Pull anything visual from the
+style modules; if you need a new colour or width, add it to the topic's
+`style.py` (or the core one, if more than one topic uses it) rather than
+inline. Helpers go in `<topic>/tools/<module>.py`, the scene and layout only
+it uses in `<topic>/scenes/<module>.py`. A scene that will be a slide calls
+`self.beat()` (a no-op method on the scene) where a presenter would stop;
+`manim_atoms.slides` turns it into a slide break.
 
 Manim 0.21 has `DEGREES` but not the `DEG` alias.
