@@ -30,12 +30,14 @@ SP_LEVEL_INSET = 0.1  # how far the gap arrow stands off each level line
 SP_KET_BUFF = 0.2
 
 
-def make_level_diagram(center=SP_LEVELS):
+def make_level_diagram(center=SP_LEVELS, gap_tex=r"\hbar c k"):
     """The Sr clock transition as a two-level system, with the gap labelled.
 
     |g> and |e> are the atom's internal states only -- the momentum a photon
     hands over lives in the interferometer beside it, not in here. The gap is
-    written as the photon's energy, hbar c k, to tie it to the hbar k recoil.
+    written as the photon's energy, hbar c k, to tie it to the hbar k recoil;
+    ``gap_tex`` relabels it where the figure is about something else (the
+    wavelength, say, beside a Rabi flop).
     """
     half = RIGHT * SP_LEVEL_LENGTH / 2
     lower = center + DOWN * SP_LEVEL_GAP / 2
@@ -60,20 +62,32 @@ def make_level_diagram(center=SP_LEVELS):
         **LEVEL_GAP_ARROW_STYLE,
     )
     gap_label = MathTex(
-        r"\hbar c k", font_size=FONT_ANNOTATION, color=lighten(GUIDE_COLOR)
+        gap_tex, font_size=FONT_ANNOTATION, color=lighten(GUIDE_COLOR)
     ).next_to(gap, RIGHT, buff=0.15)
 
     return VGroup(level_g, level_e, ket_g, ket_e, gap, gap_label)
 
 
-def transition_glow(upward=True, center=SP_LEVELS):
+def transition_glow(upward=True, center=SP_LEVELS, detuning=0.0):
     """The transition lit up in the laser's colour while a pulse drives it.
 
     Up while a photon is being absorbed, down at the mirror, where the excited
     arm is stimulated back to |g>. It is the same energy gap either way, so
     the glow is drawn over the gap arrow rather than beside it.
+
+    ``detuning`` (screen units, > 0 for a laser tuned below the line) shortens
+    the arrow to the photon's energy: it then ends on the laser's dashed line
+    (``resonance_line``) rather than on |e>.
     """
     lower = center + DOWN * (SP_LEVEL_GAP / 2 - SP_LEVEL_INSET)
-    upper = center + UP * (SP_LEVEL_GAP / 2 - SP_LEVEL_INSET)
+    upper = center + UP * (SP_LEVEL_GAP / 2 - SP_LEVEL_INSET - detuning)
     start, end = (lower, upper) if upward else (upper, lower)
     return Arrow(start, end, **LEVEL_GLOW_ARROW_STYLE)
+
+
+def resonance_line(detuning, center=SP_LEVELS):
+    """Where a laser tuned ``detuning`` (screen units) below the line reaches:
+    a dashed line in the laser red, under |e>, the length of the levels."""
+    half = RIGHT * SP_LEVEL_LENGTH / 2
+    at = center + UP * (SP_LEVEL_GAP / 2 - detuning)
+    return DashedLine(at - half, at + half, **LEVEL_RESONANCE_STYLE)

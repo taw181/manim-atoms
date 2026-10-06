@@ -100,3 +100,26 @@ GRAVITY_ARROW_STYLE = dict(
 FREE_FALL_STYLE = dict(
     dash_length=0.12, stroke_width=2.5, stroke_opacity=0.55, color=lighten(GUIDE_COLOR)
 )
+
+# --- Rabi oscillations: the Bloch vector and the population it reads -------
+# The Bloch vector is the spin of one atom, drawn white like the collective
+# spin of the squeezing figure, with a dot at its tip in the state colour it
+# is nearest: ATOM_COLOR at |g>, KICKED_COLOR at |e>, so the tip and the P_e
+# curve beside it read as the same quantity. The drive vector Omega belongs
+# to the light and takes the laser red. Where the tip has been is traced on
+# the sphere in the excited state's colour, the same as the curve, and a run
+# that is over stays up dimmed as the reference the next one is held against.
+BLOCH_VECTOR_STYLE = dict(buff=0, stroke_width=4, color=WHITE,
+                          max_tip_length_to_length_ratio=0.12)
+BLOCH_TIP_RADIUS = 0.09
+DRIVE_VECTOR_STYLE = dict(buff=0, stroke_width=4, color=LASER_COLOR,
+                          max_tip_length_to_length_ratio=0.2)
+RABI_TRACE_COLOR = KICKED_COLOR
+RABI_TRACE_WIDTH = 3
+RABI_CURVE_WIDTH = 3.5
+RABI_DONE_OPACITY = 0.35
+# The pulse areas marked on the population curve: a reference, so dashed and
+# in the construction grey, with a dot in the curve's colour where they meet it.
+PULSE_AREA_MARK_STYLE = dict(dash_length=0.08, stroke_width=2, stroke_opacity=0.7,
+                             color=lighten(GUIDE_COLOR))
+PULSE_AREA_DOT_RADIUS = 0.07
