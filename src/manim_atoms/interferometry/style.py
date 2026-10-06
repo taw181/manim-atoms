@@ -71,3 +71,17 @@ TRANSMISSION_WIDTH = 3.5
 BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
 BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
                         color=GUIDE_COLOR)
+
+# --- Ramsey-Borde: two loops from four pi/2 pulses ------------------------
+# Four beamsplitters open more paths than close. The two loops that do close
+# are shaded in the state their arms share through the dark time T' -- the
+# upper loop flies it in |e>, the lower in |g> -- which is what tells the two
+# apart where they overlap during the first T, which they share. Paths that
+# never meet a partner again carry no fringe; they are drawn dashed and faint,
+# so the figure says they exist without letting them compete with the loops.
+RB_UPPER_LOOP_STYLE = dict(stroke_width=0, fill_color=KICKED_COLOR, fill_opacity=0.14)
+RB_LOWER_LOOP_STYLE = dict(stroke_width=0, fill_color=ATOM_COLOR, fill_opacity=0.14)
+OPEN_PATH_STYLE = dict(dash_length=0.1, stroke_width=2.5, stroke_opacity=0.5)
+OPEN_ATOM_OPACITY = 0.25
+# The pulse timing marked along the bottom, a reference rather than content.
+TIME_AXIS_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR), stroke_opacity=0.7)
