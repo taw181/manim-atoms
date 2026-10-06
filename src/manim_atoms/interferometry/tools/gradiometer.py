@@ -56,11 +56,15 @@ def photon_worldline(x_at_lower, z_from, z_to, slope=GR_SLOPE, z_at=GR_LOWER_Z):
     return Line(start, end, color=LASER_COLOR, stroke_width=PULSE_STROKE_WIDTH)
 
 
-def vertices(z0, lag):
-    """The four corners of one interferometer in the (time, baseline) plane."""
+def vertices(z0, lag, arm=GR_ARM):
+    """The four corners of one interferometer in the (time, baseline) plane.
+
+    `arm` is the arm separation, for a baseline with more clouds on it than
+    two GR_ARM-high interferometers leave room for.
+    """
     a = np.array([GR_T0 + lag, z0, 0.0])
     b = a + RIGHT * GR_T
-    b_up = b + UP * GR_ARM
+    b_up = b + UP * arm
     c = b_up + RIGHT * GR_T
     return a, b, b_up, c
 

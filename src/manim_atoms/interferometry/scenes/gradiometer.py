@@ -119,7 +119,19 @@ class GradiometerBase(Scene):
     ``self.phase`` (two trackers per cloud), ``self.hands`` and ``self.big``,
     then flies its own pulse sequence. Gradiometer is the quiet one; the AION
     scenes put a wave, a field or a light shift through it.
+
+    ``CLOUDS`` names the clouds bottom to top, and ``dial_center`` /
+    ``dial_radius`` say where each one is read out: a scene with more clouds
+    on the baseline (MultiGradiometer's three) overrides those and
+    ``vertices`` / ``nominal``, and the rest carries over.
     """
+
+    CLOUDS = ("low", "up")
+    dial_radius = GR_DIAL_RADIUS
+    port_length = GR_OUT  # how far the output ports run past the last pulse
+
+    def dial_center(self, cloud):
+        return GR_DIALS[cloud]
 
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version.
@@ -162,12 +174,12 @@ class GradiometerBase(Scene):
         self.add(*hands)
         big = VGroup(
             dial_hand(
-                GR_DIALS[cloud], self.phase[cloud][0], lighten(ATOM_COLOR),
-                GR_DIAL_RADIUS,
+                self.dial_center(cloud), self.phase[cloud][0], lighten(ATOM_COLOR),
+                self.dial_radius,
             ),
             dial_hand(
-                GR_DIALS[cloud], self.phase[cloud][1], lighten(KICKED_COLOR),
-                GR_DIAL_RADIUS,
+                self.dial_center(cloud), self.phase[cloud][1], lighten(KICKED_COLOR),
+                self.dial_radius,
             ),
         )
         self.big.add(*big)
@@ -179,15 +191,16 @@ class GradiometerBase(Scene):
 
     def port_slope(self, cloud):
         """The slope a cloud's excited port leaves at: its kicked leg's."""
-        v = self.low if cloud == "low" else self.up
+        v = self.vertices(cloud)
         return leg_slope(v[1], v[3])
 
     def close(self, sweeps):
         """Read both dials, then let each pair of ports fly."""
         self.play(*[FadeIn(m) for m in sweeps], run_time=0.7)
-        for cloud, v in (("low", self.low), ("up", self.up)):
+        for cloud in self.CLOUDS:
+            v = self.vertices(cloud)
             draw_ports(
-                self, v[3], GR_OUT,
+                self, v[3], self.port_length,
                 ground_share(self.phase[cloud][1], self.phase[cloud][0]),
                 slope=self.port_slope(cloud), labels=False,
                 extra=self.port_extra(),
@@ -228,7 +241,9 @@ class RunsContinuously:
         # By the same amount the ports run, not to the same place: the last
         # pulse has carried lab time a little past the final corner, and what
         # has to match is the rate, so the wave keeps step with the atoms.
-        return [self.clock.animate.set_value(self.clock.get_value() + GR_OUT)]
+        return [self.clock.animate.set_value(
+            self.clock.get_value() + self.port_length
+        )]
 
     def close(self, sweeps):
         """The sectors arrive while the ports fly, not before them.
@@ -246,9 +261,9 @@ class RunsContinuously:
                     ground_share(self.phase[cloud][1], self.phase[cloud][0]),
                     self.port_slope(cloud),
                 )
-                for cloud, v in (("low", self.low), ("up", self.up))
+                for cloud, v in ((c, self.vertices(c)) for c in self.CLOUDS)
             ],
-            GR_OUT, labels=False,
+            self.port_length, labels=False,
             extra=[*self.port_extra(), *[FadeIn(m) for m in sweeps]],
         )
 
@@ -273,7 +288,7 @@ class RunsContinuously:
         pair = self.atoms[cloud]
         pair[0][0].set_fill(KICKED_COLOR).set_stroke(lighten(KICKED_COLOR))
         pair[1][0].set_fill(ATOM_COLOR).set_stroke(lighten(ATOM_COLOR))
-        k = 0 if cloud == "low" else 2
+        k = 2 * self.CLOUDS.index(cloud)  # the clouds' hands in opening order
         self.big[k].set_color(lighten(KICKED_COLOR))
         self.big[k + 1].set_color(lighten(ATOM_COLOR))
 
@@ -420,7 +435,7 @@ class Gradiometer(GradiometerBase):
         """Pulse k writes its phase onto both clouds' hands."""
         self.play(*[
             tracker.animate.increment_value(sum(d for _, d in jumps[k]))
-            for c in ("low", "up")
+            for c in self.CLOUDS
             for tracker, jumps in zip(
                 self.phase[c], self.jump_steps(c)
             )
