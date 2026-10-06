@@ -83,66 +83,78 @@ def make_guide(start, end):
     return DashedLine(start, end, **GUIDE_STYLE)
 
 
-def absorb(scene, x, atom, extras=(), fade=()):
+def absorb(scene, x, atom, extras=(), fade=(), also=()):
     """A wavepacket rises from below and is absorbed: |g, p> -> |e, p + hbar k>.
 
     The packet collapses into the atom rather than simply fading, so absorption
     is visibly a different event from the stimulated emission at the mirror.
+
+    `also` is (x, atom) pairs struck by twins of the same pulse, rising in
+    step with it: the same event drawn twice, e.g. on a space-time diagram
+    and in the apparatus beside it, where the atom is at the same height.
     """
     y0 = -config.frame_y_radius - 0.6
-    pulse = make_laser_pulse(x, y0)
-    scene.add(pulse)
+    targets = [(x, atom), *also]
+    pulses = [make_laser_pulse(tx, y0) for tx, _ in targets]
+    scene.add(*pulses)
 
     rise = atom.get_center()[1] - y0
     scene.play(
-        pulse.animate.shift(UP * rise),
+        *[p.animate.shift(UP * (a.get_center()[1] - y0)) for p, (_, a) in zip(pulses, targets)],
         *[FadeIn(m) for m in extras],
         rate_func=linear,
         run_time=rise / PULSE_SPEED,
     )
     scene.play(
-        Flash(atom, **FLASH_STYLE),
-        pulse.animate.scale(0.02).move_to(atom.get_center()).set_stroke(opacity=0),
+        *[Flash(a, **FLASH_STYLE) for _, a in targets],
+        *[p.animate.scale(0.02).move_to(a.get_center()).set_stroke(opacity=0)
+          for p, (_, a) in zip(pulses, targets)],
         *[FadeOut(m) for m in fade],
         run_time=0.4,
     )
-    scene.remove(pulse)
+    scene.remove(*pulses)
 
 
-def emit(scene, x, atom, extras=()):
+def emit(scene, x, atom, extras=(), also=()):
     """Stimulated emission: one photon arrives and two leave.
 
     Both leave in the mode of the driving field, so the pair climbs together
     and the atom recoils the other way, by -hbar k.
+
+    `also` is (x, atom) pairs driven by twins of the same pulse, as in absorb.
     """
     y0 = -config.frame_y_radius - 0.6
-    incoming = make_laser_pulse(x, y0)
-    scene.add(incoming)
+    targets = [(x, atom), *also]
+    incoming = [make_laser_pulse(tx, y0) for tx, _ in targets]
+    scene.add(*incoming)
 
     rise = atom.get_center()[1] - y0
     scene.play(
-        incoming.animate.shift(UP * rise),
+        *[p.animate.shift(UP * (a.get_center()[1] - y0)) for p, (_, a) in zip(incoming, targets)],
         *[FadeIn(m) for m in extras],
         rate_func=linear,
         run_time=rise / PULSE_SPEED,
     )
 
-    y = atom.get_center()[1] + 1.15
-    pair = VGroup(*[make_laser_pulse(x + dx, y) for dx in (-0.22, 0.22)])
+    pairs = [
+        VGroup(*[make_laser_pulse(tx + dx, a.get_center()[1] + 1.15) for dx in (-0.22, 0.22)])
+        for tx, a in targets
+    ]
     scene.play(
-        Flash(atom, **FLASH_STYLE),
-        FadeOut(incoming, scale=0.3),
-        FadeIn(pair, shift=UP * 0.25),
+        *[Flash(a, **FLASH_STYLE) for _, a in targets],
+        *[FadeOut(p, scale=0.3) for p in incoming],
+        *[FadeIn(pair, shift=UP * 0.25) for pair in pairs],
         run_time=0.5,
     )
 
+    y = atom.get_center()[1] + 1.15
     climb = config.frame_y_radius + 1.4 - y
     scene.play(
-        pair.animate.shift(UP * climb),
+        *[pair.animate.shift(UP * climb) for pair in pairs],
         rate_func=linear,
         run_time=climb / PULSE_SPEED,
     )
-    scene.remove(pair)
+    scene.remove(*pairs)
 
 
 def draw_legs(scene, legs, fade=(), extra=()):
