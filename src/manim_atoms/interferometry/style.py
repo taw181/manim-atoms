@@ -85,3 +85,18 @@ OPEN_PATH_STYLE = dict(dash_length=0.1, stroke_width=2.5, stroke_opacity=0.5)
 OPEN_ATOM_OPACITY = 0.25
 # The pulse timing marked along the bottom, a reference rather than content.
 TIME_AXIS_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR), stroke_opacity=0.7)
+
+# --- a gravimeter: the interferometer in free fall -------------------------
+# Gravity bends every arm by the same parabola, so it is drawn as something
+# acting on the atoms -- the perturbation amber, which samples clear of both
+# state colours and the laser red. What the arms would have done without it,
+# the straight parallelogram of the freely falling frame, is a reference and
+# takes the construction grey, dashed but a notch brighter than a guide so it
+# still reads beside the solid arms.
+GRAVITY_COLOR = PERTURBATION_COLOR
+GRAVITY_ARROW_STYLE = dict(
+    buff=0, stroke_width=3, color=GRAVITY_COLOR, max_tip_length_to_length_ratio=0.25
+)
+FREE_FALL_STYLE = dict(
+    dash_length=0.12, stroke_width=2.5, stroke_opacity=0.55, color=lighten(GUIDE_COLOR)
+)
