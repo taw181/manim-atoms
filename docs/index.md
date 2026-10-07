@@ -158,6 +158,14 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **An optical cavity**: mirrors, mode, probe and detector, plus its vacuum-Rabi-split transmission with atoms in it. `core.optics`: `make_cavity`, `rabi_transmission`.
 - **Atoms in the cavity mode** in the superposition's colour (spin squeezing's own). `interferometry.tools.squeezing`: `cavity_atoms`.
 
+## Holograms and phase masks
+
+- **The pupil's grid, and the light on it.** `core.holography`: `pupil_grid`, `illumination`.
+- **A mask's building blocks**: a grating, a lens, and several spots at once. `core.holography`: `grating_phase`, `lens_phase`, `spot_phase`.
+- **The focal plane a mask makes**, where a spot lands in it, and the field on each spot. `core.holography`: `far_field`, `spot_pixel`, `spot_fields`.
+- **Finding an array's mask** by Gerchberg–Saxton, plain or weighted, a step at a time, and how evenly it lights the spots. `core.holography`: `gs_step`, `wgs_step`, `uniformity`.
+- **Zernike modes**, by their place in the pyramid, and the Strehl ratio a wavefront error leaves. `core.holography`: `zernike`, `osa_to_nm`, `strehl`.
+
 ## Trapping apparatus
 
 - **MOT beams**, counter-propagating pairs at any in-page angles or in 3D. `trapping.tools.cooling`: `MotBeams`.

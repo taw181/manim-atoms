@@ -52,6 +52,25 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `labelled_citation(items, fmt=AUTHOR_YEAR, font_size=FONT_CITATION, color=CITATION_COLOR, max_width=CITATION_MAX_WIDTH)`: ``items`` are (label, refs) pairs, refs one reference or a list of them (Reference or LaTeX string, as for citation()): each becomes "label: refs", and they run on, separated, onto as few lines as keep within ``max_width``.
 - `place_citation(mob, corner=DL)`: ``mob`` in a corner of the slide: by default the footer, bottom left, its last line just above the progress bar. The bottom right keeps clear of the slide number; on the right the lines are right aligned.
 
+### `core.holography`
+
+`src/manim_atoms/core/holography.py` — Holography numbers: a phase mask on an SLM and the focal plane it makes.
+
+- `pupil_grid(n)`: (x, y, rho, theta) at the pixel centres of an n x n grid over the square [-1, 1]^2, row 0 at the top (y = +1) as an image has it.
+- `illumination(rho, waist=None)`: The light's amplitude on the SLM: uniform over the unit disc and zero outside it, or a Gaussian of 1/e^2 intensity radius ``waist`` cut off by it.
+- `osa_to_nm(j)`: The radial order n and azimuthal order m of the mode with OSA/ANSI index j, which counts along the rows of the Zernike pyramid: j = 0 is piston, 1 and 2 the tilts, 3 to 5 the row with defocus in the middle.
+- `zernike(n, m, rho, theta)`: The Zernike polynomial Z_n^m, normalised to unit mean square over the unit disc: cosine modes for m > 0, sine modes for m < 0.
+- `grating_phase(x, y, kx, ky)`: A blazed grating with kx periods across the aperture in x and ky in y. It steers the spot to (kx, ky) diffraction limits off the axis.
+- `lens_phase(rho, waves)`: A lens: ``waves`` of extra path at the edge of the aperture. It moves the focus along the axis, so in the focal plane the spot blurs.
+- `spot_phase(x, y, spots, phases=None, weights=None)`: The mask for several spots at once: the phase of the sum of the fields that would each make one of them, each with its own phase offset and, if given, its own weight (0 for a spot switched off).
+- `far_field(phase, amplitude, pad=4)`: The focal-plane intensity of a mask, on a grid ``pad`` times finer than the diffraction limit, scaled so that a flat mask peaks at 1.
+- `spot_pixel(spot, n, pad=4)`: (row, column) of the spot at (kx, ky) in far_field's array.
+- `spot_fields(phase, amplitude, x, y, spots)`: The complex field a mask puts on each spot, as a share of what a grating aimed at that spot alone would put there.
+- `wgs_step(phase, weights, amplitude, x, y, spots, weighted=True)`: One iteration of weighted Gerchberg-Saxton.
+- `gs_step(phase, amplitude, x, y, spots)`: One iteration of plain Gerchberg-Saxton: every spot weighted alike. Returns (the next mask, the intensity the mask it was given put on each spot).
+- `uniformity(intensities)`: 1 - (max - min) / (max + min): 1 when every spot is as bright as the rest.
+- `strehl(phase_error, amplitude)`: The focal spot's peak with a wavefront error, as a share of its peak without one: |<exp(i phi)>|^2 over the illuminated aperture.
+
 ### `core.layout`
 
 `src/manim_atoms/core/layout.py` — The furniture of a static slide: a heading, a list, a picture, a slot.
