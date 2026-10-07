@@ -180,8 +180,9 @@ def test_climb_is_time_or_leg():
 def test_the_gradiometer_corners_are_what_vertices_and_gw_vertices_drew():
     from manim_atoms.aion.tools.gradiometer_gw import gw_pulses
     from manim_atoms.interferometry.tools.gradiometer import (
-        GR_LOWER_Z, GR_PULSES, GR_UPPER_Z, cloud_sequence, corners,
+        GR_LOWER_Z, GR_PULSES, GR_UPPER_Z, cloud_sequence,
     )
+    from manim_atoms.interferometry.tools.pulse_sequence import corners
     before = json.loads((Path(__file__).parent / "fixtures" / "gradiometer_before.json").read_text())
     for kind, pulses in (("quiet", GR_PULSES), ("gw", gw_pulses())):
         for cloud, z in (("low", GR_LOWER_Z), ("up", GR_UPPER_Z)):
