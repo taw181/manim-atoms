@@ -506,3 +506,22 @@ CITATION_OUTLINE = dict(color=PLOT_BACKGROUND, width=7, opacity=0.9)
 PLACEHOLDER_STYLE = dict(
     dash_length=0.15, stroke_width=2, stroke_opacity=0.6, color=GUIDE_COLOR
 )
+
+
+# --- the Bloch sphere -----------------------------------------------------
+# Furniture, in the lightened construction grey, with its axis through the
+# poles a faint dashed guide. A spin's quantum noise is a filled patch on it.
+BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
+BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
+                        color=GUIDE_COLOR)
+NOISE_BLOB_OPACITY = 0.3
+NOISE_BLOB_STROKE_WIDTH = 3
+
+# --- optics ---------------------------------------------------------------
+# A cavity's probe, its mode and the transmission it reads out take the
+# probe's colour: the 689 red, because the squeezing cavity counts the atoms
+# in |g> on the 689 nm line.
+PROBE_COLOR = TRANSITION_689_COLOR
+CAVITY_MODE_OPACITY = 0.45
+MIRROR_STROKE_WIDTH = 7
+PROBE_STROKE_WIDTH = 3

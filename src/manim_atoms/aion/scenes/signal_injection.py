@@ -9,7 +9,7 @@ LightShiftSignal.
 from manim import *
 
 from manim_atoms.aion.style import *
-from manim_atoms.core.shapes import gaussian_band
+from manim_atoms.core.optics import gaussian_band
 from manim_atoms.species.strontium import SrLevels
 from manim_atoms.trapping.scenes.dipole import (
     DT_HEADING_CORNER,

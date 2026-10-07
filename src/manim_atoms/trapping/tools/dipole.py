@@ -11,7 +11,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.core.shapes import gaussian_spot
+from manim_atoms.core.optics import gaussian_spot
 from manim_atoms.trapping.tools.cooling import MOT_AXES, chevron
 
 

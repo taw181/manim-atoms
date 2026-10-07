@@ -52,22 +52,8 @@ SHEAR_DATA_DOT_RADIUS = 0.05  # the binned profile it is fitted to
 # green sat there too.
 COHERENT_COLOR = SQL_COLOR
 SQUEEZED_COLOR = LLN_COLOR
-NOISE_BLOB_OPACITY = 0.3
-NOISE_BLOB_STROKE_WIDTH = 3
 # (set_stroke() keywords: both are dashed curves, not DashedLines)
 COHERENT_OUTLINE_STROKE = dict(color=COHERENT_COLOR, width=2, opacity=0.7)
-# The cavity probe counts the atoms in |g> on the 689 nm line, so the probe,
-# the cavity mode and the transmission it reads out all take the 689 red; the
-# measured value, marked on the spin's noise plane, is that reading too.
-PROBE_COLOR = TRANSITION_689_COLOR
-CAVITY_MODE_OPACITY = 0.45
-MIRROR_STROKE_WIDTH = 7
-PROBE_STROKE_WIDTH = 3
 MEASURED_WIDTH = 2.5  # the ring of fixed J_z the measurement pins the spin to
 EMPTY_CAVITY_STROKE = dict(color=GUIDE_COLOR, width=2.5, opacity=0.8)
 TRANSMISSION_WIDTH = 3.5
-# The Bloch sphere: furniture, in the lightened construction grey, with its
-# axis through the poles a faint dashed guide.
-BLOCH_STYLE = dict(stroke_width=2, color=lighten(GUIDE_COLOR))
-BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
-                        color=GUIDE_COLOR)

@@ -144,15 +144,16 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A clock transition dragged by an oscillating field.** `aion.tools.uldm`: `make_modulated_levels`, `dm_upper`.
 - **The 689 nm line swept in a sawtooth.** `trapping.tools.cooling`: `SweepFan`, `make_sawtooth`.
 
-## Bloch sphere, squeezing, cavity
+## Bloch sphere
 
-- **A Bloch sphere in perspective** on a flat scene. It is general despite where it lives. `interferometry.tools.squeezing`: `BlochView`, with `BlochView.point`, `BlochView.ring`, `BlochView.curve`, `BlochView.patch` and `BlochView.outline`.
-- **Quantum noise as a patch on the sphere.** `interferometry.tools.squeezing`: `noise_patch`.
-- **An optical cavity with atoms in its mode**, and its vacuum-Rabi-split transmission. `interferometry.tools.squeezing`: `make_cavity`, `cavity_atoms`, `rabi_transmission`.
+- **A Bloch sphere in perspective** on a flat scene. `core.bloch`: `BlochView`, with `BlochView.point`, `BlochView.ring`, `BlochView.curve`, `BlochView.patch` and `BlochView.outline`.
+- **Quantum noise as a patch on the sphere** (a coherent or squeezed spin state). `core.bloch`: `noise_patch`.
 
-## Beams as Gaussian profiles
+## Optics: beams and cavities
 
-- **A beam seen side on**, or a spot seen end on. `core.shapes`: `gaussian_band`, `gaussian_spot`.
+- **A beam seen side on**, or a spot seen end on, as a Gaussian profile. `core.optics`: `gaussian_band`, `gaussian_spot`.
+- **An optical cavity**: mirrors, mode, probe and detector, plus its vacuum-Rabi-split transmission with atoms in it. `core.optics`: `make_cavity`, `rabi_transmission`.
+- **Atoms in the cavity mode** in the superposition's colour (spin squeezing's own). `interferometry.tools.squeezing`: `cavity_atoms`.
 
 ## Trapping apparatus
 
@@ -274,5 +275,4 @@ candidates to move down into `tools/` or `core/`.
 - `aion.scenes.ligo`: `Panel` (a drawing shrunk into a panel), `make_mirror`, `make_laser`, `make_detector`, `wave`, `beam`.
 - `aion.scenes.dai_data`: `dot_cloud`, `dot_points`, `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.
-- `interferometry.tools.squeezing`: `BlochView` is in a tools module, but in squeezing's.
 - `interferometry.tools.lmt`: `recoil`, `kick_worldline` and `lmt_history` are general engines in LMT's module.

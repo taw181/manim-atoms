@@ -23,13 +23,9 @@ from manim import *
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.layout import slide_title
 from manim_atoms.core.primitives import state_label
-from manim_atoms.interferometry.tools.squeezing import (
-    BlochView,
-    cavity_atoms,
-    make_cavity,
-    noise_patch,
-    rabi_transmission,
-)
+from manim_atoms.core.bloch import BlochView, noise_patch
+from manim_atoms.core.optics import make_cavity, rabi_transmission
+from manim_atoms.interferometry.tools.squeezing import cavity_atoms
 
 # --- spin-squeezing geometry ------------------------------------------------
 # Left column: the cavity, and its transmission under it.

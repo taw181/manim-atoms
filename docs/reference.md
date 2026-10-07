@@ -30,10 +30,25 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *the experimental sequence*: `SEQUENCE_STAGE_COLORS`, `TRANSITION_461_COLOR`, `TRANSITION_689_COLOR`, `TRANSITION_698_COLOR`, `TRANSITION_488_COLOR`, `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`, `REPUMP_COLOR`, `TIMELINE_AHEAD_OPACITY`, `TIMELINE_DONE_OPACITY`, `TIMELINE_ACTIVE_RING`, `FONT_TIMELINE`, `FONT_REFERENCE`, `REFERENCE_IDLE_OPACITY`, `VIDEO_DIM_OPACITY`, `VIDEO_BORDER_STYLE`, `FONT_VIDEO_CLOCK`
 - *dipole traps*: `TRAP_BEAM_COLOR`, `TRAP_BEAM_OPACITY`, `TRAP_BEAM_LAYERS`, `TRANSPARENCY_OPACITY`, `MOT_GLOW_OPACITY`, `MOT_GLOW_LAYERS`, `FONT_CAPTION`
 - *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
+- *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
+- *optics*: `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
 - `merger_color(z)`: A merger track's shade: GW_MERGER_NEAR_COLOR at the low end of GW_MERGER_Z_RANGE fading to GW_MERGER_FAR_COLOR at the high end, in log z.
 
 ## core
+
+### `core.bloch`
+
+`src/manim_atoms/core/bloch.py` — The Bloch sphere: a two-level state, or a collective spin, as a direction.
+
+- class `BlochView()`: A Bloch sphere drawn in perspective on a flat scene: |e> up, the viewer a little above the equator, looking down by ``elevation``.
+  - `.point(v)`: Where the direction ``v`` lands on screen.
+  - `.depth(v)`: > 0 for a point on the side of the sphere facing the viewer.
+  - `.curve(points, color, width, back_opacity=0.35)`: A curve through directions on the sphere: solid in front, dashed and faint behind.
+  - `.ring(axis, height=0.0, n=160)`: The circle of directions v with v . axis = height.
+  - `.outline()`
+  - `.patch(center, e1, e2, a, b, n=90)`: The outline of a patch of the sphere round the direction ``center``: an ellipse of angular half-widths ``a`` along the tangent ``e1`` and ``b`` along ``e2``, wrapped onto the surface.
+- `noise_patch(view, center, e1, e2, a, b, color)`: The collective spin's quantum noise, a filled patch on the sphere.
 
 ### `core.citations`
 
@@ -52,6 +67,15 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `image_point(image, px, py)`: Pixel (px, py) of an ImageMobject, counted from its upper left, on screen.
 - `numbered_list(items, font_size=FONT_CONTENTS, buff=0.45)`: 1. first, 2. second, ... with the numbers in a column of their own.
 - `placeholder_frame(width, height, label)`: A dashed slot, labelled, for a figure that has yet to be dropped in.
+
+### `core.optics`
+
+`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, and an optical cavity.
+
+- `gaussian_band(start, end, width, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
+- `gaussian_spot(center, radius, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
+- `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
+- `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
 
 ### `core.primitives`
 
@@ -72,13 +96,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `arm_ket(excited, phase=None, font_size=FONT_LEGEND, stacked=False)`: The state an arm is in: |g, p> or |e, p + hbar k>, in that state's colour.
 - `fluorescence(atoms)`: What fluoresce plays, unplayed: (halos, the animations lighting them).
 - `fluoresce(scene, atoms, fade=(), run_time=0.8)`: Atoms caught by an imaging pulse light up in its blue.
-
-### `core.shapes`
-
-`src/manim_atoms/core/shapes.py` — Beams drawn as Gaussian profiles: a band seen side on, a spot seen end on.
-
-- `gaussian_band(start, end, width, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
-- `gaussian_spot(center, radius, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
 
 ### `core.spacetime`
 
@@ -131,7 +148,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *phase, drawn as a clock hand*: `CLOCK_ATOM_RADIUS`, `CLOCK_HAND_COLOR`, `CLOCK_HAND_WIDTH`, `CLOCK_HAND_RATIO`, `CLOCK_DIAL_RADIUS`, `CLOCK_SWEEP_OPACITY`
 - *output ports*: `PORT_EMPTY`, `PORT_EMPTY_OPACITY`
 - *phase-shear readout*: `SHEAR_BEAM_OPACITY`, `SHEAR_WAVEFRONT_STYLE`, `SHEAR_AXIS_STYLE`, `SHEAR_IMAGE_BORDER_STYLE`, `SHEAR_CONTRAST`, `SHEAR_PROFILE_WIDTH`, `SHEAR_DATA_DOT_RADIUS`
-- *spin squeezing*: `COHERENT_COLOR`, `SQUEEZED_COLOR`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`, `COHERENT_OUTLINE_STROKE`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`, `MEASURED_WIDTH`, `EMPTY_CAVITY_STROKE`, `TRANSMISSION_WIDTH`, `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`
+- *spin squeezing*: `COHERENT_COLOR`, `SQUEEZED_COLOR`, `COHERENT_OUTLINE_STROKE`, `MEASURED_WIDTH`, `EMPTY_CAVITY_STROKE`, `TRANSMISSION_WIDTH`
 
 ### `interferometry.tools.clock`
 
@@ -191,16 +208,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/tools/squeezing.py` — Spin squeezing by a non-demolition measurement in an optical cavity.
 
-- `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
-- class `BlochView()`: A Bloch sphere drawn in perspective on a flat scene: |e> up, the viewer a little above the equator, looking down by ``elevation``.
-  - `.point(v)`: Where the direction ``v`` lands on screen.
-  - `.depth(v)`: > 0 for a point on the side of the sphere facing the viewer.
-  - `.curve(points, color, width, back_opacity=0.35)`: A curve through directions on the sphere: solid in front, dashed and faint behind.
-  - `.ring(axis, height=0.0, n=160)`: The circle of directions v with v . axis = height.
-  - `.outline()`
-  - `.patch(center, e1, e2, a, b, n=90)`: The outline of a patch of the sphere round the direction ``center``: an ellipse of angular half-widths ``a`` along the tangent ``e1`` and ``b`` along ``e2``, wrapped onto the surface.
-- `noise_patch(view, center, e1, e2, a, b, color)`: The collective spin's quantum noise, a filled patch on the sphere.
-- `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
 - `cavity_atoms(center, radius, n=40, seed=4)`: The atoms in the cavity mode, each in the same superposition of |g> and |e>, so drawn halfway between the two states' colours.
 
 ### `interferometry.scenes.clock`
