@@ -12,17 +12,11 @@ arms are drawn in.
 from manim import *
 
 from manim_atoms.interferometry.style import *
-from manim_atoms.interferometry.tools.pulses import pulse_caption
+from manim_atoms.interferometry.tools.pulse_sequence import play_sequence, run_sequence
 from manim_atoms.core.primitives import (
-    absorb,
     arm_ket,
     draw_legs,
-    emit,
-    grow,
     make_atom,
-    make_k_arrow,
-    momentum_arrow,
-    state_colors,
     state_label,
 )
 from manim_atoms.species.two_level import (
@@ -31,14 +25,16 @@ from manim_atoms.species.two_level import (
 )
 from manim_atoms.interferometry.scenes.mach_zehnder import (
     MZ_A,
-    MZ_B,
-    MZ_B_UP,
-    MZ_C,
     MZ_OUT,
+    MZ_PULSES,
     MachZehnder,
 )
 
 KET_BUFF = 0.2  # from a leg's midpoint to the state label beside it
+# Which side of each leg its ket goes, per pulse, for the legs that pulse
+# launches in the engine's order (left-alone arm first; |g> port first):
+# below the ground arms, and out of the parallelogram for the kicked ones.
+SP_KET_SIDES = ((DOWN, UL), (DR, UP), (DOWN, DR))
 
 
 class SinglePhotonMachZehnder(MachZehnder):
@@ -72,105 +68,18 @@ class SinglePhotonMachZehnder(MachZehnder):
         self.play(FadeIn(atom, scale=0.5), run_time=0.5)
         draw_legs(self, [(atom, entry, MZ_A, ATOM_COLOR)], extra=[FadeIn(ket_in)])
 
-        # --- 3. first pi/2: split ----------------------------------------
-        # One photon, one transition: the glow rises with the wavepacket and
-        # goes out as the atom takes it up.
-        k_arrow = make_k_arrow(MZ_A[0] - 0.9, -config.frame_y_radius + 0.45)
-        glow = transition_glow()
-        absorb(
-            self,
-            MZ_A[0],
-            atom,
-            extras=[pulse_caption(r"\pi/2", MZ_A[0]), k_arrow, glow],
-            fade=[k_arrow, glow],
+        # --- 3. the three pulses, photon by photon -------------------------
+        # As in MachZehnder, through the same hooks, each with more on it: a
+        # glow on the level diagram rising (or, for the excited arm at the
+        # mirror, falling) with each wavepacket, and each leg labelled with
+        # the state the arm is in while traversing it.
+        seq = run_sequence(MZ_PULSES, MZ_A, 1.0, port=MZ_OUT)
+        ports = play_sequence(
+            self, seq, {"": atom}, style="photon",
+            photon_extras=self.photon_extras, on_kick=self.kick,
+            with_legs=self.with_legs, after_step=self.stop,
         )
-
-        lower = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(MZ_A)
-        upper = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(MZ_A)
-        recoil = momentum_arrow(MZ_A, UP, r"\hbar k")
-
-        self.remove(atom)
-        self.add(lower, upper)
-        self.play(*grow(recoil), run_time=0.6)
-
-        # Each leg is coloured by the state that arm is in while traversing
-        # it, and labelled with it.
-        kets = [
-            arm_ket(False).next_to(midpoint(MZ_A, MZ_B), DOWN, buff=KET_BUFF),
-            arm_ket(True).next_to(midpoint(MZ_A, MZ_B_UP), UL, buff=KET_BUFF),
-        ]
-        draw_legs(
-            self,
-            [(lower, MZ_A, MZ_B, ATOM_COLOR), (upper, MZ_A, MZ_B_UP, KICKED_COLOR)],
-            fade=[recoil],
-            extra=[FadeIn(k) for k in kets],
-        )
-        self.beat()
-
-        # --- 4. pi pulse: the mirror -------------------------------------
-        # The two arms do opposite things to the same beam. The ground-state
-        # arm absorbs, gains hbar k and climbs; the excited arm is stimulated
-        # back down to |g>, emits into the mode of the driving field and
-        # recoils by -hbar k, which flattens it out. The level diagram shows
-        # which way each one is being driven.
-        gain = momentum_arrow(MZ_B, UP, r"+\hbar k")
-        lose = momentum_arrow(MZ_B_UP, DOWN, r"-\hbar k", label_dir=RIGHT)
-
-        glow_up = transition_glow()
-        absorb(
-            self,
-            MZ_B[0],
-            lower,
-            extras=[pulse_caption(r"\pi", MZ_B[0]), glow_up],
-            fade=[glow_up],
-        )
-        self.play(state_colors(lower, KICKED_COLOR), *grow(gain), run_time=0.6)
-
-        glow_down = transition_glow(upward=False)
-        emit(self, MZ_B_UP[0], upper, extras=[glow_down])
-        self.play(
-            state_colors(upper, ATOM_COLOR),
-            *grow(lose),
-            FadeOut(glow_down),
-            run_time=0.6,
-        )
-        kets = [
-            arm_ket(True).next_to(midpoint(MZ_B, MZ_C), DR, buff=KET_BUFF),
-            arm_ket(False).next_to(midpoint(MZ_B_UP, MZ_C), UP, buff=KET_BUFF),
-        ]
-        draw_legs(
-            self,
-            [(lower, MZ_B, MZ_C, KICKED_COLOR), (upper, MZ_B_UP, MZ_C, ATOM_COLOR)],
-            fade=[gain, lose],
-            extra=[FadeIn(k) for k in kets],
-        )
-        self.beat()
-
-        # --- 5. second pi/2: recombine -----------------------------------
-        # Both arms sit at MZ_C now, so one pulse covers them.
-        glow = transition_glow()
-        absorb(
-            self,
-            MZ_C[0],
-            lower,
-            extras=[pulse_caption(r"\pi/2", MZ_C[0]), glow],
-            fade=[glow],
-        )
-
-        port_g = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
-        port_e = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
-        self.remove(lower, upper)
-        self.add(port_g, port_e)
-        out_g, out_e = MZ_C + RIGHT * MZ_OUT, MZ_C + (RIGHT + UP) * MZ_OUT
-        kets = [
-            arm_ket(False).next_to(midpoint(MZ_C, out_g), DOWN, buff=KET_BUFF),
-            arm_ket(True).next_to(midpoint(MZ_C, out_e), DR, buff=KET_BUFF),
-        ]
-        draw_legs(
-            self,
-            [(port_g, MZ_C, out_g, ATOM_COLOR), (port_e, MZ_C, out_e, KICKED_COLOR)],
-            extra=[FadeIn(k) for k in kets],
-        )
+        port_g, port_e = ports["g"], ports["e"]
 
         # --- 6. the output ports ---------------------------------------
         p1 = state_label(r"P_g", ATOM_COLOR).next_to(port_g, RIGHT, buff=0.3)
@@ -181,3 +90,23 @@ class SinglePhotonMachZehnder(MachZehnder):
         ).to_corner(DR)
         self.play(Write(p1), Write(p2), Write(readout), run_time=1.3)
         self.wait(2.0)
+
+    def photon_extras(self, step, k, arm):
+        """MachZehnder's, and the transition lit while the wavepacket climbs:
+        upward as an arm absorbs, downward as the excited arm at the mirror is
+        stimulated to emit. Either goes out as the photon is taken up."""
+        extras, fade = super().photon_extras(step, k, arm)
+        emits = not step.merges and any(
+            name == arm and state == "g" for name, _, state in step.hits
+        )
+        glow = transition_glow(upward=not emits)
+        return [*extras, glow], [*fade, glow]
+
+    def with_legs(self, step, k):
+        """MachZehnder's, and each leg labelled with its arm's state."""
+        fade, extra = super().with_legs(step, k)
+        kets = [
+            arm_ket(state == "e").next_to(midpoint(start, end), side, buff=KET_BUFF)
+            for (_, start, end, state, _), side in zip(step.legs, SP_KET_SIDES[k])
+        ]
+        return fade, [*extra, *[FadeIn(ket) for ket in kets]]

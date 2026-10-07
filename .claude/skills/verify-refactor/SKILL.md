@@ -97,6 +97,12 @@ uv run python $S/compare_checksums.py /tmp/old1 /tmp/fa
 - If some render of the old code is frame-for-frame identical to some
   render of the new, the change is proven to change nothing, and the rest
   was noise.
+- A noisy scene (`LargeMomentumTransfer`: every render differs from every
+  other in 8 to 29 frames) may never give a whole matching pair. Pass all
+  the old renders at once, comma-separated:
+  `compare_checksums.py /tmp/old1,/tmp/old2,/tmp/old3 /tmp/fa`. A frame then
+  passes if it is identical to that frame in any old render, which proves
+  the scene unchanged frame by frame.
 - If no pair matches after a few renders each, it is a real change: find
   out why.
 - Extract the differing frames (`ffmpeg -vf select`) and diff the pixels.

@@ -20,13 +20,12 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.interferometry.tools.clock import (
-    CP_ARM,
+    clock_rate,
+    clock_sequence,
     CP_DIAL,
     CP_OUT,
     CP_T,
     CP_T0,
-    CP_Z,
-    clock_rate,
     dial_hand,
     draw_ports,
     make_clock_hand,
@@ -40,7 +39,6 @@ from manim_atoms.interferometry.scenes.gradiometer import (
 )
 from manim_atoms.interferometry.tools.gradiometer import (
     cloud_sequence,
-    corners,
     GR_DIAL_RADIUS,
     GR_DIALS,
     GR_LAG,
@@ -55,12 +53,9 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_UPPER_Z,
     gradiometer_frame,
 )
-from manim_atoms.interferometry.tools.pulses import fire_vertical_pulse, strobe_pulse
-from manim_atoms.core.primitives import (
-    draw_legs,
-    make_atom,
-    state_colors,
-)
+from manim_atoms.interferometry.tools.pulse_sequence import corners, play_sequence
+from manim_atoms.interferometry.tools.pulses import strobe_pulse
+from manim_atoms.core.primitives import make_atom
 from manim_atoms.core.spacetime import (
     carry,
     growing_band,
@@ -111,10 +106,8 @@ class DarkMatterPhase(Scene):
         ).to_corner(UL)
         self.play(FadeIn(title), run_time=0.9)
 
-        a = np.array([CP_T0, CP_Z, 0.0])
-        b = a + RIGHT * CP_T
-        b_up = b + UP * CP_ARM
-        c = b_up + RIGHT * CP_T
+        self.seq = clock_sequence()
+        a, b, b_up, c = corners(self.seq)
         rate = clock_rate(CP_T)
 
         # --- what is passing through ---------------------------------------
@@ -210,22 +203,30 @@ class DarkMatterPhase(Scene):
         self.wait(2.0)
 
     def split(self, at):
-        """The beamsplitter's output: two arms, each carrying its own hand.
+        """The beamsplitter's output, made here: two arms, each carrying its
+        own hand. The continuous variant's; the stop-start one has the
+        player make the arms, and only hands them to take_arms."""
+        arm_lo = make_atom(
+            radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
+        ).move_to(at)
+        arm_hi = make_atom(
+            KICKED_COLOR, radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
+        ).move_to(at)
+        self.remove(self.seed)
+        self.add(arm_lo, arm_hi)
+        return self.take_arms(arm_lo, arm_hi)
+
+    def take_arms(self, arm_lo, arm_hi):
+        """Each arm takes its own hand.
 
         Shared by both variants, because what the pulse produces does not
         depend on how the pulse was drawn.
         """
-        self.arm_lo = make_atom(
-            radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
-        ).move_to(at)
-        self.arm_hi = make_atom(
-            KICKED_COLOR, radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
-        ).move_to(at)
-        self.hand_lo = make_clock_hand(self.arm_lo, self.kicked_last)
-        self.hand_hi = make_clock_hand(self.arm_hi, self.kicked_first)
-        self.remove(self.seed)
-        self.add(self.arm_lo, self.arm_hi, self.hand_lo, self.hand_hi)
-        return self.arm_lo, self.arm_hi
+        self.arm_lo, self.arm_hi = arm_lo, arm_hi
+        self.hand_lo = make_clock_hand(arm_lo, self.kicked_last)
+        self.hand_hi = make_clock_hand(arm_hi, self.kicked_first)
+        self.add(self.hand_lo, self.hand_hi)
+        return arm_lo, arm_hi
 
     def port_extra(self):
         """What rides along with the output ports. Nothing, unless lab time does."""
@@ -242,59 +243,46 @@ class DarkMatterPhase(Scene):
         now, bands, dots = self.now, self.bands, self.dots
         leg_one = dm_phase(self.rate, a[0], b[0])
         leg_two = dm_phase(self.rate, b[0], c[0])
+        arms = {"": self.seed}
+        dial_hands = {"0": self.big_lo, "1": self.big_hi}
 
-        # --- the beamsplitter ----------------------------------------------
-        self.play(FadeIn(dots[0], scale=0.4), run_time=0.3)
-        fire_vertical_pulse(self, a[0], [self.seed])
-        arm_lo, arm_hi = self.split(a)
+        def mark(step, k):
+            """The trace marks where pulse k samples the field."""
+            self.play(FadeIn(dots[k], scale=0.4), run_time=0.3)
 
-        # --- leg 1: arm 1 is excited, over one stretch of the oscillation ---
-        self.play(FadeIn(bands[0]), run_time=0.5)
-        draw_legs(
-            self,
-            [
-                (arm_lo, a, b, ATOM_COLOR),
-                (arm_hi, a, b_up, KICKED_COLOR),
-            ],
-            extra=[
-                self.kicked_first.animate.set_value(leg_one),
-                now.animate.set_value(b[0]),
-            ],
+        def hand_colour(step, k, arm):
+            """At the mirror the arms swap, and so does the window: each dial
+            hand takes its arm's new colour. The same pulse that reverses the
+            momenta hands the excitation over, which is what makes the two
+            arms sample the field at different times rather than together."""
+            if k != 1:
+                return []
+            new = next(state for name, _, state in step.hits if name == arm)
+            colour = KICKED_COLOR if new == "e" else ATOM_COLOR
+            return [dial_hands[arm].animate.set_color(lighten(colour))]
+
+        def band(step, k):
+            """Each arm in turn is excited over one stretch of the
+            oscillation, the second differing from the first."""
+            if k == 0:
+                self.take_arms(arms["0"], arms["1"])
+            if k < 2:
+                self.play(FadeIn(bands[k]), run_time=0.5)
+
+        def leg(step, k):
+            """The excited arm's hand winds through its window, and lab time
+            runs on to the next pulse."""
+            hand, phase, to = ((self.kicked_first, leg_one, b[0]),
+                               (self.kicked_last, leg_two, c[0]))[k]
+            return (), [hand.animate.set_value(phase), now.animate.set_value(to)]
+
+        play_sequence(
+            self, self.seq, arms, style="column", kick_time=0.5, ports=False,
+            atom=lambda color, opacity: make_atom(
+                color, radius=CLOCK_ATOM_RADIUS, opacity=opacity),
+            before_pulse=mark, on_kick=hand_colour, before_legs=band,
+            with_legs=leg, after_step=lambda step, k: self.beat(),
         )
-        self.beat()
-
-        # --- the mirror: the arms swap, and so does the window ---------------
-        # The same pulse that reverses the momenta hands the excitation over,
-        # which is what makes the two arms sample the field at different times
-        # rather than together.
-        self.play(FadeIn(dots[1], scale=0.4), run_time=0.3)
-        fire_vertical_pulse(self, b[0], [arm_lo, arm_hi])
-        self.play(
-            state_colors(arm_lo, KICKED_COLOR),
-            state_colors(arm_hi, ATOM_COLOR),
-            self.big_lo.animate.set_color(lighten(KICKED_COLOR)),
-            self.big_hi.animate.set_color(lighten(ATOM_COLOR)),
-            run_time=0.5,
-        )
-
-        # --- leg 2: arm 2 is excited, over the next, which differs ---------
-        self.play(FadeIn(bands[1]), run_time=0.5)
-        draw_legs(
-            self,
-            [
-                (arm_lo, b, c, KICKED_COLOR),
-                (arm_hi, b_up, c, ATOM_COLOR),
-            ],
-            extra=[
-                self.kicked_last.animate.set_value(leg_two),
-                now.animate.set_value(c[0]),
-            ],
-        )
-        self.beat()
-
-        # --- recombine -------------------------------------------------------
-        self.play(FadeIn(dots[2], scale=0.4), run_time=0.3)
-        fire_vertical_pulse(self, c[0], [arm_lo])
 
 
 class DarkMatterPhaseContinuous(DarkMatterPhase):

@@ -18,8 +18,9 @@ the phase budget that names which terms the measurement keeps.
   readout_equation; CP_LASER_PHASES is the phase the laser writes at each
   pulse.
 
-Defaults bind to the CP_* geometry block below, ClockPhase's. The pulses
-themselves are in interferometry.tools.pulses.
+Defaults bind to the CP_* geometry block below, ClockPhase's.
+CP_PULSES and clock_sequence are that interferometer as a pulse list on the
+pulse-sequence engine, shared by ClockPhase and DarkMatterPhase.
 """
 
 import numpy as np
@@ -27,6 +28,7 @@ from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import draw_legs, make_atom, make_guide
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse, run_sequence
 
 
 # --- phase, drawn as a clock hand -----------------------------------------
@@ -70,6 +72,16 @@ CP_DIAL = np.array([4.6, 0.9, 0.0])
 # which is the one part of the frame no pulse column ends in and nothing on
 # the crowded right-hand side -- dial, result, port labels -- reaches into.
 CP_READOUT = np.array([-4.6, -3.3, 0.0])
+# pi/2, pi, pi/2 from below, CP_T apart
+CP_PULSES = [
+    Pulse(CP_T0, 0.5), Pulse(CP_T0 + CP_T, 1.0), Pulse(CP_T0 + CP_T + CP_T, 0.5),
+]
+
+
+def clock_sequence():
+    """The clock interferometer, run through the pulse-sequence engine: the
+    atom at (CP_T0, CP_Z), each recoil climbing CP_ARM per leg."""
+    return run_sequence(CP_PULSES, (CP_T0, CP_Z), CP_ARM, port=CP_OUT, climb="leg")
 
 
 def clock_rate(interrogation_time):

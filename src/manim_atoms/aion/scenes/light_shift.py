@@ -20,7 +20,6 @@ from manim_atoms.interferometry.tools.clock import (
 )
 from manim_atoms.interferometry.tools.gradiometer import (
     cloud_sequence,
-    corners,
     GR_ARM,
     GR_DIAL_RADIUS,
     GR_DIALS,
@@ -38,6 +37,7 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_UPPER_Z,
     gradiometer_frame,
 )
+from manim_atoms.interferometry.tools.pulse_sequence import corners
 from manim_atoms.core.primitives import (
     draw_legs,
     fluoresce,

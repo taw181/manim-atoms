@@ -193,6 +193,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/tools/clock.py` — Phase drawn as a clock hand: hands, dials, output ports and the phase budget.
 
+- `clock_sequence()`: The clock interferometer, run through the pulse-sequence engine: the atom at (CP_T0, CP_Z), each recoil climbing CP_ARM per leg.
 - `clock_rate(interrogation_time)`: How fast a hand turns, fixed by how far it should get in one leg.
 - `make_clock_hand(atom, phase)`: A hand riding an atom, pointing at the phase that arm has accumulated.
 - `make_dial(center, caption=None, radius=CLOCK_DIAL_RADIUS)`: A clock face, for a phase that is too small to read off a moving atom.
@@ -215,7 +216,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/interferometry/tools/gradiometer.py` — The atom gradiometer: two clock interferometers on one baseline, one laser.
 
 - `cloud_sequence(pulses, z0, disp=no_displacement)`: One cloud's interferometer: the atom at height ``z0`` stepped through ``pulses``, each acting when it reaches ``z0``. One recoil climbs GR_ARM per leg (climb="leg"), so the corners stay pinned to the arrivals even when a wave makes the intervals unequal; ``disp`` bows the legs.
-- `corners(seq)`: A cloud's four corners (a, b, b_up, c): the split, the two arms at the mirror (b the one left alone at the split, b_up the one kicked there), and the recombination.
 - `cloud_legs(seq, k, pair, wavy=False)`: The legs pulse k launches, as draw_legs takes them: (atom, start, end, colour) for each arm, ``pair[0]`` flying arm "0" (left alone at the split) and ``pair[1]`` arm "1"; with ``wavy``, the displacement too, as draw_wavy_legs takes them.
 - `gradiometer_frame(scene, title_tex)`: The furniture every gradiometer scene shares, played onto the screen.
 - `laser_jumps(v)`: The laser's phase on each of a cloud's two hands, as (lab time, delta).
@@ -252,7 +252,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - class `Step()`: What one pulse did. ``x`` is its lab time.
 - class `Sequence()`: A run of the engine: one Step per pulse, every arm's corners (``paths``: name -> points, from where it was born to where it ended), the arms left after the last pulse (``ports``), and ``disp``.
 - `run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None, port=SEQUENCE_PORT, climb='time')`: Step one atom, in |g> at ``start`` (lab time, height) with velocity ``v0`` recoils, through ``pulses`` (in time order). Each pulse acts at its arrival at the starting height. After the last pulse the arms fly on to ``until`` (default: ``port`` past it): those legs are the output ports. ``disp(t)`` displaces everything (gravity: -g t^2 / 2 from the launch). ``climb`` is "time" (``u`` per unit time) or "leg" (``u`` per leg, the ports going on at the last leg's rate; see the module docstring). Returns a Sequence.
-- `play_sequence(scene, seq, atoms, *, span=None, ray_time=0.3, flash_time=0.35, fast_after=None, fast_pace=0.6, colors=None, before_pulse=None, with_pulse=None, after_step=None)`: Animate ``seq``: one ray per pulse, reaching from its side through to the furthest arm; a flash on every arm it kicks, recoloured to its new state; then the legs to the next pulse. ``atoms`` maps arm names to the atoms already on screen (``{"": atom}`` to start); the dict returned maps the arms left at the end.
+- `play_sequence(scene, seq, atoms, *, style='ray', span=None, ray_time=0.3, flash_time=0.35, fast_after=None, fast_pace=0.6, kick_time=0.6, colors=None, atom=None, ports=True, before_pulse=None, with_pulse=None, photon_extras=None, on_kick=None, before_legs=None, with_legs=None, after_step=None)`: Animate ``seq``, pulse by pulse: the pulse, what it does to each arm it drives, then the legs to the next pulse (bowed, if the sequence is displaced). ``atoms`` maps arm names to the atoms already on screen (``{"": atom}`` to start); it is updated in place, so a hook can read the arms from it, and returned.
+- `corners(seq)`: A Mach-Zehnder's four corners (a, b, b_up, c), from a run of pi/2, pi, pi/2: the split, the two arms at the mirror (b the one left alone at the split, b_up the one kicked there), and the recombination.
 
 ### `interferometry.tools.pulses`
 
@@ -282,7 +283,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - Scene `ClockPhase(Scene)`: One interferometer -- one clock -- with the phase on show.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
   - `.laser_jump(jumps)`: The laser writes its phase in: each (tracker, delta) hand turns by delta, on the spot, just after the pulse that wrote it.
-  - `.pulse(x, n, hits)`: Pulse n, captioned with the laser phase phi_n it writes in.
   - `.phase_budget(budget)`: Hook: ClockPhaseTerms marks up what each term of the phase is worth.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/clock.py ClockPhase`
 - Scene `ClockPhaseTerms(ClockPhase)`: ClockPhase, and then what each term of the phase it read out is worth.
@@ -340,6 +340,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py SingleLaserKick`
 - Scene `MachZehnder(Scene)`: The full pi/2 - pi - pi/2 sequence: split, mirror, recombine.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `.photon_extras(step, k, arm)`: The pulse's caption, with its first photon; on the first pulse the k-vector marker too, gone as the photon is absorbed.
+  - `.kick(step, k, arm)`: A recoil arrow on the atom it acts on, where the kick happens.
+  - `.with_legs(step, k)`: The pulse's recoil arrows fade as the arms fly off.
+  - `.stop(step, k)`: A stop as the atoms reach the next pulse; the ports run on.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder`
 
 ### `interferometry.scenes.phase_shear`
@@ -355,6 +359,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/interferometry/scenes/single_photon.py` — The single-photon Mach-Zehnder sequence, with the photons resolved.
 
 - Scene `SinglePhotonMachZehnder(MachZehnder)`: pi/2 - pi - pi/2 driven by single photons, beside the transition it drives.
+  - `.photon_extras(step, k, arm)`: MachZehnder's, and the transition lit while the wavepacket climbs: upward as an arm absorbs, downward as the excited arm at the mirror is stimulated to emit. Either goes out as the photon is taken up.
+  - `.with_legs(step, k)`: MachZehnder's, and each leg labelled with its arm's state.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/single_photon.py SinglePhotonMachZehnder`
 
 ### `interferometry.scenes.squeezing`
@@ -834,7 +840,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - Scene `DarkMatterPhase(Scene)`: The same clock, with a dark-matter field oscillating through it.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
-  - `.split(at)`: The beamsplitter's output: two arms, each carrying its own hand.
+  - `.split(at)`: The beamsplitter's output, made here: two arms, each carrying its own hand. The continuous variant's; the stop-start one has the player make the arms, and only hands them to take_arms.
+  - `.take_arms(arm_lo, arm_hi)`: Each arm takes its own hand.
   - `.port_extra()`: What rides along with the output ports. Nothing, unless lab time does.
   - `.fly()`: Three pulses and two legs, one at a time.
   - `uv run manim -ql src/manim_atoms/aion/scenes/uldm.py DarkMatterPhase`
