@@ -95,7 +95,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **The engine.** It steps one atom through any list of pulses. Each `Pulse` has an area (½ splits, 1 swaps), a direction, optionally the arms it drives and the arms it drops, and a stage. Merging is automatic: outputs that coincide after a π/2 become one, which is how an interferometer closes. It returns a `Sequence` of `Step`s, each with where the pulse lands, its splits, hits, merges and legs, plus every arm's corners and the output ports. It covers Mach–Zehnder, LMT, Ramsey–Bordé, and with a displacement (disp) a gravimeter or a fountain. `interferometry.tools.pulse_sequence`: `run_sequence`, `Pulse`, `Sequence`, `Step`, `Arm`.
 - **Pulses with light travel time**: a `Pulse` with a slope reaches each height later (`Pulse.arrival`), and `run_sequence` times it at the atom's height, so a gradiometer is one sequence per cloud. `run_sequence(climb="leg")` pins corners to unequal pulse arrivals and keeps the loop closed, the convention for an exaggerated, modulated light travel time. `interferometry.tools.pulse_sequence`: `Pulse`, `run_sequence`.
-- **Animating a sequence**: one ray per pulse, a flash on every arm it kicks, the recolouring and splits, then the legs (bowed, if displaced). Hooks add captions and stops. `interferometry.tools.pulse_sequence`: `play_sequence`.
+- **Animating a sequence**, pulse by pulse: as a ray with flashes (quick, for long sequences), as photons absorbed by |g⟩ arms and stimulating emission from |e⟩ ones (explainers), or as a column climbing through the arms; then the legs (bowed, if displaced). Hooks add captions, recoil arrows, dial hands, kets and stops. `interferometry.tools.pulse_sequence`: `play_sequence` (`style=` "ray", "photon" or "column").
 - **A Mach–Zehnder's four corners** (a, b, b_up, c) from a run of π/2, π, π/2, for loops and labels. `interferometry.tools.pulse_sequence`: `corners`.
 - **Sequences already written**: the LMT Mach–Zehnder of any odd order, and the LMT ladder. `interferometry.tools.lmt`: `lmz_pulses`, `lmt_ladder_pulses`. The clock interferometer of ClockPhase and DarkMatterPhase: `interferometry.tools.clock`: `CP_PULSES`, `clock_sequence`.
 
@@ -267,7 +267,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 Copy from these when building something similar.
 
-- **A geometry block and stop-start legs.** `interferometry.scenes.mach_zehnder`: `MachZehnder`, `SingleLaserKick`.
+- **A pulse list played photon by photon, the scene's own parts as hooks.** `interferometry.scenes.mach_zehnder`: `MachZehnder`, `SingleLaserKick`.
 - **Photons resolved, with a level diagram as the key.** `interferometry.scenes.single_photon`: `SinglePhotonMachZehnder`.
 - **The pulse-sequence engine, animated** (with stage captions and pulse labels through the hooks). `interferometry.scenes.lmt`: `LMTMachZehnder`; the bare ladder is `LargeMomentumTransfer`.
 - **Phase as hands, a dial and a budget.** `interferometry.scenes.clock`: `ClockPhase`, `ClockPhaseTerms`.

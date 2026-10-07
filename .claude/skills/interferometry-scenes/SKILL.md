@@ -101,38 +101,76 @@ from manim_atoms.interferometry.tools.pulses import (fire_vertical_pulse, kick_w
 from manim_atoms.interferometry.tools.pulse_sequence import Pulse, play_sequence, run_sequence
 ```
 
-### 1. A pulse sequence, stop-start
+### 1. A pulse sequence, stop-start, photon by photon
 
 The atoms wait while each pulse is drawn. Use it for explainers, where each
-pulse is the point. Worked example: `MachZehnder`.
+pulse is the point. Write the pulses down, let `run_sequence` step the atom
+through them, and play it with `play_sequence(style="photon")`:
+- each driven arm gets its own wavepacket, absorbed by a |g⟩ arm and
+  stimulating emission from an |e⟩ arm (the convention above);
+- each packet is followed by a play recolouring that arm;
+- at a split the halves are born in their final colours;
+- a closing π/2 is one packet to the meeting point.
+
+What is the scene's own goes in through hooks. Worked examples:
+`MachZehnder` (hooks as methods), `SinglePhotonMachZehnder` (overriding two
+of them to add level-diagram glows and kets) and `SingleLaserKick` (a
+sequence of one pulse).
 
 ```python
 R_L = 2.8                                   # each leg, in lab time
 R_A = np.array([-5.8, -2.6, 0.0])           # the beamsplitter
-R_B = R_A + RIGHT * R_L                     # the mirror, lower arm
-R_B_UP = R_A + (RIGHT + UP) * R_L           # the mirror, upper arm: one recoil = slope 1
-R_C = R_B_UP + RIGHT * R_L                  # the second beamsplitter
+R_OUT = 2.2                                 # the ports, past the last pulse
+R_PULSES = [Pulse(R_A[0], 0.5), Pulse(R_A[0] + R_L, 1.0), Pulse(R_A[0] + 2 * R_L, 0.5)]
+R_LABELS = (r"\pi/2", r"\pi", r"\pi/2")
 
-absorb(self, R_A[0], atom, extras=[pulse_caption(r"\pi/2", R_A[0])])
-lower = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(R_A)
-upper = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(R_A)
-self.remove(atom); self.add(lower, upper)
-kick = momentum_arrow(R_A, UP, r"\hbar k")
-self.play(*grow(kick), run_time=0.6)
-draw_legs(self, [(lower, R_A, R_B, ATOM_COLOR), (upper, R_A, R_B_UP, KICKED_COLOR)],
-          fade=[kick])
-self.beat()                                 # stop as the atoms reach the next pulse
+seq = run_sequence(R_PULSES, R_A, 1.0, port=R_OUT)   # one recoil = slope 1
+arrows = []
 
-absorb(self, R_B[0], lower)                 # |g> absorbs: +hbar k
-self.play(state_colors(lower, KICKED_COLOR), run_time=0.4)
-emit(self, R_B_UP[0], upper)                # |e> emits: -hbar k
-self.play(state_colors(upper, ATOM_COLOR), run_time=0.4)
-draw_legs(self, [(lower, R_B, R_C, KICKED_COLOR), (upper, R_B_UP, R_C, ATOM_COLOR)])
+def caption(step, k, arm):          # the pulse's caption rides its first photon
+    if arm != step.driven[0]:
+        return (), ()
+    return [pulse_caption(R_LABELS[k], step.x)], []    # (extras, fade), as absorb takes them
+
+def kick(step, k, arm):             # a recoil arrow on the atom it kicks
+    at = next(point for name, point, _ in step.hits if name == arm)
+    gains = k == 0 or arm == "0"    # the |g> arm absorbs; the |e> arm emits
+    arrows.append(momentum_arrow(at, UP if gains else DOWN,
+                                 r"+\hbar k" if gains else r"-\hbar k",
+                                 label_dir=LEFT if gains else RIGHT))
+    return grow(arrows[-1])
+
+def fade_arrows(step, k):           # (fade, extra) for the legs, as draw_legs takes them
+    fade = list(arrows)
+    arrows.clear()
+    return fade, ()
+
+ports = play_sequence(
+    self, seq, {"": atom}, style="photon",
+    photon_extras=caption, on_kick=kick, with_legs=fade_arrows,
+    after_step=lambda step, k: self.beat() if k < 2 else None,   # stop as the atoms reach the next pulse
+)
+loop = Polygon(*seq.paths["1"], *reversed(seq.paths["0"]), **LOOP_AREA_STYLE)
 ```
 
+The other hooks:
+- `before_pulse(step, k)`: a caption or marker before the pulse;
+- `before_legs(step, k)`: once the pulse is done, e.g. a laser phase
+  written onto the hands;
+- `atom(color, opacity)`: makes the halves and the ports, e.g. at
+  `CLOCK_ATOM_RADIUS`.
+
+Further options:
+- `kick_time`: the length of the recolouring play;
+- `ports=False`: stop after the last pulse, for a scene that reads its
+  ports out itself;
+- `style="column"`: `fire_vertical_pulse` through all the arms a pulse
+  drives, then one play recolouring them all. `ClockPhase` and
+  `DarkMatterPhase` use it.
+
 `draw_legs` takes `(atom, start, end, colour)` per arm, all the same
-length. `extra=[...]` animates anything over exactly that stretch of
-flight; recipe 3 uses it to turn a hand.
+length. `extra=[...]` (from `with_legs`) animates anything over exactly
+that stretch of flight; recipe 3 uses it to turn a hand.
 
 ### 2. Any sequence, through the engine
 
@@ -174,7 +212,7 @@ What comes back:
 - `seq.paths`: every arm's corners, from its birth to its end (for loops);
 - `seq.ports`: the arms left after the last pulse.
 
-`play_sequence` takes `span` (keep the rays clear of a title), `ray_time`,
+`play_sequence` (here in its default `style="ray"`) takes `span` (keep the rays clear of a title), `ray_time`,
 `flash_time`, `fast_after` / `fast_pace` (speed up once the idea has
 landed), and three hooks: `before_pulse(step, k)` (a caption),
 `with_pulse(step)` (mobjects faded in with the ray, e.g. a π/2 label) and
