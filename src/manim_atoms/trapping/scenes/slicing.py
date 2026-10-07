@@ -18,7 +18,12 @@ from manim import *
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band
 from manim_atoms.species.strontium import SrLevels
-from manim_atoms.trapping.tools.sequence import STAGES, Timeline, stage_heading
+from manim_atoms.trapping.tools.sequence import (
+    caption,
+    stage_heading,
+    STAGES,
+    Timeline,
+)
 from manim_atoms.trapping.tools.slicing import CLOUD_WIDTH, SlicingCloud, VelocityPlot
 
 # --- velocity-slicing layout ----------------------------------------------
@@ -57,12 +62,6 @@ VS_HOLD = 1.5  # the pause after each step, where a slide stops instead
 VS_BEFORE = (r"2\,\mu\mathrm{K}", r"30\,\%")
 VS_AFTER = (r"10\,\mathrm{nK}", r"90\,\%")
 VS_READOUT_Y = 1.2  # just above the plot
-
-
-def caption(text, heading):
-    """A grey caption under ``heading``, left-aligned with it."""
-    return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
-        heading, DOWN, buff=0.3, aligned_edge=LEFT)
 
 
 def readout(when, values, color, plot):

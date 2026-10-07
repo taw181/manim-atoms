@@ -196,3 +196,10 @@ def stage_heading(stage):
         font_size=FONT_ANNOTATION, color=spec["color"],
     )
     return VGroup(name, line).arrange(DOWN, buff=0.3)
+
+
+def caption(text, heading):
+    """A grey caption under ``heading``, left-aligned with it."""
+    return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
+        heading, DOWN, buff=0.3, aligned_edge=LEFT
+    )

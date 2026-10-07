@@ -37,12 +37,12 @@ from manim_atoms.aion.physics.gw_signals import (
     time_before_merger,
 )
 from manim_atoms.resources import data_path
-from manim_atoms.aion.scenes.ligo import (
-    Panel,
+from manim_atoms.aion.tools.ligo import (
     make_apparatus,
     make_equation,
     make_light,
     make_strain_trace,
+    Panel,
     returning_waves,
 )
 from manim_atoms.aion.style import *

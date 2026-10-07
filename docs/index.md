@@ -178,7 +178,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **The experiment's stages**, as data. `trapping.tools.sequence`: `Stage`.
 - **A timeline of coloured blocks** lighting up stage by stage, and braced references under it. `trapping.tools.sequence`: `Timeline`, `References`.
-- **The running stage's heading.** `trapping.tools.sequence`: `stage_heading`.
+- **The running stage's heading**, and a grey caption under it. `trapping.tools.sequence`: `stage_heading`, `caption`.
 - **Which video frame shows a given time.** `trapping.tools.sequence`: `snapshot_index`, `snapshot_ms`.
 
 ## Fields and waves over a diagram
@@ -186,6 +186,14 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A gravitational wave's strain**, its trace above the diagram on the diagram's own time axis, and a marker riding it. `aion.tools.gradiometer_gw`: `strain`, `make_strain_trace`, `trace_point`, `strain_marker`, `arrival_dots`.
 - **Light travel time under a wave**, and the early or late arrivals it causes. `aion.tools.gradiometer_gw`: `gw_lag`, `gw_arrival_lags`, `quiet_arrival`, `arrival_note`.
 - **An ultralight dark-matter field**, its trace, its marker, and the phase an arm winds up in it. `aion.tools.uldm`: `dm_field`, `make_field_trace`, `field_marker`, `dm_phase`.
+
+## LIGO's Michelson interferometer
+
+- **The apparatus and its light**, on one lab clock: laser, splitter, arms, test masses, detector, and waves whose phase runs on from beam to beam. `aion.tools.ligo`: `make_apparatus`, `make_light`, `run`.
+- **Its parts.** `aion.tools.ligo`: `make_laser`, `make_splitter`, `make_mirror`, `make_detector`, `detector_glow`, `wave`, `beam`. These are drawn at LIGO's own positions.
+- **The physics.** `aion.tools.ligo`: `strain`, `mirror_positions`, `phase_difference`.
+- **The readout**: h(t), the returning waves overlaid, and the equation. `aion.tools.ligo`: `make_strain_trace`, `returning_waves`, `make_equation`.
+- **A drawing shrunk into part of the frame.** `aion.tools.ligo`: `Panel`, which the builders all take.
 
 ## Plots drawn in manim
 
@@ -273,6 +281,6 @@ scene can only reach them by importing that scene. They are the first
 candidates to move down into `tools/` or `core/`.
 
 - `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`, `LMTMachZehnder.caption`, `LMTMachZehnder.pulse_label`.
-- `aion.scenes.ligo`: `Panel` (a drawing shrunk into a panel), `make_mirror`, `make_laser`, `make_detector`, `wave`, `beam`.
+- `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `Panel`, `wave` and `beam` are generic already.
 - `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.

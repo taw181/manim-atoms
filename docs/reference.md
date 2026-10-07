@@ -403,6 +403,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - class `References(VGroup)`: A brace under each run of stages a paper covers, numbered, and the numbered list of papers below. The one covering the running stage is lit.
   - `.cite(n)`: Animations lighting reference ``n`` (None for none) and dimming the rest.
 - `stage_heading(stage)`: The running stage's name, and the transition it drives, in big type.
+- `caption(text, heading)`: A grey caption under ``heading``, left-aligned with it.
 
 ### `trapping.tools.slicing`
 
@@ -433,7 +434,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/scenes/dipole.py` — Loading the two dipole traps from the red MOT, then spin-polarising them.
 
-- `caption(text, heading)`: A grey caption under ``heading``, left-aligned with it.
 - Scene `DipoleTrapLoading(Scene)`: The red MOT shared out into two crossed dipole traps, then the atoms spin-polarised into m_F = +9/2, with the levels and the timeline beside them. One stage_break() per stage.
   - `.stage_break()`: The pause after each stage. A slide wrapper stops here instead.
   - `.recaption(step, text, heading)`
@@ -464,7 +464,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/scenes/slicing.py` — Velocity slicing: the clock pulse that picks out the slowest atoms.
 
-- `caption(text, heading)`: A grey caption under ``heading``, left-aligned with it.
 - `readout(when, values, color, plot)`: 'Before slicing T ~ ... pi-pulse fidelity ~ ...', over the plot's left end.
 - `recaption(step, text, heading)`: The next caption, and the animation swapping it in -- played alongside whatever the new step does, so the caption never holds the scene still.
 - Scene `VelocitySlicing(Scene)`: A long clock pulse excites the slowest atoms, a push beam clears the rest: the velocity distribution and the cloud side by side. One stage_break() per step.
@@ -543,6 +542,31 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - `sensitivity_axes(log_f_range, log_h_range, origin, width, height, x_label='Frequency / Hz', y_label='Characteristic strain', **kwargs)`: log_axes labelled for characteristic strain against frequency.
 - `detector_region(axes, stem, color)`: A detector's curve, and its region shaded up to the top of the axes.
+
+### `aion.tools.ligo`
+
+`src/manim_atoms/aion/tools/ligo.py` — LIGO's Michelson interferometer, drawn to be lit by a passing wave.
+
+- `strain(t)`: h(t), normalised to a peak of 1: a few cycles under a smooth envelope.
+- class `Panel()`: Where the drawing goes: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
+  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
+  - `.point(p)`
+  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
+- `phase_difference(t, h=strain)`: phi_x - phi_y at the detector: 2k (L_x - L_y), which is linear in h.
+- `mirror_positions(t, h=strain)`: Plus polarisation: the x arm stretches exactly as the y arm squeezes.
+- `wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT)`: A sine riding the segment start -> end, drawn out to `frac` of its length.
+- `beam(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on.
+- `make_mirror(vertical)`: A test mass: a thin slab, upright if ``vertical``, else lying flat.
+- `make_splitter()`: A half-silvered plate at 45 degrees: it reflects light from the laser up the y arm, and light coming back down the x arm into the detector.
+- `make_laser()`: The laser: a box at LASER, labelled under it.
+- `make_detector()`: A photodiode facing up the output port.
+- `detector_glow(now, h=strain)`: Power at the detector, sin^2(dphi / 2), drawn as light pooling on it.
+- `make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME, amplitude=TRACE_AMPLITUDE)`: h(t) drawn out as it arrives, with a dot on the present; the panel spans the stretch `span` of lab time. `amplitude` is the peak's height before the panel scales it.
+- `returning_waves(now, h=strain, panel=FULL_FRAME)`: The light back from each arm, overlaid where the two recombine.
+- `run(scene, now, to, *anims)`: Advance the lab clock to `to`, playing `anims` over the same stretch.
+- `make_apparatus(now, h=strain, panel=FULL_FRAME)`: The title, the optics and their labels, with the test masses riding the wave. Returns (the title and labels, the optics, which go over the light, the arm labels).
+- `make_light(now, lit_in, lit_arm, h=strain, panel=FULL_FRAME)`: The beams, chained so their phase runs on from one to the next, and the glow on the detector. `lit_in` and `lit_arm` say how far the light has got down the input beam and the arms.
+- `make_equation(panel=FULL_FRAME)`: Delta phi in the arm lengths, then in h, under the readout panel; and the scale of the real thing under that.
 
 ### `aion.tools.uldm`
 
@@ -766,26 +790,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/aion/scenes/ligo.py` — How LIGO works: a Michelson interferometer read out at its dark port.
 
-- `strain(t)`: h(t), normalised to a peak of 1: a few cycles under a smooth envelope.
-- class `Panel()`: Where the drawing goes: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
-  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
-  - `.point(p)`
-  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
-- `phase_difference(t, h=strain)`: phi_x - phi_y at the detector: 2k (L_x - L_y), which is linear in h.
-- `mirror_positions(t, h=strain)`: Plus polarisation: the x arm stretches exactly as the y arm squeezes.
-- `wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT)`: A sine riding the segment start -> end, drawn out to `frac` of its length.
-- `beam(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on.
-- `make_mirror(vertical)`: A test mass: a thin slab, upright if ``vertical``, else lying flat.
-- `make_splitter()`: A half-silvered plate at 45 degrees: it reflects light from the laser up the y arm, and light coming back down the x arm into the detector.
-- `make_laser()`: The laser: a box at LASER, labelled under it.
-- `make_detector()`: A photodiode facing up the output port.
-- `detector_glow(now, h=strain)`: Power at the detector, sin^2(dphi / 2), drawn as light pooling on it.
-- `make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME, amplitude=TRACE_AMPLITUDE)`: h(t) drawn out as it arrives, with a dot on the present; the panel spans the stretch `span` of lab time. `amplitude` is the peak's height before the panel scales it.
-- `returning_waves(now, h=strain, panel=FULL_FRAME)`: The light back from each arm, overlaid where the two recombine.
-- `run(scene, now, to, *anims)`: Advance the lab clock to `to`, playing `anims` over the same stretch.
-- `make_apparatus(now, h=strain, panel=FULL_FRAME)`: The title, the optics and their labels, with the test masses riding the wave. Returns (the title and labels, the optics, which go over the light, the arm labels).
-- `make_light(now, lit_in, lit_arm, h=strain, panel=FULL_FRAME)`: The beams, chained so their phase runs on from one to the next, and the glow on the detector. `lit_in` and `lit_arm` say how far the light has got down the input beam and the arms.
-- `make_equation(panel=FULL_FRAME)`: Delta phi in the arm lengths, then in h, under the readout panel; and the scale of the real thing under that.
 - Scene `LIGOMichelson(Scene)`: A Michelson interferometer on a dark fringe, lit up by a passing wave.
   - `.beat()`: The pause on the dark port, before the wave: nothing here, a click on the slide version.
   - `uv run manim -ql src/manim_atoms/aion/scenes/ligo.py LIGOMichelson`
