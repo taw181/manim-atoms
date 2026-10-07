@@ -17,12 +17,16 @@ The check fails when:
 How docs/index.md cites things: every backticked token that looks like a
 dotted Python name is a citation, after anything from ``(`` on is dropped.
 
-- ``core.spacetime`` names a module (``manim_atoms.`` is optional);
+- ``core.spacetime`` names a module, ``core`` a package (``manim_atoms.``
+  is optional);
 - ``core.spacetime.draw_wavy_legs`` names something in it, as does
   ``interferometry.tools.squeezing.BlochView.ring`` a method;
 - a bare ``draw_wavy_legs`` or ``BlochView.ring`` is looked up in the
   modules cited on the same line, and must be in one of them -- or, on a
-  line that cites no module, anywhere in the package;
+  line that cites no module, anywhere in the package. An indented bullet
+  also looks in the modules its parent bullet cites. Failing that, a bare
+  name may be a style constant (``V``) or a method some class there defines
+  (``beat``);
 - tokens starting ``manim.`` (manim's own names) are left alone, as is
   anything that is not a dotted name (``|g>``, ``uv run ...``, ``-ql``).
 """
@@ -99,6 +103,11 @@ class Module:
         return [n for n in self.tree.body
                 if isinstance(n, (ast.FunctionDef, ast.ClassDef))
                 and not n.name.startswith("_")]
+
+    def defines_method(self, name):
+        """Whether any class here has a method ``name``."""
+        return any(isinstance(n, ast.FunctionDef) and n.name == name
+                   for c in self.classes.values() for n in c.body)
 
     def resolves(self, dotted):
         """Whether ``name`` or ``Class.method`` exists in this module."""
@@ -262,9 +271,15 @@ def check_index(modules, problems):
         problems.append(f"{INDEX.relative_to(ROOT)} is missing")
         return set()
     cited = set()
+    packages = {".".join(d.relative_to(PACKAGE).parts) for d in PACKAGE.rglob("*")
+                if (d / "__init__.py").exists()} | {""}
+    styles = [m for m in modules.values() if m.is_style]
+    parent = []  # the modules the last top-level bullet cites
     for lineno, line in enumerate(INDEX.read_text().splitlines(), start=1):
+        nested = line.startswith((" ", "\t")) and line.lstrip().startswith("- ")
         tokens = [t.split("(")[0].strip() for t in re.findall(r"`([^`]+)`", line)]
-        tokens = [t for t in tokens if NAME.match(t) and not t.startswith("manim.")]
+        tokens = [t for t in tokens if NAME.match(t) and not t.startswith("manim.")
+                  and t.removeprefix("manim_atoms").removeprefix(".") not in packages]
         line_mods, bare = [], []
         for t in tokens:
             mod, rest = module_of(t, modules)
@@ -277,9 +292,16 @@ def check_index(modules, problems):
                 cited.add(f"{mod.name}.{rest.split('.')[0]}")
             else:
                 problems.append(f"index.md:{lineno}: `{t}` -- no `{rest}` in {mod.name}")
+        if not nested:
+            parent = line_mods if line.startswith("- ") else []
+        else:
+            line_mods = line_mods + parent
         for t in bare:
             pool = line_mods or modules.values()
             hits = [m for m in pool if m.resolves(t)]
+            if not hits and "." not in t:
+                hits = ([m for m in styles if m.resolves(t)]
+                        or [m for m in pool if m.defines_method(t)])
             if not hits:
                 where = ", ".join(m.name for m in line_mods) if line_mods else "the package"
                 problems.append(f"index.md:{lineno}: `{t}` -- not in {where}")
