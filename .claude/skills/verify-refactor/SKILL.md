@@ -14,6 +14,7 @@ done on "it imports".
 | a name used but no longer defined or imported where it is used | `undefined_names.py` | seconds |
 | code that only fails when it runs (a helper called wrongly, a hook a subclass still overrides) | `dry_run.sh` | ~6 min for all 41 scenes, seconds for a few |
 | a picture that changed without an error: a default argument now bound to a different constant, a draw order, a colour | `last_frames.sh` + `compare_frames.py` | ~10 min, in the background |
+| a change in the middle of a scene: a pulse, a flash, a leg | `frame_checksums.sh` + `compare_checksums.py` | ~10 min for a dozen scenes |
 
 Every script finds the repo root itself; run them from anywhere. `S` below is
 this skill's `scripts/` directory.
@@ -67,11 +68,39 @@ followed by `compare_frames.py ... --subset` compares just those.
 A pure refactor must come out pixel-identical. If a frame differs, it is a
 real change: find out why before going on, don't re-baseline over it.
 
-One exception, when comparing every frame (ffmpeg-extracted) rather than
-the last: two renders of the same code can differ by a few pixels in a few
-mid-animation frames. Before chasing such a difference, render the scene
-again from the same code and compare the two renders: if they differ in
-the same frames, it is noise. A last frame has never been seen to vary.
+## Every frame, when the middle of a scene matters
+
+A last frame says nothing about a pulse, a flash or a leg that is over by
+the end. When a change touches how a scene plays (the pulse engine, a
+player, a sequence's hooks), compare every frame. Frames are big; their
+checksums are not:
+
+```bash
+$S/frame_checksums.sh /tmp/fb 'gradiometer|uldm'          # before; background it
+$S/frame_checksums.sh /tmp/fa 'gradiometer|uldm'          # after
+uv run python $S/compare_checksums.py /tmp/fb /tmp/fa     # ALL IDENTICAL
+```
+
+**Renders are not perfectly deterministic.** Two renders of the same code
+can differ by a few levels on a few pixels in a few mid-animation frames
+(seen in the GW gradiometer scenes, never in a last frame). So a difference
+is not yet a change. To settle it, render the old code too, from a worktree,
+and look for an exact match:
+
+```bash
+git worktree add /tmp/old main
+$S/frame_checksums.sh /tmp/old1 'gradiometer_gw' /tmp/old   # the old code, twice
+$S/frame_checksums.sh /tmp/old2 'gradiometer_gw' /tmp/old
+uv run python $S/compare_checksums.py /tmp/old1 /tmp/fa
+```
+
+- If some render of the old code is frame-for-frame identical to some
+  render of the new, the change is proven to change nothing, and the rest
+  was noise.
+- If no pair matches after a few renders each, it is a real change: find
+  out why.
+- Extract the differing frames (`ffmpeg -vf select`) and diff the pixels.
+  Noise sits in a few pixels at low amplitude, often away from what changed.
 
 ## Habits that keep it cheap
 
