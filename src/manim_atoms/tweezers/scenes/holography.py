@@ -22,7 +22,8 @@ that wraps shows no edge.
   correction. A beat() on the pyramid, on the aberration, after each mode
   is taken out, and after the array is corrected.
 
-Angles in the train are exaggerated and its relay is two lenses. The
+Angles in the train are exaggerated, its relay is two lenses, and the fold
+at the SLM is drawn steep so the incoming beam clears them. The
 aberration is about a radian, far more than a good objective has.
 """
 
@@ -391,5 +392,136 @@ class ZernikeCorrection(Scene):
         array_spots.add_updater(lambda m: m.paint(seen()))
         self.wait(HOLO_SETTLE)
         self.play(corrected.animate.set_value(1), run_time=2 * ZC_FIX_TIME)
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+
+# --- optical-train geometry --------------------------------------------------
+# Side on, along the bottom half of the frame: the SLM a focal length before
+# the first relay lens, the two relay lenses their focal lengths apart, the
+# objective a focal length after the second, and the foci a focal length
+# after that. So the SLM is imaged onto the objective, and a tilt of the
+# beam at the SLM becomes a sideways shift of the focus. The mask and the
+# focal plane are shown face on above their places in the train.
+OT_AXIS = -1.9  # the optical axis's height
+OT_SLM_X = -5.2  # leaves room to its left for the mask, face on
+OT_FOCAL = 1.8  # every lens's focal length
+OT_LENSES = [(OT_SLM_X + OT_FOCAL, OT_FOCAL), (OT_SLM_X + 3 * OT_FOCAL, OT_FOCAL),
+             (OT_SLM_X + 4 * OT_FOCAL, OT_FOCAL)]  # (x, f): relay, relay, objective
+OT_PLANE_X = OT_SLM_X + 5 * OT_FOCAL  # the focal plane
+OT_BEAM = 0.42  # the beam's half-width at the SLM
+OT_LENS_HEIGHT = 2.2  # tall enough for the steered beam
+OT_OPACITY = 0.3  # one beam's fill
+OT_SLOPE = 0.2  # the steered beam's, at the SLM: exaggerated a hundredfold
+OT_PICTURE = 1.9  # the face-on pictures' height
+OT_PICTURE_Y = 1.0  # and their centres' height
+OT_PERIODS_PER_SLOPE = 40  # grating periods across the mask per unit of slope drawn
+# From the SLM back up the incoming beam, which fades out along this: steep, so
+# it clears the relay and stays below the pictures. A real fold is a few degrees.
+OT_INCOMING = np.array([1.2, 2.0, 0.0])
+OT_ATOM_RADIUS = 0.07  # small enough that five foci's atoms stand apart
+OT_STEER_TIME = 2.0
+
+
+class OpticalTrain(Scene):
+    """The light's path from the SLM to the atoms, side on: a flat mask gives
+    one focus, a grating steers it, and an array's mask fans the light out
+    to a row of foci. A beat() on the bare train, after the steering, after
+    the array and after the label."""
+
+    def beat(self):
+        """The pause after each step: nothing here, a click on the slide version."""
+
+    def construct(self):
+        x, y, rho, _ = pupil_grid(HG_N)
+        amplitude = illumination(rho)
+        aperture = round_aperture(HG_N)
+        slm_at = np.array([OT_SLM_X, OT_AXIS, 0.0])
+        slope = ValueTracker(0)
+
+        def focus_height(s):
+            return trace_ray(0.0, s, OT_SLM_X, OT_LENSES, OT_PLANE_X)[-1][1]
+
+        def steered():
+            return beamlet(OT_BEAM, slope.get_value(), OT_SLM_X, OT_LENSES, OT_PLANE_X,
+                           OT_AXIS, OT_OPACITY)
+
+        slm = make_slm(slm_at, 2 * OT_BEAM + 0.5)
+        incoming = Polygon(slm_at + UP * OT_BEAM, slm_at + DOWN * OT_BEAM,
+                           slm_at + DOWN * OT_BEAM + OT_INCOMING,
+                           slm_at + UP * OT_BEAM + OT_INCOMING, stroke_width=0)
+        incoming.set_fill([TWEEZER_COLOR, TWEEZER_COLOR], opacity=[OT_OPACITY, 0])
+        incoming.set_sheen_direction(normalize(OT_INCOMING))
+        lenses = VGroup(*[make_lens([at, OT_AXIS, 0], OT_LENS_HEIGHT) for at, _ in OT_LENSES])
+        plane = DashedLine([OT_PLANE_X, OT_AXIS - 1.0, 0], [OT_PLANE_X, OT_AXIS + 1.0, 0],
+                           **GUIDE_STYLE)
+        names = VGroup(
+            Tex("SLM", font_size=FONT_STEP, color=STEP_COLOR).next_to(slm, DOWN, buff=0.25),
+            Tex("relay", font_size=FONT_STEP, color=STEP_COLOR)
+            .next_to(VGroup(lenses[0], lenses[1]), DOWN, buff=0.2),
+            Tex("objective", font_size=FONT_STEP, color=STEP_COLOR)
+            .next_to(lenses[2], DOWN, buff=0.2),
+            Tex("atoms", font_size=FONT_STEP, color=STEP_COLOR).next_to(plane, DOWN, buff=0.2),
+        )
+        beam = always_redraw(steered)
+        atom = make_atom(radius=OT_ATOM_RADIUS).add_updater(
+            lambda m: m.move_to([OT_PLANE_X, OT_AXIS + focus_height(slope.get_value()), 0]))
+        title = heading("From the SLM to the atoms").move_to(HOLO_HEADING, aligned_edge=UL)
+
+        self.add(slope)
+        self.play(FadeIn(title), FadeIn(slm), FadeIn(lenses), FadeIn(plane), FadeIn(names))
+        self.play(FadeIn(incoming), FadeIn(beam), FadeIn(atom))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        # the mask, face on above the SLM, and the focal plane above the foci:
+        # the grating's periods and the spot's place follow the slope drawn
+        def periods():
+            return OT_PERIODS_PER_SLOPE * slope.get_value()
+
+        def grating():
+            return grating_phase(x, y, 0, -periods())
+
+        mask = PhaseMask(grating(), aperture).set(height=OT_PICTURE)
+        mask.move_to([OT_SLM_X - 0.8, OT_PICTURE_Y, 0])
+        focal = FocalImage(focal_view(grating(), amplitude), FOCAL_SPOT_COLOR, gamma=HG_GAMMA)
+        focal.set(height=OT_PICTURE).move_to([OT_PLANE_X + 0.9, OT_PICTURE_Y, 0])
+        frame = framed(focal)
+        leaders = VGroup(
+            DashedLine(slm.get_top(), mask.get_bottom(), **GUIDE_STYLE),
+            DashedLine(plane.get_top(), focal.get_bottom(), **GUIDE_STYLE),
+        )
+        labels = VGroup(panel_label("mask", mask), panel_label("focal plane", focal))
+        self.play(FadeIn(mask), FadeIn(focal), FadeIn(frame), Create(leaders), FadeIn(labels))
+        mask.add_updater(lambda m: m.paint(grating()))
+        focal.add_updater(lambda m: m.paint(focal_view(grating(), amplitude)))
+        self.play(slope.animate.set_value(OT_SLOPE), run_time=OT_STEER_TIME)
+        self.play(slope.animate.set_value(-OT_SLOPE), run_time=2 * OT_STEER_TIME)
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        # an array: the mask sends a beam to every focus at once
+        self.play(slope.animate.set_value(0), run_time=OT_STEER_TIME)
+        mask.clear_updaters()
+        focal.clear_updaters()
+        slopes = np.linspace(-OT_SLOPE, OT_SLOPE, 5)
+        spots = np.array([[0.0, -OT_PERIODS_PER_SLOPE * s] for s in slopes])
+        array_mask = iterate_hologram(x, y, amplitude, spots, 20)[0][-1]
+        fan = VGroup(*[beamlet(OT_BEAM, s, OT_SLM_X, OT_LENSES, OT_PLANE_X, OT_AXIS,
+                               OT_OPACITY / 2) for s in slopes])
+        atoms = VGroup(*[make_atom(radius=OT_ATOM_RADIUS)
+                         .move_to([OT_PLANE_X, OT_AXIS + focus_height(s), 0])
+                         for s in slopes])
+        atom.clear_updaters()
+        mask.paint(array_mask)
+        focal.paint(focal_view(array_mask, amplitude) * len(spots))
+        self.play(FadeOut(beam), FadeOut(atom), FadeIn(fan), FadeIn(atoms))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        link = Arrow(mask.get_right(), focal.get_left(), **TRANSFORM_ARROW_STYLE)
+        law = Tex("the focal plane is the Fourier transform of the SLM plane",
+                  font_size=FONT_STEP).next_to(link, UP, buff=0.12)
+        self.play(GrowArrow(link), FadeIn(law))
         self.wait(HOLO_SETTLE)
         self.beat()

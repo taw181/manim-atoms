@@ -291,6 +291,7 @@ Copy from these when building something similar.
 - **A picture recomputed every frame from trackers** (a mask and the focal plane it makes). `tweezers.scenes.holography`: `PhaseMaskBuildingBlocks`.
 - **An algorithm stepped through, then run** (pictures, bars and a number all read from one step counter). `tweezers.scenes.holography`: `HologramIteration`.
 - **A table of pictures, then a quantity taken away term by term.** `tweezers.scenes.holography`: `ZernikeCorrection`.
+- **An optical train side on, with light traced through its lenses** and face-on pictures above it. `tweezers.scenes.holography`: `OpticalTrain`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.
