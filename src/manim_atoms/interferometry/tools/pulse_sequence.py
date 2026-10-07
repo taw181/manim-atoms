@@ -59,9 +59,16 @@ import numpy as np
 from manim import *
 
 from manim_atoms.interferometry.style import *
-from manim_atoms.core.primitives import draw_legs, make_atom, recoil, state_colors
+from manim_atoms.core.primitives import (
+    absorb,
+    draw_legs,
+    emit,
+    make_atom,
+    recoil,
+    state_colors,
+)
 from manim_atoms.core.spacetime import draw_wavy_legs, no_displacement
-from manim_atoms.interferometry.tools.pulses import kick_worldline
+from manim_atoms.interferometry.tools.pulses import fire_vertical_pulse, kick_worldline
 
 SEQUENCE_PORT = 0.7  # how far the output ports are drawn past the last pulse
 MERGE_TOL = 1e-9  # how close two outputs must be to be one
@@ -242,68 +249,203 @@ def _coinciding(arms):
     return groups
 
 
-def play_sequence(scene, seq, atoms, *, span=None, ray_time=0.3, flash_time=0.35,
-                  fast_after=None, fast_pace=0.6, colors=None, before_pulse=None,
-                  with_pulse=None, after_step=None):
-    """Animate ``seq``: one ray per pulse, reaching from its side through to
-    the furthest arm; a flash on every arm it kicks, recoloured to its new
-    state; then the legs to the next pulse. ``atoms`` maps arm names to the
-    atoms already on screen (``{"": atom}`` to start); the dict returned
-    maps the arms left at the end.
+def play_sequence(scene, seq, atoms, *, style="ray", span=None, ray_time=0.3,
+                  flash_time=0.35, fast_after=None, fast_pace=0.6, kick_time=0.6,
+                  colors=None, atom=None, ports=True, before_pulse=None,
+                  with_pulse=None, photon_extras=None, on_kick=None,
+                  before_legs=None, with_legs=None, after_step=None):
+    """Animate ``seq``, pulse by pulse: the pulse, what it does to each arm it
+    drives, then the legs to the next pulse (bowed, if the sequence is
+    displaced). ``atoms`` maps arm names to the atoms already on screen
+    (``{"": atom}`` to start); it is updated in place, so a hook can read the
+    arms from it, and returned.
+
+    The pulse, by ``style``:
+
+    - "ray": one ray from its side through to the furthest arm; a flash on
+      every arm it kicks, recoloured with the flash. Quick, for long
+      sequences (LMT).
+    - "photon": one wavepacket per driven arm, in arm order -- absorbed by a
+      |g> arm, stimulating emission from an |e> arm (core.primitives' absorb
+      and emit, from the pulse's side) -- each followed by its own play
+      recolouring that arm. At a split the halves are born in their final
+      colours; at a closing pi/2 one packet reaches the meeting point. For
+      explainers, where each pulse is the point (MachZehnder).
+    - "column": the pulse climbs a column through the arms it drives
+      (fire_vertical_pulse), then one play recolours them all (ClockPhase).
+
+    Options:
 
     - ``span``: (bottom, top) the rays run within, to keep clear of a title;
     - ``ray_time``, ``flash_time``: seconds, scaled by ``fast_pace`` from
-      pulse ``fast_after`` on;
-    - ``before_pulse(step, k)``: called before each ray (a stage caption);
-    - ``with_pulse(step)``: mobjects faded in with the ray (a pi/2 label);
-    - ``after_step(step, k)``: called once the legs are flown (a stop).
+      pulse ``fast_after`` on ("ray");
+    - ``kick_time``: the recolouring play's seconds ("photon", "column");
+    - ``atom(color, opacity)``: makes the halves and the ports (default
+      make_atom);
+    - ``ports``: False stops after the last pulse, with no ports drawn, for
+      a scene that reads its ports out itself.
+
+    Hooks, each optional:
+
+    - ``before_pulse(step, k)``: before the pulse (a caption, a marker);
+    - ``with_pulse(step)``: mobjects faded in with the ray ("ray");
+    - ``photon_extras(step, k, arm)``: (extras, fade) for the packet sent to
+      ``arm``, as absorb takes them (a caption, the k-vector marker, a
+      level-diagram glow); an emission fades its ``fade`` in the recolouring
+      play that follows it;
+    - ``on_kick(step, k, arm)``: animations played with ``arm``'s
+      recolouring (a recoil arrow growing, a dial hand changing colour); at
+      a split, called for the kicked half;
+    - ``before_legs(step, k)``: once the pulse is done, before the legs (a
+      laser phase written in, a band faded in);
+    - ``with_legs(step, k)``: (fade, extra) for the legs, as draw_legs takes
+      them (arrows fading, kets fading in, hands turning);
+    - ``after_step(step, k)``: once the legs are flown (a stop).
     """
     colors = colors or {"g": ATOM_COLOR, "e": KICKED_COLOR}
+    if atom is None:
+        def atom(color, opacity):
+            return make_atom(color, opacity=opacity)
+    if style not in ("ray", "photon", "column"):
+        raise ValueError(f"style {style!r}: 'ray', 'photon' or 'column'")
     displaced = seq.disp is not no_displacement
+    kicks = on_kick or (lambda step, k, arm: ())
     for k, step in enumerate(seq.steps):
+        last = k + 1 == len(seq.steps)
         if before_pulse is not None:
             before_pulse(step, k)
-        pace = 1.0 if fast_after is None or k < fast_after else fast_pace
-        from_below = step.pulse.from_below
-        points = [atoms[n].get_center() for n in step.driven]
-        reach = (max if from_below else min)(points, key=lambda p: p[1])
-        ray = kick_worldline(reach, from_below, steepness=0.0, span=span)
-        extras = with_pulse(step) if with_pulse is not None else ()
-        scene.play(Create(ray), *[FadeIn(m) for m in extras], rate_func=linear,
-                   run_time=ray_time * pace)
-
-        if step.merges:
-            flashes = [Flash(atoms[n], **FLASH_STYLE) for n in step.driven]
-            scene.play(*flashes, FadeOut(ray), run_time=flash_time * pace)
-            scene.remove(*[atoms.pop(n) for n in step.driven])
-            for name, start, _, state, _ in step.legs:
-                if name not in atoms:
-                    atoms[name] = make_atom(colors[state], opacity=SUPERPOSITION_OPACITY)
-                    scene.add(atoms[name].move_to(start))
+        if style == "ray":
+            _ray(scene, step, k, atoms, colors, atom, span, with_pulse,
+                 ray_time, flash_time,
+                 1.0 if fast_after is None or k < fast_after else fast_pace)
         else:
-            kicked_to = {arm: state for arm, _, state in step.hits}
-            for parent, stay, kicked in step.splits:
-                split = atoms.pop(parent)
-                at = split.get_center()
-                # both halves start in the parent's state; the kicked one is
-                # recoloured with the flash
-                kept = colors["e" if kicked_to[kicked] == "g" else "g"]
-                atoms[stay] = make_atom(kept, opacity=SUPERPOSITION_OPACITY).move_to(at)
-                atoms[kicked] = make_atom(kept, opacity=SUPERPOSITION_OPACITY).move_to(at)
-                scene.remove(split)
-                scene.add(atoms[stay], atoms[kicked])
-            flashes = [Flash(atoms[arm], **FLASH_STYLE) for arm, _, _ in step.hits]
-            recolour = [state_colors(atoms[arm], colors[state]) for arm, _, state in step.hits]
-            scene.play(*flashes, *recolour, FadeOut(ray), run_time=flash_time * pace)
+            _photons(scene, step, k, atoms, colors, atom, style, kick_time,
+                     photon_extras, kicks, ports or not last)
         for name in step.pulse.drop:
             if name in atoms:
                 scene.remove(atoms.pop(name))
+        if before_legs is not None:
+            before_legs(step, k)
 
+        if last and not ports:
+            break
+        fade, extra = with_legs(step, k) if with_legs is not None else ((), ())
         if displaced:
             draw_wavy_legs(scene, [(atoms[a], s, e, colors[st], d)
-                                   for a, s, e, st, d in step.legs])
+                                   for a, s, e, st, d in step.legs],
+                           fade=fade, extra=extra)
         else:
-            draw_legs(scene, [(atoms[a], s, e, colors[st]) for a, s, e, st, _ in step.legs])
+            draw_legs(scene, [(atoms[a], s, e, colors[st]) for a, s, e, st, _ in step.legs],
+                      fade=fade, extra=extra)
         if after_step is not None:
             after_step(step, k)
     return atoms
+
+
+def _ray(scene, step, k, atoms, colors, atom, span, with_pulse, ray_time, flash_time, pace):
+    """One pulse as a ray, with its flashes, splits, merges and recolouring."""
+    from_below = step.pulse.from_below
+    points = [atoms[n].get_center() for n in step.driven]
+    reach = (max if from_below else min)(points, key=lambda p: p[1])
+    ray = kick_worldline(reach, from_below, steepness=0.0, span=span)
+    extras = with_pulse(step) if with_pulse is not None else ()
+    scene.play(Create(ray), *[FadeIn(m) for m in extras], rate_func=linear,
+               run_time=ray_time * pace)
+
+    if step.merges:
+        flashes = [Flash(atoms[n], **FLASH_STYLE) for n in step.driven]
+        scene.play(*flashes, FadeOut(ray), run_time=flash_time * pace)
+        _ports(scene, step, atoms, colors, atom)
+        return
+    kicked_to = {arm: state for arm, _, state in step.hits}
+    for parent, stay, kicked in step.splits:
+        split = atoms.pop(parent)
+        at = split.get_center()
+        # both halves start in the parent's state; the kicked one is
+        # recoloured with the flash
+        kept = colors[_other(kicked_to[kicked])]
+        atoms[stay] = atom(kept, SUPERPOSITION_OPACITY).move_to(at)
+        atoms[kicked] = atom(kept, SUPERPOSITION_OPACITY).move_to(at)
+        scene.remove(split)
+        scene.add(atoms[stay], atoms[kicked])
+    flashes = [Flash(atoms[arm], **FLASH_STYLE) for arm, _, _ in step.hits]
+    recolour = [state_colors(atoms[arm], colors[state]) for arm, _, state in step.hits]
+    scene.play(*flashes, *recolour, FadeOut(ray), run_time=flash_time * pace)
+
+
+def _photons(scene, step, k, atoms, colors, atom, style, kick_time, photon_extras,
+             kicks, ports):
+    """One pulse as photons ("photon") or a column ("column")."""
+    x, from_below = step.x, step.pulse.from_below
+
+    def extras_for(arm):
+        return photon_extras(step, k, arm) if photon_extras is not None else ((), ())
+
+    def photon(arm, old_state):
+        """One packet to ``arm``; returns what the following play fades."""
+        extras, fade = extras_for(arm)
+        if old_state == "g" or step.merges:
+            absorb(scene, x, atoms[arm], extras=extras, fade=fade, from_below=from_below)
+            return ()
+        emit(scene, x, atoms[arm], extras=extras, from_below=from_below)
+        return fade
+
+    def column(targets):
+        """The column through ``targets``, captioned as photon_extras says."""
+        extras, fade = extras_for(step.driven[0])
+        if extras or fade:
+            raise ValueError("photon_extras is for style='photon'")
+        fire_vertical_pulse(scene, x, [atoms[n] for n in targets])
+
+    if step.merges:
+        # the arms meet: one packet reaches the meeting point
+        if style == "photon":
+            photon(step.driven[0], None)
+        else:
+            column([step.driven[0]])
+        if ports:
+            _ports(scene, step, atoms, colors, atom)
+        return
+
+    kicked_to = {arm: state for arm, _, state in step.hits}
+    if step.splits:
+        if style == "column":
+            column([parent for parent, _, _ in step.splits])
+        for parent, stay, kicked in step.splits:
+            kept = _other(kicked_to[kicked])
+            fade = photon(parent, kept) if style == "photon" else ()
+            split = atoms.pop(parent)
+            at = split.get_center()
+            atoms[stay] = atom(colors[kept], SUPERPOSITION_OPACITY).move_to(at)
+            atoms[kicked] = atom(colors[kicked_to[kicked]], SUPERPOSITION_OPACITY).move_to(at)
+            scene.remove(split)
+            scene.add(atoms[stay], atoms[kicked])
+            anims = [*kicks(step, k, kicked), *[FadeOut(m) for m in fade]]
+            if anims:
+                scene.play(*anims, run_time=kick_time)
+        return
+
+    if style == "photon":
+        for arm, _, state in step.hits:
+            fade = photon(arm, _other(state))
+            scene.play(state_colors(atoms[arm], colors[state]), *kicks(step, k, arm),
+                       *[FadeOut(m) for m in fade], run_time=kick_time)
+    else:
+        column([arm for arm, _, _ in step.hits])
+        scene.play(*[state_colors(atoms[arm], colors[state]) for arm, _, state in step.hits],
+                   *[a for arm, _, _ in step.hits for a in kicks(step, k, arm)],
+                   run_time=kick_time)
+
+
+def _ports(scene, step, atoms, colors, atom):
+    """The arms a closing pulse merged give way to its output ports."""
+    scene.remove(*[atoms.pop(n) for n in step.driven])
+    for name, start, _, state, _ in step.legs:
+        if name not in atoms:
+            atoms[name] = atom(colors[state], SUPERPOSITION_OPACITY)
+            scene.add(atoms[name].move_to(start))
+
+
+def _other(state):
+    """The other internal state."""
+    return "e" if state == "g" else "g"

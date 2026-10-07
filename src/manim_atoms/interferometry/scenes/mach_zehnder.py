@@ -1,8 +1,10 @@
 """A single beamsplitter kick, and the full Mach-Zehnder light-pulse sequence.
 
-Each scene keeps its own geometry block; the atoms and pulses they are drawn
-with come from manim_atoms.core.primitives, and everything visual from
-manim_atoms.style. SinglePhotonMachZehnder subclasses MachZehnder.
+Each scene is a geometry block and a list of pulses: the pulse-sequence
+engine (interferometry.tools.pulse_sequence) steps the atom through them and
+plays them photon by photon, and the scene adds what is its own -- captions,
+recoil arrows, the stops -- through the player's hooks. SinglePhotonMachZehnder
+subclasses MachZehnder.
 """
 
 import numpy as np
@@ -10,16 +12,13 @@ from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.pulses import pulse_caption
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse, play_sequence, run_sequence
 from manim_atoms.core.primitives import (
     make_atom,
     momentum_arrow,
     grow,
     make_k_arrow,
     make_guide,
-    absorb,
-    emit,
-    draw_legs,
-    state_colors,
     state_label,
     state_legend,
 )
@@ -44,6 +43,8 @@ MZ_A = np.array([-5.8, -2.6, 0.0])  # first pi/2
 MZ_B = MZ_A + RIGHT * MZ_L  # pi pulse, lower arm
 MZ_B_UP = MZ_A + (RIGHT + UP) * MZ_L  # pi pulse, upper arm
 MZ_C = MZ_B_UP + RIGHT * MZ_L  # second pi/2, where the arms overlap again
+MZ_PULSES = [Pulse(MZ_A[0], 0.5), Pulse(MZ_B[0], 1.0), Pulse(MZ_C[0], 0.5)]
+MZ_LABELS = (r"\pi/2", r"\pi", r"\pi/2")
 
 
 class SingleLaserKick(Scene):
@@ -73,41 +74,27 @@ class SingleLaserKick(Scene):
         )
         in_label.clear_updaters()
 
-        # --- 3. laser pulse from below -----------------------------------
-        pulse_caption = MathTex(
+        # --- 3. one pulse from below, and the arms it launches -------------
+        # A sequence of one pi/2, whose two outputs fly on as the arms. One
+        # recoil is slope 1: equal horizontal components, a true 45 degree
+        # kick, the resultant of the forward momentum p and the recoil hbar k.
+        seq = run_sequence([Pulse(SPLIT_X, 0.5)], SPLIT_POINT, 1.0, port=ARM_LENGTH)
+        caption = MathTex(
             r"\pi/2\ \text{pulse}", font_size=FONT_ANNOTATION, color=LASER_COLOR
         ).next_to(SPLIT_POINT, DOWN, buff=0.9)
         k_arrow = make_k_arrow(SPLIT_X - 0.9, -config.frame_y_radius + 0.45)
-        absorb(self, SPLIT_X, atom, extras=[pulse_caption, k_arrow], fade=[k_arrow])
 
-        # --- 4. the split -------------------------------------------------
-        straight = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(SPLIT_POINT)
-        kicked = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(
-            SPLIT_POINT
+        def kick(step, k, arm):
+            """The momentum kick, purely vertical, and the incoming label goes."""
+            recoil = momentum_arrow(SPLIT_POINT, UP, r"\hbar k", length=1.2)
+            return [*grow(recoil), FadeOut(in_label)]
+
+        arms = play_sequence(
+            self, seq, {"": atom}, style="photon", kick_time=0.7,
+            photon_extras=lambda step, k, arm: ([caption, k_arrow], [k_arrow]),
+            on_kick=kick,
         )
-
-        # The momentum kick is purely vertical -- the 45 degree path is the
-        # resultant of the forward momentum p and the recoil hbar k.
-        recoil = momentum_arrow(SPLIT_POINT, UP, r"\hbar k", length=1.2)
-
-        self.remove(atom)
-        self.add(straight, kicked)
-        self.play(*grow(recoil), FadeOut(in_label), run_time=0.7)
-
-        # --- 5. diverging arms -------------------------------------------
-        # Equal horizontal component on both arms -> a true 45 degree kick.
-        draw_legs(
-            self,
-            [
-                (straight, SPLIT_POINT, SPLIT_POINT + RIGHT * ARM_LENGTH, ATOM_COLOR),
-                (
-                    kicked,
-                    SPLIT_POINT,
-                    SPLIT_POINT + ARM_LENGTH * (RIGHT + UP),
-                    KICKED_COLOR,
-                ),
-            ],
-        )
+        straight, kicked = arms["0"], arms["1"]
 
         # --- 6. final state labels ---------------------------------------
         straight_label = state_label(r"|g,\,p\rangle", ATOM_COLOR).next_to(
@@ -149,71 +136,19 @@ class MachZehnder(Scene):
             run_time=(MZ_A[0] - atom.get_center()[0]) / V,
         )
 
-        # --- 3. first pi/2: split ----------------------------------------
-        k_arrow = make_k_arrow(MZ_A[0] - 0.9, -config.frame_y_radius + 0.45)
-        absorb(
-            self,
-            MZ_A[0],
-            atom,
-            extras=[pulse_caption(r"\pi/2", MZ_A[0]), k_arrow],
-            fade=[k_arrow],
+        # --- 3. the three pulses, photon by photon -------------------------
+        # pi/2 splits, pi swaps the arms' internal states and with them their
+        # momenta (the upper arm loses hbar k and flattens out, the lower gains
+        # it and climbs, so they converge), and the last pi/2 recombines them
+        # where they meet. Each leg is coloured by the state that arm is in
+        # while traversing it. One recoil is slope 1.
+        seq = run_sequence(MZ_PULSES, MZ_A, 1.0, port=MZ_OUT)
+        ports = play_sequence(
+            self, seq, {"": atom}, style="photon",
+            photon_extras=self.photon_extras, on_kick=self.kick,
+            with_legs=self.with_legs, after_step=self.stop,
         )
-
-        lower = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(MZ_A)
-        upper = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(MZ_A)
-        recoil = momentum_arrow(MZ_A, UP, r"\hbar k")
-
-        self.remove(atom)
-        self.add(lower, upper)
-        self.play(*grow(recoil), run_time=0.6)
-
-        # Each leg is coloured by the state that arm is in while traversing it.
-        draw_legs(
-            self,
-            [(lower, MZ_A, MZ_B, ATOM_COLOR), (upper, MZ_A, MZ_B_UP, KICKED_COLOR)],
-            fade=[recoil],
-        )
-        self.beat()
-
-        # --- 4. pi pulse: the mirror -------------------------------------
-        # The pi pulse exchanges the two arms' internal states, and with them
-        # their momenta: the upper arm loses hbar k and flattens out, the lower
-        # arm gains it and climbs. The arms converge instead of diverging.
-        gain = momentum_arrow(MZ_B, UP, r"+\hbar k")
-        lose = momentum_arrow(MZ_B_UP, DOWN, r"-\hbar k", label_dir=RIGHT)
-
-        # Bottom to top, following the beam. Both arms share a column, so the
-        # pulse rising to the upper arm passes over the lower arm's +hbar k
-        # arrow -- that overlap is worth accepting, because each arrow has to
-        # stand on the atom it acts on, where the kick actually happens.
-        absorb(self, MZ_B[0], lower, extras=[pulse_caption(r"\pi", MZ_B[0])])
-        self.play(state_colors(lower, KICKED_COLOR), *grow(gain), run_time=0.6)
-        # The excited arm is driven the other way: one photon arrives, two
-        # leave, and it recoils by -hbar k, which flattens it out.
-        emit(self, MZ_B_UP[0], upper)
-        self.play(state_colors(upper, ATOM_COLOR), *grow(lose), run_time=0.6)
-        draw_legs(
-            self,
-            [(lower, MZ_B, MZ_C, KICKED_COLOR), (upper, MZ_B_UP, MZ_C, ATOM_COLOR)],
-            fade=[gain, lose],
-        )
-        self.beat()
-
-        # --- 5. second pi/2: recombine -----------------------------------
-        # Both arms sit at MZ_C now, so one pulse covers them.
-        absorb(self, MZ_C[0], lower, extras=[pulse_caption(r"\pi/2", MZ_C[0])])
-
-        port_g = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
-        port_e = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
-        self.remove(lower, upper)
-        self.add(port_g, port_e)
-        draw_legs(
-            self,
-            [
-                (port_g, MZ_C, MZ_C + RIGHT * MZ_OUT, ATOM_COLOR),
-                (port_e, MZ_C, MZ_C + (RIGHT + UP) * MZ_OUT, KICKED_COLOR),
-            ],
-        )
+        port_g, port_e = ports["g"], ports["e"]
 
         # --- 6. the enclosed area and the output ports -------------------
         loop = Polygon(MZ_A, MZ_B, MZ_C, MZ_B_UP, **LOOP_AREA_STYLE)
@@ -231,3 +166,45 @@ class MachZehnder(Scene):
         self.beat()
         self.play(Write(p1), Write(p2), Write(readout), run_time=1.3)
         self.wait(2.0)
+
+    # --- the player's hooks: what the sequence adds to the engine's ------------
+    def photon_extras(self, step, k, arm):
+        """The pulse's caption, with its first photon; on the first pulse the
+        k-vector marker too, gone as the photon is absorbed."""
+        if arm != step.driven[0]:
+            return (), ()
+        caption = pulse_caption(MZ_LABELS[k], step.x)
+        if k > 0:
+            return [caption], []
+        k_arrow = make_k_arrow(step.x - 0.9, -config.frame_y_radius + 0.45)
+        return [caption, k_arrow], [k_arrow]
+
+    def kick(self, step, k, arm):
+        """A recoil arrow on the atom it acts on, where the kick happens.
+
+        Bottom to top, following the beam. At the mirror both arms share a
+        column, so the pulse rising to the upper arm passes over the lower
+        arm's +hbar k arrow -- that overlap is worth accepting, because each
+        arrow has to stand on the atom it acts on. The excited arm is driven
+        the other way: one photon arrives, two leave, and it recoils by
+        -hbar k, which flattens it out.
+        """
+        at = next(point for name, point, _ in step.hits if name == arm)
+        if k == 0:
+            arrow = momentum_arrow(at, UP, r"\hbar k")
+        elif arm == "0":
+            arrow = momentum_arrow(at, UP, r"+\hbar k")
+        else:
+            arrow = momentum_arrow(at, DOWN, r"-\hbar k", label_dir=RIGHT)
+        self.arrows = [*getattr(self, "arrows", []), arrow]
+        return grow(arrow)
+
+    def with_legs(self, step, k):
+        """The pulse's recoil arrows fade as the arms fly off."""
+        fade, self.arrows = getattr(self, "arrows", []), []
+        return fade, ()
+
+    def stop(self, step, k):
+        """A stop as the atoms reach the next pulse; the ports run on."""
+        if k + 1 < len(MZ_PULSES):
+            self.beat()
