@@ -93,8 +93,11 @@ dot = Dot(plot_point(axes, np.log10(x0), np.log10(y0)))
   `aion.tools.uldm_plot.clipped` does.
 - `aion.tools.gw_plot.sensitivity_axes` is these axes labelled for strain.
 
-Linear axes are manim's `Axes`, styled with `PLOT_FOREGROUND`; see
-`trapping.tools.hifais.loading_axes` for one with ticks, labels and units.
+Linear axes: `core.plots.ticked_axes` gives (axes, frame) with MathTex x
+ticks (so they can read π), numbered y ticks and axis labels, as the DAI
+fringe and Lissajous panels use; `core.plots.legend_row` is the key above
+them. `trapping.tools.hifais.loading_axes` is a hand-styled `Axes` with
+numbered ticks on both axes and units.
 
 ### 3. A matplotlib figure for a slide
 

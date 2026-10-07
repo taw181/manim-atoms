@@ -74,9 +74,10 @@ block.
   internal state doesn't change, so colour can no longer carry the arm: use
   the slope, and label the momentum states. Say which it is in the title.
 - **Pulses from above.** `kick_worldline(point, from_below=False)` draws
-  the photon, and `recoil(state, False)` gives the kick's sign. `absorb`
-  and `emit` drive from below only, so a scene that needs one from above
-  draws it with `kick_worldline` and `Flash`.
+  the photon, and `recoil(state, False)` gives the kick's sign.
+  `absorb(..., from_below=False)` and `emit(..., from_below=False)` play
+  the photon coming down from the top of the frame (an |g⟩ atom then gets
+  −ħk, an |e⟩ atom +ħk).
 - **Gravity, a passing wave.** Bow the legs with a displacement (recipe 5).
   Pulses stay vertical: the laser hasn't moved.
 - **Another species.** Its levels and line colours go in a new `species/`
