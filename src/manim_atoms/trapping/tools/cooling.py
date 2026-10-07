@@ -8,12 +8,58 @@ light drives -- is the species' level scheme (species.scheme.LevelScheme,
 SrLevels for strontium); SweepFan adds a narrow-line MOT's frequency sweep
 to it. Upstream of the trap, Oven, AtomBeam,
 make_push_beam and make_baffle draw where its atoms come from.
+CoolingStage describes one stage of a cooling sequence for a scene to play
+(trapping.scenes.cooling.CoolingSequence).
 """
+
+from dataclasses import dataclass
 
 import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
+
+
+# --- a cooling stage, as configuration ---------------------------------------
+@dataclass(frozen=True)
+class CoolingStage:
+    """One stage of a cooling sequence, as CoolingSequence plays it.
+
+    - ``stage``: its timeline block and heading (trapping.tools.sequence.Stage);
+    - ``beams``: the role of the line the MOT beams run on ("cooling",
+      "narrow"); a new role swaps the beam set;
+    - ``drive``: the level-scheme keys lit while it runs (none while a sweep
+      stands in for the line);
+    - ``temperature``, ``gradient``, ``duration``: TeX, for its temperature
+      tag, its field gradient beside the coil, its time over its block;
+    - ``coil_width``: how heavily the coils are drawn (COIL_STRONG_WIDTH,
+      COIL_WEAK_WIDTH);
+    - ``cloud``: (radius, temperature) the cloud ends the stage at;
+    - ``sweep``: TeX for the frequency modulation, if the narrow line is swept
+      (SweepFan), shown under its heading;
+    - ``glow``: the cloud lit in the narrow line's colour;
+    - ``up_beam``: a seventh beam from below, holding the cloud against
+      gravity;
+    - ``intensity``: the beams ramped to this, if they are;
+    - ``leak``: (leak keys, repump keys) on the level scheme, for a stage
+      where some atoms fall dark and repumps fetch them back;
+    - ``run_time``: how long its cooling plays (the first stage loads instead).
+    """
+
+    stage: object
+    beams: str
+    drive: tuple
+    temperature: str
+    gradient: str
+    duration: str
+    coil_width: float
+    cloud: tuple
+    sweep: str | None = None
+    glow: bool = False
+    up_beam: bool = False
+    intensity: float | None = None
+    leak: tuple | None = None
+    run_time: float = 3.0
 
 
 # --- the trap -------------------------------------------------------------

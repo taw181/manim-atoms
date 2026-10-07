@@ -414,6 +414,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/tools/cooling.py` — A magneto-optical trap drawn as a cartoon: its beams, coils and atom cloud.
 
+- class `CoolingStage()`: One stage of a cooling sequence, as CoolingSequence plays it.
 - `project(v)`: A 3D direction (x right, y up, z out of the page) on the page.
 - `oblique_ring(center, radius, color=GUIDE_COLOR)`: A circle in the plane across the push axis (y up, z out of the page), in the oblique view: the depth cue for beams that leave the page.
 - `chevron(direction, tip, color, size=MOT_BEAM_WIDTH * 0.45)`: An open arrowhead: two strokes meeting at ``tip``, pointing along ``direction``.
@@ -456,12 +457,13 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `trapping.tools.sequence`
 
-`src/manim_atoms/trapping/tools/sequence.py` — One shot of the experiment: the stages, the Sr levels they drive, the timeline.
+`src/manim_atoms/trapping/tools/sequence.py` — One shot of an experiment: its stages, the lines they drive, the timeline.
 
-- `snapshot_index(t_ms)`: Which snapshot shows the cloud at ``t_ms``: the last one taken by then.
-- `snapshot_ms(t_ms)`: When the snapshot showing the cloud at ``t_ms`` was taken.
-- class `Stage()`: One stage of the sequence: its colour key, its label, and, where it has them, the transition it drives, the stretch of imaging video that shows it and the paper that covers it.
-- class `Timeline(VGroup)`: A row of coloured blocks, one per stage, with the label under each.
+- class `Imaging()`: An imaging video of the cloud through a shot: the file (as resources.data_path takes it), how many video frames each snapshot is held for, the crop (top, bottom, left, right in pixels), and when the first snapshot was taken and the time between them, in ms.
+  - `.snapshot_index(t_ms)`: Which snapshot shows the cloud at ``t_ms``: the last one taken by then.
+  - `.snapshot_ms(t_ms)`: When the snapshot showing the cloud at ``t_ms`` was taken.
+- class `Stage()`: One stage of a sequence: its key, its label, and, where it has them, the transition it drives, the stretch of imaging video that shows it, the paper that covers it, and its own (fill, edge) colours on the timeline (default: SEQUENCE_STAGE_COLORS[key]).
+- class `Timeline(VGroup)`: A row of coloured blocks, one per stage, with the label under each, and a wider gap after block ``break_after`` (if any).
   - `.activate(i)`
 - class `References(VGroup)`: A brace under each run of stages a paper covers, numbered, and the numbered list of papers below. The one covering the running stage is lit.
   - `.cite(n)`: Animations lighting reference ``n`` (None for none) and dimming the rest.
@@ -480,17 +482,18 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `trapping.scenes.cooling`
 
-`src/manim_atoms/trapping/scenes/cooling.py` — Cooling Sr: the three MOT stages that open every shot, as a cartoon.
+`src/manim_atoms/trapping/scenes/cooling.py` — Laser cooling, stage by stage, as a cartoon: Sr's three MOTs, or any species' sequence written as configuration.
 
-- `temperature_tag(key)`: The cloud's temperature at stage ``key``, as MathTex in its corner.
-- `gradient_tag(key, coils)`: The field gradient, beside the upper coil it is drawn with.
-- `duration_tag(key, block)`: How long a stage runs, over its block of the timeline.
-- Scene `CoolingSequence(MovingCameraScene)`: The blue MOT, the modulated red MOT and the narrowband red MOT: the light, the field gradient and the cloud at each, with the Sr levels and the timeline beside them. One stage_break() per stage.
+- `temperature_tag(stage)`: The cloud's temperature at a CoolingStage, as MathTex in its corner.
+- `gradient_tag(stage, coils)`: A CoolingStage's field gradient, beside the upper coil it is drawn with.
+- `duration_tag(stage, block)`: How long a CoolingStage runs, over its block of the timeline.
+- Scene `CoolingSequence(MovingCameraScene)`: A species' cooling stages as a cartoon: the light, the field gradient and the cloud at each, with its level scheme and the timeline beside them. One stage_break() per stage.
+  - settings: `SPECIES`, `STAGES`, `EXTRAS`
   - `.stage_break()`: The pause after each stage. A slide wrapper stops here instead.
   - `.upstream(levels)`: The oven filling the 2D MOT, then the push beam switching on and the stream setting off for the 3D MOT; returns that stream.
-  - `.heading(i)`: Stage ``i``'s heading, in the upper left; the modulated red MOT's carries the depth of its sweep under the transition it drives.
+  - `.heading(i)`: Stage ``i``'s heading, in the upper left; a swept stage's carries the depth of its sweep under the transition it drives.
   - `.next_stage(timeline, i, heading, anims)`: Move the timeline and heading on to stage ``i``, alongside ``anims``, and put up its duration; returns the new heading.
-  - `.cool(cloud, key, tag, *anims, run_time)`: Shrink and cool the cloud to where stage ``key`` leaves it, the temperature tag changing over halfway; returns the new tag.
+  - `.cool(cloud, stage, tag, *anims, run_time)`: Shrink and cool the cloud to where ``stage`` leaves it, the temperature tag changing over halfway; returns the new tag.
   - `uv run manim -ql src/manim_atoms/trapping/scenes/cooling.py CoolingSequence`
 
 ### `trapping.scenes.dipole`
@@ -515,10 +518,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `trapping.scenes.sequence`
 
-`src/manim_atoms/trapping/scenes/sequence.py` — One shot of the experiment, stage by stage, beside the imaging of it.
+`src/manim_atoms/trapping/scenes/sequence.py` — One shot of an experiment, stage by stage, beside the imaging of it.
 
-- Scene `ExperimentSequence(Scene)`: One shot, stage by stage: the timeline, the Sr levels each stage drives, the papers that cover them, and the imaging video of the cloud run on the same clock.
-  - settings: `STAGES`, `REFERENCES`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`
+- Scene `ExperimentSequence(Scene)`: One shot, stage by stage: the timeline, the levels each stage drives, the papers that cover them, and the imaging video of the cloud run on the same clock.
+  - settings: `SPECIES`, `STAGES`, `REFERENCES`, `IMAGING`, `BREAK_AFTER`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`
   - `uv run manim -ql src/manim_atoms/trapping/scenes/sequence.py ExperimentSequence`
 - Scene `ExperimentSequenceSimple(ExperimentSequence)`: The sequence up to loading the lower dipole trap, beside the video alone: no level scheme, and only the papers those stages cite.
   - settings: `STAGES`, `REFERENCES`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`

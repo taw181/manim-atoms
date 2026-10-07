@@ -1,11 +1,13 @@
-"""One shot of the experiment, stage by stage, beside the imaging of it.
+"""One shot of an experiment, stage by stage, beside the imaging of it.
 
 A timeline of the sequence runs along the bottom and lights up one stage at
-a time; the Sr level scheme lights the transition that stage drives; and the
-imaging video plays in the upper right corner through the stages it covers,
-from the blue MOT to loading the lower dipole trap. The stages after it --
-state preparation, interferometry and readout -- run over its last frame,
-dimmed.
+a time; the species' level scheme lights the transition that stage drives;
+and the imaging video, if there is one, plays in the upper right corner
+through the stages it covers. ExperimentSequence is configured by a species,
+its stages, its papers and its imaging; as written it is Sr's, its video
+running from the blue MOT to loading the lower dipole trap, and the stages
+after it -- state preparation, interferometry and readout -- over its last
+frame, dimmed.
 
 ExperimentSequenceSimple is the slide's cut: no level scheme, the sequence
 stopped once the lower trap has loaded, and the video in the middle.
@@ -15,18 +17,15 @@ from manim import *
 
 from manim_atoms.resources import data_path
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import SrLevels, STRONTIUM
+from manim_atoms.species.scheme import LevelScheme
+from manim_atoms.species.strontium import STRONTIUM
 from manim_atoms.trapping.tools.sequence import (
-    IMAGING_CROP,
-    IMAGING_FRAMES_PER_SNAPSHOT,
-    IMAGING_T0_MS,
-    IMAGING_VIDEO,
     REFERENCES,
+    SR_IMAGING,
     STAGES,
+    TIMELINE_BREAK_AFTER,
     References,
     Timeline,
-    snapshot_index,
-    snapshot_ms,
     stage_heading,
 )
 from manim_atoms.core.video import VideoFrame, load_video_frames
@@ -52,10 +51,17 @@ SEQ_SWITCH_TIME = 0.6  # how long the timeline takes to move to the next stage
 
 
 class ExperimentSequence(Scene):
-    """One shot, stage by stage: the timeline, the Sr levels each stage drives, the
-    papers that cover them, and the imaging video of the cloud run on the same clock."""
+    """One shot, stage by stage: the timeline, the levels each stage drives, the
+    papers that cover them, and the imaging video of the cloud run on the same clock.
+
+    Configured by class attributes: ``SPECIES``, ``STAGES`` (trapping.tools.sequence
+    Stage), ``REFERENCES``, ``IMAGING`` (an Imaging, or None for no video panel),
+    ``BREAK_AFTER`` (the timeline's gap), ``LEVELS`` (draw the level scheme)."""
+    SPECIES = STRONTIUM
     STAGES = STAGES
     REFERENCES = REFERENCES
+    IMAGING = SR_IMAGING
+    BREAK_AFTER = TIMELINE_BREAK_AFTER
     LEVELS = True
     VIDEO_SIZE = SEQ_VIDEO_SIZE
     VIDEO_CENTER = SEQ_VIDEO_CENTER
@@ -63,35 +69,36 @@ class ExperimentSequence(Scene):
 
     def construct(self):
         stages = self.STAGES
-        levels = SrLevels().scale(SEQ_LEVELS_SCALE).move_to(SEQ_LEVELS_CENTER)
-        timeline = Timeline(stages)
+        levels = LevelScheme(self.SPECIES).scale(SEQ_LEVELS_SCALE).move_to(SEQ_LEVELS_CENTER)
+        timeline = Timeline(stages, self.BREAK_AFTER)
         timeline.move_to([0, SEQ_TIMELINE_Y, 0], aligned_edge=UP)
         timeline.set_x(0)
         refs = References(timeline, stages, self.REFERENCES)
 
-        frames = load_video_frames(
-            data_path(*IMAGING_VIDEO), every=IMAGING_FRAMES_PER_SNAPSHOT,
-            crop=IMAGING_CROP,
-        )
-        video = VideoFrame(frames).set(height=self.VIDEO_SIZE).move_to(self.VIDEO_CENTER)
-        t_ms = ValueTracker(IMAGING_T0_MS)
-        video.add_updater(lambda m: m.show(snapshot_index(t_ms.get_value())))
-        clock = always_redraw(lambda: Tex(
-            rf"$t = {snapshot_ms(t_ms.get_value()):.0f}$\,ms",
-            font_size=FONT_VIDEO_CLOCK,
-        ).next_to(video.get_corner(UL), DR, buff=0.15))
-        # drawn over the video and its clock, since the frames can't be faded
-        veil = Rectangle(width=self.VIDEO_SIZE, height=self.VIDEO_SIZE, stroke_width=0,
-                         fill_color=PLOT_BACKGROUND, fill_opacity=1).move_to(video)
-        border = SurroundingRectangle(video, buff=0, **IMAGE_BORDER_STYLE)
-
-        self.add(video, clock, veil)
+        imaging = self.IMAGING
+        if imaging is not None:
+            frames = load_video_frames(
+                data_path(*imaging.video), every=imaging.frames_per_snapshot,
+                crop=imaging.crop,
+            )
+            video = VideoFrame(frames).set(height=self.VIDEO_SIZE).move_to(self.VIDEO_CENTER)
+            t_ms = ValueTracker(imaging.t0_ms)
+            video.add_updater(lambda m: m.show(imaging.snapshot_index(t_ms.get_value())))
+            clock = always_redraw(lambda: Tex(
+                rf"$t = {imaging.snapshot_ms(t_ms.get_value()):.0f}$\,ms",
+                font_size=FONT_VIDEO_CLOCK,
+            ).next_to(video.get_corner(UL), DR, buff=0.15))
+            # drawn over the video and its clock, since the frames can't be faded
+            veil = Rectangle(width=self.VIDEO_SIZE, height=self.VIDEO_SIZE, stroke_width=0,
+                             fill_color=PLOT_BACKGROUND, fill_opacity=1).move_to(video)
+            border = SurroundingRectangle(video, buff=0, **IMAGE_BORDER_STYLE)
+            self.add(video, clock, veil)
         self.play(*([FadeIn(levels)] if self.LEVELS else []), FadeIn(timeline),
-                  FadeIn(refs), Create(border))
+                  FadeIn(refs), *([Create(border)] if imaging is not None else []))
 
         heading = VGroup()
         for i, stage in enumerate(stages):
-            new_heading = stage_heading(stage, STRONTIUM).move_to(self.HEADING_CENTER)
+            new_heading = stage_heading(stage, self.SPECIES).move_to(self.HEADING_CENTER)
             anims = [
                 *timeline.activate(i),
                 *(levels.drive(stage.transition) if self.LEVELS else []),
@@ -101,8 +108,8 @@ class ExperimentSequence(Scene):
                            FadeIn(new_heading, shift=UP * 0.2)),
             ]
             heading = new_heading
-            filmed = stage.video_ms is not None
-            was_filmed = i > 0 and stages[i - 1].video_ms is not None
+            filmed = imaging is not None and stage.video_ms is not None
+            was_filmed = imaging is not None and i > 0 and stages[i - 1].video_ms is not None
             if filmed and not was_filmed:
                 anims.append(veil.animate.set_fill(opacity=0))
             elif was_filmed and not filmed:

@@ -108,6 +108,22 @@ uv run python $S/compare_checksums.py /tmp/old1 /tmp/fa
 - Extract the differing frames (`ffmpeg -vf select`) and diff the pixels.
   Noise sits in a few pixels at low amplitude, often away from what changed.
 
+**When frames can't settle it** (`CoolingSequence`: old renders differ among
+themselves in 37 to 47 frames, and its camera pan in thousands of pixels),
+trace the scene's script instead, which is deterministic:
+
+```bash
+PYTHONPATH=/tmp/old/src uv run python $S/scene_trace.py /tmp/old/src/manim_atoms/trapping/scenes/cooling.py CoolingSequence /tmp/old.json
+uv run python $S/scene_trace.py src/manim_atoms/trapping/scenes/cooling.py CoolingSequence /tmp/new.json
+cmp /tmp/old.json /tmp/new.json          # identical: the same script, the same drawing
+```
+
+It dry-runs the scene and, after every play and wait, digests every mobject
+on screen (points, colours, opacities, stroke widths, in draw order). Equal
+traces mean the change cannot have changed a frame; any render difference
+left is noise. `TRACE_STOP=k` writes a per-mobject digest after step k, to
+find which mobject a difference is in.
+
 ## Habits that keep it cheap
 
 - **Move with code, not by hand.** Cut top-level definitions by `ast` span,

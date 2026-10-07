@@ -150,7 +150,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A species' level diagram**, each line lit while a stage drives it. `species.scheme`: `LevelScheme`, `LevelScheme.drive`; its pieces `transition_arrow`, `path_arrows`.
 - **Strontium**: 461, 689 and 698 nm, the repumps, 488 nm, 87Sr's F = 9/2. `species.strontium`: `STRONTIUM`, and `SrLevels`, its level scheme.
 - **A clock transition dragged by an oscillating field.** `aion.tools.uldm`: `make_modulated_levels`, `dm_upper`.
-- **The 689 nm line swept in a sawtooth.** `trapping.tools.cooling`: `SweepFan`, `make_sawtooth`.
+- **A species' narrow line swept in a sawtooth** (Sr's 689 nm), as a fan of arrows on its level scheme. `trapping.tools.cooling`: `SweepFan`, `make_sawtooth`.
 
 ## Bloch sphere
 
@@ -168,7 +168,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Trapping apparatus
 
 - **MOT beams**, counter-propagating pairs at any in-page angles or in 3D. `trapping.tools.cooling`: `MotBeams`.
-- **The red MOT's up beam**, a push beam, and a baffle. `trapping.tools.cooling`: `make_up_beam`, `make_push_beam`, `make_baffle`.
+- **A narrow-line MOT's up beam**, a push beam, and a baffle. `trapping.tools.cooling`: `make_up_beam`, `make_push_beam`, `make_baffle`.
 - **Anti-Helmholtz coils**, drawn as heavy as their gradient. `trapping.tools.cooling`: `Coils`.
 - **An oven.** `trapping.tools.cooling`: `Oven`.
 - **3D on the page**: an oblique projection, a ring across the push axis, an open arrowhead. `trapping.tools.cooling`: `project`, `oblique_ring`, `chevron`.
@@ -184,9 +184,10 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Timelines and staged sequences
 
 - **The experiment's stages**, as data. `trapping.tools.sequence`: `Stage`.
+- **A cooling stage**, as configuration for a cooling cartoon: its light, field, cloud, sweep, up beam, leak and repump. `trapping.tools.cooling`: `CoolingStage`; played by `trapping.scenes.cooling`: `CoolingSequence`.
 - **A timeline of coloured blocks** lighting up stage by stage, and braced references under it. `trapping.tools.sequence`: `Timeline`, `References`.
 - **The running stage's heading**, and a grey caption under it. `trapping.tools.sequence`: `stage_heading`, `caption`.
-- **Which video frame shows a given time.** `trapping.tools.sequence`: `snapshot_index`, `snapshot_ms`.
+- **An imaging video of a shot**, and which frame shows a given time. `trapping.tools.sequence`: `Imaging`, `Imaging.snapshot_index`, `Imaging.snapshot_ms`; Sr's is `SR_IMAGING`.
 
 ## Fields and waves over a diagram
 
