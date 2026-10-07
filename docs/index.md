@@ -92,10 +92,10 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 ## Pulse sequences and arm bookkeeping
 
-- **The engine.** It steps one atom through a list of (time, kind, stage) pulses ("split", "up", "down", "merge"), splitting, kicking and merging arms. For each pulse it returns where the pulse lands, what it does to each arm, and the legs flown to the next pulse. `interferometry.tools.pulse_sequence`: `lmt_history`.
-- **An LMT Mach–Zehnder sequence** of any odd order, written for the engine. `interferometry.tools.lmt`: `lmz_pulses`.
-- **Animating a history**: one ray per pulse, a flash on every arm it drives, then the legs. `interferometry.scenes.lmt`: `LMTMachZehnder.play_history` (on the scene).
-- **The corners of a simple kick ladder**, one arm at a time. `interferometry.tools.lmt`: `lmt_points`.
+- **The engine.** It steps one atom through any list of pulses. Each `Pulse` has an area (½ splits, 1 swaps), a direction, optionally the arms it drives and the arms it drops, and a stage. Merging is automatic: outputs that coincide after a π/2 become one, which is how an interferometer closes. It returns a `Sequence` of `Step`s, each with where the pulse lands, its splits, hits, merges and legs, plus every arm's corners and the output ports. It covers Mach–Zehnder, LMT, Ramsey–Bordé, and with a displacement (disp) a gravimeter or a fountain. `interferometry.tools.pulse_sequence`: `run_sequence`, `Pulse`, `Sequence`, `Step`, `Arm`.
+- **Animating a sequence**: one ray per pulse, a flash on every arm it kicks, the recolouring and splits, then the legs (bowed, if displaced). Hooks add captions and stops. `interferometry.tools.pulse_sequence`: `play_sequence`.
+- **Sequences already written**: the LMT Mach–Zehnder of any odd order, and the LMT ladder. `interferometry.tools.lmt`: `lmz_pulses`, `lmt_ladder_pulses`.
+- **Superseded, going in the next commit.** `interferometry.tools.pulse_sequence`: `lmt_history`. `interferometry.tools.lmt`: `lmt_points`. `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`.
 
 ## Displacements: gravity, a passing wave
 

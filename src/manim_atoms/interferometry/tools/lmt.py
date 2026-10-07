@@ -13,6 +13,8 @@ import numpy as np
 from manim import *
 
 from manim_atoms.interferometry.style import *
+from manim_atoms.core.primitives import recoil
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse
 
 
 # --- large momentum transfer geometry -------------------------------------
@@ -41,19 +43,40 @@ def lmt_points(slope_per_kick):
 
 
 def lmz_pulses(n, step, T, t0=0.0, stage=0):
-    """The LMT Mach-Zehnder of order n (odd): pi/2 and (n - 1)/2 pulses out,
-    a mirror of n pulses, (n - 1)/2 pulses back and a pi/2. Every pulse drives
-    both arms, so each opens or closes the gap by 2 hbar k. It is symmetric in
-    time about the middle of the mirror, so the arms close.
-    Stages ``stage`` to ``stage + 2``: beam splitter, mirror, beam splitter."""
+    """The LMT Mach-Zehnder of order n (odd), as Pulse objects for
+    run_sequence: a pi/2 and (n - 1)/2 pulses out, a mirror of n pulses,
+    (n - 1)/2 pulses back and a pi/2. Every pulse drives both arms, from
+    whichever side opens (or, at the mirror and after it, closes) the gap by
+    2 hbar k; the sequence is symmetric in time about the middle of the
+    mirror, so the arms close. Stages ``stage`` to ``stage + 2``: beam
+    splitter, mirror, beam splitter."""
     m = (n - 1) // 2
     end = 2 * T + (n - 1) * step
-    pulses = [(0.0, "split", stage)]
-    pulses += [(j * step, "up", stage) for j in range(1, m + 1)]
-    pulses += [(T + j * step, "down", stage + 1) for j in range(n)]
-    pulses += [(end - j * step, "up", stage + 2) for j in range(m, 0, -1)]
-    pulses.append((end, "merge", stage + 2))
-    return [(t0 + t, kind, s) for t, kind, s in pulses]
+    pushes = [(0.0, 0.5, +1, stage)]  # (time, area, which way the kicked arm goes, stage)
+    pushes += [(j * step, 1.0, +1, stage) for j in range(1, m + 1)]
+    pushes += [(T + j * step, 1.0, -1, stage + 1) for j in range(n)]
+    pushes += [(end - j * step, 1.0, +1, stage + 2) for j in range(m, 0, -1)]
+    pushes.append((end, 0.5, +1, stage + 2))
+    pulses, kicked = [], "g"  # the state of the arm the first pulse kicks
+    for t, area, way, s in pushes:
+        # the beam splitters come from below; each pi pulse from whichever
+        # side's photon pushes the kicked arm `way`
+        from_below = area == 0.5 or recoil(kicked, True)[0] == way
+        pulses.append(Pulse(t0 + t, area, from_below, stage=s))
+        kicked = "e" if kicked == "g" else "g"
+    return pulses
+
+
+def lmt_ladder_pulses(kicks=LMT_KICKS, step=LMT_STEP, t0=LMT_T0):
+    """A pi/2 that splits the atom, then pi pulses alternating from below
+    and above: each drives both arms, which reach it in opposite states, so
+    one absorbs and the other is stimulated to emit and they are pushed
+    apart by 2 hbar k a pulse."""
+    pulses, t = [], t0
+    for i in range(kicks):
+        pulses.append(Pulse(t, 0.5 if i == 0 else 1.0, from_below=i % 2 == 0))
+        t += step
+    return pulses
 
 
 # --- the LMT Mach-Zehnder (Rudolph et al., Fig. 1c) -------------------------
