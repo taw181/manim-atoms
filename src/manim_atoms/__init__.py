@@ -3,8 +3,8 @@
 - ``manim_atoms.style``: the house style -- colours, type sizes, line styles
   and pacing -- that every figure draws from.
 - ``manim_atoms.core``: building blocks every topic draws with: atoms, laser
-  pulses, worldlines on a lab clock, Gaussian beams, slide layout, citations,
-  video frames.
+  pulses, worldlines on a lab clock, the Bloch sphere, beams and cavities,
+  log-log plots, slide layout, citations, video frames.
 - ``manim_atoms.species``: level schemes: a generic two-level diagram and
   strontium's levels and lines.
 - ``manim_atoms.interferometry``: light-pulse atom interferometry --
