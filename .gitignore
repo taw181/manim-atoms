@@ -3,3 +3,4 @@ __pycache__/
 media/
 *.egg-info/
 uv.lock.bak
+/slides/
