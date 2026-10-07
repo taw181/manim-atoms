@@ -55,6 +55,9 @@ def snapshot_ms(t_ms):
 # --- the stages -----------------------------------------------------------
 @dataclass(frozen=True)
 class Stage:
+    """One stage of the sequence: its colour key, its label, and, where it has them, the
+    transition it drives, the stretch of imaging video that shows it and the paper
+    that covers it."""
     key: str  # into SEQUENCE_STAGE_COLORS
     label: str  # Tex; "\\" breaks the line
     transition: str | None = None  # into TRANSITIONS

@@ -60,6 +60,7 @@ VS_READOUT_Y = 1.2  # just above the plot
 
 
 def caption(text, heading):
+    """A grey caption under ``heading``, left-aligned with it."""
     return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
         heading, DOWN, buff=0.3, aligned_edge=LEFT)
 
@@ -83,6 +84,8 @@ def recaption(step, text, heading):
 
 
 class VelocitySlicing(Scene):
+    """A long clock pulse excites the slowest atoms, a push beam clears the rest: the
+    velocity distribution and the cloud side by side. One stage_break() per step."""
     def stage_break(self):
         """The pause after each step. A slide wrapper stops here instead."""
         self.wait(VS_HOLD)

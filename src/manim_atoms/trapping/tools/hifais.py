@@ -58,6 +58,7 @@ FIT_SAMPLES = 160
 
 
 def chamber_view(path, height):
+    """One of the chamber renders (CHAMBER_TOP, CHAMBER_SIDE) as an image ``height`` tall."""
     return load_image(path, height=height)
 
 

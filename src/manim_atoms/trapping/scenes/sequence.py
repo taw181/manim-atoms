@@ -52,6 +52,8 @@ SEQ_SWITCH_TIME = 0.6  # how long the timeline takes to move to the next stage
 
 
 class ExperimentSequence(Scene):
+    """One shot, stage by stage: the timeline, the Sr levels each stage drives, the
+    papers that cover them, and the imaging video of the cloud run on the same clock."""
     STAGES = STAGES
     REFERENCES = REFERENCES
     LEVELS = True

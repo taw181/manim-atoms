@@ -4,7 +4,7 @@ The cooling stages differ in which light is on, how strong the field
 gradient is and how hot and big the cloud is, so each of those is a knob
 here: a beam set's intensity, the coils' gradient, the cloud's radius and
 temperature. The level-scheme side of the story -- which transition the
-light drives -- is SrLevels in manim_atoms.trapping.tools.sequence; SweepFan adds the
+light drives -- is SrLevels in manim_atoms.species.strontium; SweepFan adds the
 red MOT's frequency sweep to it. Upstream of the trap, Oven, AtomBeam,
 make_push_beam and make_baffle draw where its atoms come from.
 """

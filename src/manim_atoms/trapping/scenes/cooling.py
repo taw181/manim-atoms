@@ -113,6 +113,7 @@ PAN_TIME = 3.4  # following the stream to the 3D MOT
 
 
 def temperature_tag(key):
+    """The cloud's temperature at stage ``key``, as MathTex in its corner."""
     return MathTex(COOL_TEMPERATURE_TEX[key], font_size=FONT_TEMPERATURE,
                    color=lighten(GUIDE_COLOR)).move_to(COOL_TEMPERATURE_AT)
 
@@ -131,6 +132,9 @@ def duration_tag(key, block):
 
 
 class CoolingSequence(MovingCameraScene):
+    """The blue MOT, the modulated red MOT and the narrowband red MOT: the light,
+    the field gradient and the cloud at each, with the Sr levels and the timeline
+    beside them. One stage_break() per stage."""
     def stage_break(self):
         """The pause after each stage. A slide wrapper stops here instead."""
         self.wait(COOL_HOLD)

@@ -24,6 +24,7 @@ SPIN_HIST_HEIGHT = 1.3  # of a bar holding every atom
 # beams but a wash of red light over the whole figure, with the usual
 # arrowheads round its edge pointing in along the MOT's three axes.
 def make_mot_glow(center, radius, color=TRANSITION_689_COLOR):
+    """A MOT as a soft glow at ``center``, with a chevron at the end of each beam pointing in."""
     center = np.array(center, dtype=float)
     heads = VGroup(*[
         chevron(-d, center + d * radius * 0.85, color)

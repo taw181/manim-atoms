@@ -65,12 +65,16 @@ DT_HOLD = 1.5  # the pause after each stage, where a slide stops instead
 
 
 def caption(text, heading):
+    """A grey caption under ``heading``, left-aligned with it."""
     return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
         heading, DOWN, buff=0.3, aligned_edge=LEFT
     )
 
 
 class DipoleTrapLoading(Scene):
+    """The red MOT shared out into two crossed dipole traps, then the atoms spin-polarised
+    into m_F = +9/2, with the levels and the timeline beside them. One
+    stage_break() per stage."""
     def stage_break(self):
         """The pause after each stage. A slide wrapper stops here instead."""
         self.wait(DT_HOLD)
