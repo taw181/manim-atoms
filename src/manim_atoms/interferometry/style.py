@@ -1,11 +1,49 @@
 """The interferometry scenes' style: the core house style plus phase drawn
-as a clock hand, output ports, phase-shear readout and spin squeezing.
+as a clock hand and its budget, output ports, the pulses' pacing, an
+injected perturbation, phase-shear readout and spin squeezing.
 
     from manim import *
     from manim_atoms.interferometry.style import *
 """
 
 from manim_atoms.style import *
+
+# --- type -----------------------------------------------------------------
+FONT_PHASE = 40
+
+# --- line styles ----------------------------------------------------------
+LOOP_AREA_STYLE = dict(stroke_width=0, fill_color=AREA_COLOR, fill_opacity=0.09)
+
+# --- pacing ---------------------------------------------------------------
+# A burst marks the event, so it is struck at the vertex and stays there
+# while the atom flies on -- which is what a space-time diagram says happened.
+# It has to be brief for that to read as one moment rather than as the atom
+# walking out of its own flash.
+STROBE_FLASH = 0.18  # wall seconds
+
+# --- an injected light shift ----------------------------------------------
+# Bounded rather than a bare wash, unlike the field and strain windows: those
+# mark a stretch of an oscillation that was always there, where this one marks
+# a beam being switched on and off, and the two edges are those two moments.
+# Something unspecified acting on the atoms for a stretch of the sequence --
+# the generic version of the light-shift beam, drawn the same way (bounded:
+# it is on for a while, then off) in a colour of its own.
+PERTURBATION_COLOR = ManimColor("#e0b04a")
+PERTURBATION_STYLE = dict(
+    stroke_width=2,
+    stroke_color=PERTURBATION_COLOR,
+    stroke_opacity=0.6,
+    fill_color=PERTURBATION_COLOR,
+    fill_opacity=0.16,
+)
+
+# --- the phase budget -----------------------------------------------------
+STRUCK_COLOR = GUIDE_COLOR
+STRUCK_OPACITY = 0.45  # what a crossed-out term dims to
+CROSS_COLOR = LASER_COLOR
+CROSS_STROKE_WIDTH = 4
+RING_STROKE_WIDTH = 3
+RING_BUFF = 0.18  # how far a ring stands off the term it circles
 
 # --- phase, drawn as a clock hand -----------------------------------------
 # A hand is only legible on an atom about twice the usual size, which crowds a

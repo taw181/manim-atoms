@@ -1,11 +1,48 @@
-"""The trapping scenes' style: the core house style plus laser cooling,
-velocity slicing and the HiFAIS source.
+"""The trapping scenes' style: the core house style plus the experimental
+sequence's timeline, dipole traps, laser cooling, velocity slicing and the
+HiFAIS source.
 
     from manim import *
     from manim_atoms.trapping.style import *
 """
 
 from manim_atoms.style import *
+
+# --- the experimental sequence --------------------------------------------
+# One shot of the experiment laid out as a timeline, with the Sr level scheme
+# beside it showing which transition each stage drives. The timeline keeps
+# the colours of the group's own sequence figure (fill, edge), so it reads as
+# the same diagram the audience may already have seen.
+SEQUENCE_STAGE_COLORS = {
+    "blue_mot": ("#80b3ff", "#0066ff"),
+    "modulated_red_mot": ("#ff5555", "#d40000"),
+    "narrowband_red_mot": ("#e9afaf", "#c83737"),
+    "upper_dipole_trap": ("#afe9dd", "#37c8ab"),
+    "lower_dipole_trap": ("#ddafe9", "#ac39c8"),
+    "spin_polarization": ("#d7f4d7", "#37c837"),
+    "velocity_slicing": ("#ffe680", "#d4aa00"),
+    "differential_interferometry": ("#ffaacc", "#aa0044"),
+    "state_readout": ("#aaaaff", "#0000ff"),
+}
+# A stage still to come is faint, one already run half lit, the one running
+# fully lit and ringed.
+TIMELINE_AHEAD_OPACITY = 0.22
+TIMELINE_DONE_OPACITY = 0.5
+TIMELINE_ACTIVE_RING = dict(color=WHITE, width=4)
+FONT_TIMELINE = 20
+FONT_REFERENCE = 18
+REFERENCE_IDLE_OPACITY = 0.7  # still legible from the back of a room when idle
+# The imaging stops once the lower trap is loaded; the stages after it carry
+# on over its last frame, dimmed, so the frame stays as a reminder of where
+# the atoms are.
+VIDEO_DIM_OPACITY = 0.5  # of the background-coloured veil drawn over it
+FONT_VIDEO_CLOCK = 24
+
+# --- dipole traps ---------------------------------------------------------
+TRANSPARENCY_OPACITY = 0.35
+MOT_GLOW_OPACITY = 0.22  # the red MOT's light, at its centre, beside the traps
+MOT_GLOW_LAYERS = 8
+FONT_CAPTION = FONT_LEGEND  # the step within a stage, under its heading
 
 # --- laser cooling --------------------------------------------------------
 # The MOT stages drawn as a cartoon beside the level scheme. The beams take
@@ -40,16 +77,6 @@ BAFFLE_COLOR = OPTIC_COLOR
 BAFFLE_WIDTH = 8
 HOT_ATOM_COLOR = GUIDE_COLOR
 
-# A long-baseline detector in cartoon (tools/baseline.py): the vacuum shaft
-# and the atom sources on its side are hardware, in the optics grey; the clock
-# laser runs the shaft's length in the laser red, and the clouds it drives
-# are the ground-state blue.
-SHAFT_COLOR = OPTIC_COLOR
-SHAFT_WALL_WIDTH = 6
-SOURCE_STROKE_WIDTH = 3
-BASELINE_BEAM_OPACITY = 0.55
-LAUNCH_STROKE_WIDTH = 2.5
-FONT_SOURCE = FONT_LEGEND
 
 # --- velocity slicing -----------------------------------------------------
 # The velocity distribution is stacked by internal state, but what the scene
