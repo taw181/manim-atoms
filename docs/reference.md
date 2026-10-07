@@ -24,7 +24,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *plots*: `PLOT_BACKGROUND`, `PLOT_FOREGROUND`, `FONT_AXIS`, `FONT_TICK`, `DATA_DOT_RADIUS`
 - *energy levels*: `LEVEL_STROKE_WIDTH`, `LEVEL_GAP_ARROW_STYLE`, `LEVEL_GLOW_ARROW_STYLE`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`
 - *fluorescence readout*: `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`
-- *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
+- *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`, `LASER_BOX_WIDTH`, `LASER_BOX_HEIGHT`, `BEAM_GLOW_WIDTH`, `BEAM_GLOW_OPACITY`, `WAVE_SAMPLES_PER_UNIT`
 - *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
 - *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `IMAGE_BORDER_STYLE`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
@@ -68,12 +68,18 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.optics`
 
-`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, and an optical cavity.
+`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, a cavity, the parts of an interferometer, and light drawn as a wave.
 
 - `gaussian_band(start, end, width, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
 - `gaussian_spot(center, radius, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
 - `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
 - `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
+- `make_mirror(length, thickness, vertical=True)`: A flat mirror seen edge on: a slab ``length`` long and ``thickness`` thick, upright if ``vertical``, else lying flat. A test mass, or a fold mirror. Centred on the origin: move it into place.
+- `make_beam_splitter(center, length, thickness, angle=45 * DEGREES)`: A half-silvered plate seen edge on, at ``center``, turned by ``angle``. At 45 degrees it splits light along x between x and y, and recombines what comes back.
+- `make_laser(exit, label='laser')`: A laser: a box whose right edge, where the beam leaves, is at ``exit``, with ``label`` under it (None: no label).
+- `make_photodetector(face, label='photodetector')`: A photodiode facing up, the top of its face at ``face``, with ``label`` to its right (None: no label).
+- `light_wave(start, end, amplitude, phase, k, frac=1.0, samples_per_unit=WAVE_SAMPLES_PER_UNIT)`: A sine of wavenumber ``k`` riding the segment start -> end, drawn out to ``frac`` of its length.
+- `beam_glow(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on, drawn out to ``frac`` of the way from start to end, at ``opacity`` of its usual strength.
 
 ### `core.primitives`
 
@@ -491,7 +497,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *an oscillating background field*: `FIELD_COLOR`, `FIELD_STROKE_WIDTH`, `EARTH_COLOR`, `MOON_COLOR`, `SUN_COLOR`, `BODY_OPACITY`, `BODY_MIN_RADIUS`
 - *an injected light shift*: `LIGHT_SHIFT_COLOR`, `LIGHT_SHIFT_STYLE`
 - *energy levels*: `LEVEL_RESONANCE_STYLE`
-- *an optical Michelson interferometer*: `X_ARM_COLOR`, `Y_ARM_COLOR`, `OUTPUT_COLOR`, `BEAM_STROKE_WIDTH`, `BEAM_GLOW_WIDTH`, `BEAM_GLOW_OPACITY`
+- *an optical Michelson interferometer*: `X_ARM_COLOR`, `Y_ARM_COLOR`, `OUTPUT_COLOR`, `BEAM_STROKE_WIDTH`
 - *data plots (matplotlib)*: `LOWER_CLOUD_COLOR`, `UPPER_CLOUD_COLOR`, `LLN_COLOR`, `SQL_COLOR`, `LOWER_PULSE_MARK_COLOR`, `UPPER_PULSE_MARK_COLOR`, `HLN_COLOR`, `SQL_BAND_OPACITIES`, `IMPRINTED_SIGNAL_COLOR`, `RECOVERED_SIGNAL_COLOR`, `FRINGE_DOT_OPACITY`, `FRINGE_DIM_OPACITY`, `NEWEST_RING_RADIUS`, `NEWEST_RING_WIDTH`, `GW_DETECTOR_COLORS`, `GW_REGION_OPACITY`, `GW_MERGER_NEAR_COLOR`, `GW_MERGER_FAR_COLOR`, `GW_MERGER_Z_RANGE`, `GW_MERGER_TIME_COLORS`, `GW_BAND_EDGE_STYLE`, `GW_TRACK_WIDTH`, `GW_TRACK_AHEAD_OPACITY`, `GW_SOURCE_COLOR`, `GW_SOURCE_RADIUS`, `GW_SOURCE_GLOW_RADIUS`, `GW_SOURCE_GLOW_OPACITY`, `GW_DATA_WINDOW_COLOR`, `GW_TRACK_CROWD_WIDTH`, `ULDM_COLORS`, `ULDM_CURVE_WIDTH`, `ULDM_EXCLUDED_STYLE`, `ULDM_EXCLUDED_EDGE`, `ULDM_MARK_STYLE`, `ULDM_MARK_FAINT_OPACITY`, `ULDM_MARK_DOT_RADIUS`, `ULDM_LABEL_OUTLINE`, `FONT_INSET_TICK`, `FONT_INSET_LABEL`
 - *km-scale challenges table*: `FONT_TABLE_HEADING`, `FONT_TABLE_NAME`, `FONT_TABLE_NOTE`, `FONT_TABLE_CELL`, `TABLE_RULE_STYLE`
 - `merger_color(z)`: A merger track's shade: GW_MERGER_NEAR_COLOR at the low end of GW_MERGER_Z_RANGE fading to GW_MERGER_FAR_COLOR at the high end, in log z.
@@ -568,12 +574,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `strain(t)`: h(t), normalised to a peak of 1: a few cycles under a smooth envelope.
 - `phase_difference(t, h=strain)`: phi_x - phi_y at the detector: 2k (L_x - L_y), which is linear in h.
 - `mirror_positions(t, h=strain)`: Plus polarisation: the x arm stretches exactly as the y arm squeezes.
-- `wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT)`: A sine riding the segment start -> end, drawn out to `frac` of its length.
-- `beam(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on.
-- `make_mirror(vertical)`: A test mass: a thin slab, upright if ``vertical``, else lying flat.
-- `make_splitter()`: A half-silvered plate at 45 degrees: it reflects light from the laser up the y arm, and light coming back down the x arm into the detector.
-- `make_laser()`: The laser: a box at LASER, labelled under it.
-- `make_detector()`: A photodiode facing up the output port.
 - `detector_glow(now, h=strain)`: Power at the detector, sin^2(dphi / 2), drawn as light pooling on it.
 - `make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME, amplitude=TRACE_AMPLITUDE)`: h(t) drawn out as it arrives, with a dot on the present; the panel spans the stretch `span` of lab time. `amplitude` is the peak's height before the panel scales it.
 - `returning_waves(now, h=strain, panel=FULL_FRAME)`: The light back from each arm, overlaid where the two recombine.

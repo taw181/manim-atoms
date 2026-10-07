@@ -147,6 +147,13 @@ PROBE_COLOR = ManimColor("#f01c24")
 CAVITY_MODE_OPACITY = 0.45
 MIRROR_STROKE_WIDTH = 7
 PROBE_STROKE_WIDTH = 3
+LASER_BOX_WIDTH = 1.2  # a laser drawn as a box, its beam leaving the right edge
+LASER_BOX_HEIGHT = 0.55
+# Light drawn as a wave riding a beam: the band under it, and how finely the
+# sine is sampled along it.
+BEAM_GLOW_WIDTH = 10
+BEAM_GLOW_OPACITY = 0.18
+WAVE_SAMPLES_PER_UNIT = 45
 
 # --- the Bloch sphere -----------------------------------------------------
 # Furniture, in the lightened construction grey, with its axis through the

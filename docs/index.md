@@ -152,10 +152,12 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A Bloch sphere in perspective** on a flat scene. `core.bloch`: `BlochView`, with `BlochView.point`, `BlochView.ring`, `BlochView.curve`, `BlochView.patch` and `BlochView.outline`.
 - **Quantum noise as a patch on the sphere** (a coherent or squeezed spin state). `core.bloch`: `noise_patch`.
 
-## Optics: beams and cavities
+## Optics: beams, cavities, interferometer parts
 
 - **A beam seen side on**, or a spot seen end on, as a Gaussian profile. `core.optics`: `gaussian_band`, `gaussian_spot`.
 - **An optical cavity**: mirrors, mode, probe and detector, plus its vacuum-Rabi-split transmission with atoms in it. `core.optics`: `make_cavity`, `rabi_transmission`.
+- **The parts of an optical interferometer**, seen from above and placed by the caller: a flat mirror or test mass, a beam splitter, a laser, a photodetector. `core.optics`: `make_mirror`, `make_beam_splitter`, `make_laser`, `make_photodetector`.
+- **Light drawn as a wave riding a beam**, its phase chained from beam to beam, and the faint band under it. `core.optics`: `light_wave`, `beam_glow`.
 - **Atoms in the cavity mode** in the superposition's colour (spin squeezing's own). `interferometry.tools.squeezing`: `cavity_atoms`.
 
 ## Trapping apparatus
@@ -190,7 +192,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## LIGO's Michelson interferometer
 
 - **The apparatus and its light**, on one lab clock: laser, splitter, arms, test masses, detector, and waves whose phase runs on from beam to beam. `aion.tools.ligo`: `make_apparatus`, `make_light`, `run`.
-- **Its parts.** `aion.tools.ligo`: `make_laser`, `make_splitter`, `make_mirror`, `make_detector`, `detector_glow`, `wave`, `beam`. These are drawn at LIGO's own positions.
+- **The light pooling on its detector.** `aion.tools.ligo`: `detector_glow`. Its parts are `core.optics`' (above), placed at LIGO's own positions.
 - **The physics.** `aion.tools.ligo`: `strain`, `mirror_positions`, `phase_difference`.
 - **The readout**: h(t), the returning waves overlaid, and the equation. `aion.tools.ligo`: `make_strain_trace`, `returning_waves`, `make_equation`.
 
@@ -281,7 +283,6 @@ they are fixed to one scene's layout, or live on a scene as methods. They
 are the candidates for the next round of generalisation.
 
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
-- `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `wave` and `beam` are generic already.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
 - `core.primitives`: `absorb` and `emit` drive from below only.
 - `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
