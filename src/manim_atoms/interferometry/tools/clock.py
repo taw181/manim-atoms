@@ -4,6 +4,20 @@ The pieces the clock-phase scenes and the gradiometer share: a hand on each
 arm that turns while that arm is excited, a dial that reads the angle between
 two hands, the two output ports the last pulse splits the atoms between, and
 the phase budget that names which terms the measurement keeps.
+
+- hands: make_clock_hand rides an atom and reads a ValueTracker; clock_rate
+  sets how fast it turns. On one lab clock, core.spacetime.wound and its
+  variants drive the tracker.
+- dials: make_dial, dial_hand, and phase_sweep for the angle between two hands.
+- pulses on a diagram with no light travel time: fire_vertical_pulse stops
+  lab time, strobe_pulse keeps it running.
+- ports: draw_ports (stop-start) and fly_ports (on the lab clock) send the
+  two output states off, at any slope (leg_slope gives a kicked leg's);
+  ground_share is how the atoms divide between them, port_parts the pieces,
+  live_ports keeps drawn ports following the phase.
+- the budget: budget_equation, show_phase_budget, ring_around, readout_equation.
+
+Defaults bind to the CP_* geometry block below, ClockPhase's.
 """
 
 import numpy as np

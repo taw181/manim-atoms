@@ -1,8 +1,16 @@
 """Atoms, laser pulses and the recoil they hand over: the atom-interferometry
 building blocks every other scene is drawn with.
 
-Mobject helpers (make_atom, make_cloud, make_laser_pulse, momentum_arrow, make_guide),
-pulse primitives (absorb, emit) and motion (draw_legs, state_colors).
+- mobjects: make_atom, make_cloud, make_laser_pulse, make_guide, and the
+  recoil arrow momentum_arrow (brought on by grow) and the k marker
+  make_k_arrow;
+- states: state_colors recolours an atom, state_label and arm_ket write its
+  ket in the state's colour;
+- pulses: absorb and emit, played on an atom; both drive it from below, with
+  the packet climbing along +y;
+- motion: draw_legs flies atoms along straight legs at V, drawing the
+  trajectory as it goes (core.spacetime.draw_wavy_legs for bowed ones);
+- readout: fluoresce, or fluorescence to play alongside something else.
 """
 
 import numpy as np
@@ -176,6 +184,7 @@ def state_colors(atom, color):
 
 
 def state_label(tex, color, font_size=FONT_STATE):
+    """A ket or other state name as MathTex, in the lightened shade of its state's colour."""
     return MathTex(tex, font_size=font_size, color=lighten(color))
 
 

@@ -2,7 +2,9 @@
 
 Each scene keeps its own geometry block; the atoms and pulses they are drawn
 with come from manim_atoms.core.primitives, and everything visual from
-manim_atoms.style.
+manim_atoms.style. MachZehnder's make_legend (the two states' key) and
+pulse_caption (a label on the caption row beside a beam) are general, and
+SinglePhotonMachZehnder subclasses it.
 """
 
 import numpy as np

@@ -12,7 +12,7 @@ with the contrast. Tilt the pulse by theta and the wavefronts cross the cloud
 Lambda = lambda / theta apart: the hands fan out across it, the ports come
 out striped, and where the stripes sit gives Phi from the one image.
 
-    uv run manim -qh src/manim_atoms/scenes/phase_shear.py PhaseShearReadout
+    uv run manim -qh src/manim_atoms/interferometry/scenes/phase_shear.py PhaseShearReadout
 """
 
 import numpy as np

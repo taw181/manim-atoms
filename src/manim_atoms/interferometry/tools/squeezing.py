@@ -22,6 +22,11 @@ onto the phase, and the interferometer resolves it to xi / sqrt(N), xi < 1.
 The helpers draw the pieces: the Bloch sphere in perspective, with the noise
 as a patch on its surface, the cavity with its probe, and the transmission
 line shape it reads.
+
+BlochView is a general Bloch sphere -- any direction, ring or patch on the
+sphere, drawn solid in front and dashed behind -- and lives here only
+because squeezing was the first scene to need one. noise_patch,
+make_cavity and cavity_atoms are squeezing's own.
 """
 
 import numpy as np

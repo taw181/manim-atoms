@@ -13,6 +13,17 @@ noise is common to both and cancels in the difference.
 
 The slope is exaggerated by many orders of magnitude. For a 100 m baseline
 L/c is ~0.3 us against an interrogation time T of order a second.
+
+- photon_worldline: a pulse's worldline as a line of finite slope;
+  climbing_pulse draws it as far as the lab clock has got.
+- fire_pulse sends one pulse up the baseline with lab time stopped;
+  sweep_pulse does it with lab time running, and calls back as the pulse
+  reaches each cloud. Both work for any diagram with light travel time.
+- vertices: one interferometer's four corners; gradiometer_frame: the title,
+  laser line, time axis and baseline every gradiometer scene opens with.
+
+Defaults bind to the GR_* geometry block below. The scenes built on these
+are GradiometerBase and its subclasses, in interferometry.scenes.gradiometer.
 """
 
 import numpy as np

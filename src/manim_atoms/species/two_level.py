@@ -1,4 +1,11 @@
-"""The Sr clock transition, drawn as a two-level system beside a figure."""
+"""The Sr clock transition, drawn as a two-level system beside a figure.
+
+make_level_diagram draws |g> and |e> in the two arms' colours with the gap
+between them labelled hbar c k, so it doubles as the figure's key;
+transition_glow lights the gap up or down while a pulse drives it. Placed by
+the SP_* constants below, upper right. For Sr's full level scheme and its
+cooling lines, see species.strontium.
+"""
 
 import numpy as np
 from manim import *

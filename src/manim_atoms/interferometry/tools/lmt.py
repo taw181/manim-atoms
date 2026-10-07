@@ -1,5 +1,22 @@
 """Large momentum transfer: sequences of single-photon pulses, each driving
-every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c)."""
+every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c).
+
+Three of these are general, not LMT's own:
+
+- recoil: what one pulse does to one arm -- the velocity change and the new
+  internal state -- for a pulse from below or from above;
+- kick_worldline: a photon's worldline arriving at a point from below or
+  from above;
+- lmt_history: the arm bookkeeping engine. Give it a sequence of (time,
+  kind, stage) pulses and it steps one atom through them, splitting,
+  kicking and merging arms, and returns per pulse where it lands, what it
+  does to each arm and the legs flown to the next. lmz_pulses writes the
+  sequence for an LMT Mach-Zehnder of any odd order; LMTMachZehnder's
+  play_history is the scene that animates a history.
+
+lmt_points is the simpler ladder's corners, one arm at a time. Defaults bind
+to the LMT_* and LMZ_* geometry blocks below.
+"""
 
 import numpy as np
 from manim import *
