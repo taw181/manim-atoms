@@ -54,7 +54,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Laser pulses and photons
 
 - **A wavepacket** travelling along +y. `core.primitives`: `make_laser_pulse`.
-- **A photon absorbed (|g> → |e>, +ħk) or stimulating emission (|e> → |g>, −ħk)**, played on one atom. `core.primitives`: `absorb`, `emit`. Both drive from below only.
+- **A photon absorbed (|g> → |e>) or stimulating emission (|e> → |g>)**, played on one atom, with light from below (absorbing gives +ħk, emitting −ħk) or from above (the reverse). `core.primitives`: `absorb`, `emit`, each with `from_below`.
 - **A pulse from below or from above**, as a worldline arriving at a point. `interferometry.tools.pulses`: `kick_worldline(from_below=...)`.
 - **A vertical pulse column** where light travel time is ignored. `interferometry.tools.pulses`:
   - `fire_vertical_pulse` climbs to each atom with lab time stopped;
@@ -293,4 +293,3 @@ are the candidates for the next round of generalisation.
 
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
-- `core.primitives`: `absorb` and `emit` drive from below only.

@@ -92,8 +92,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `grow(annotation)`: Animations that bring a momentum_arrow on screen.
 - `make_k_arrow(x, y)`: The little vertical k-vector marker that sits beside a beam.
 - `make_guide(start, end)`: A dashed construction line, e.g. the trajectory an atom arrives along.
-- `absorb(scene, x, atom, extras=(), fade=())`: A wavepacket rises from below and is absorbed: |g, p> -> |e, p + hbar k>.
-- `emit(scene, x, atom, extras=())`: Stimulated emission: one photon arrives and two leave.
+- `absorb(scene, x, atom, extras=(), fade=(), from_below=True)`: A wavepacket arrives and is absorbed: |g, p> -> |e, p + hbar k>, with k pointing the way the light travels -- up from below (the default), or down from above (``from_below=False``), giving p - hbar k.
+- `emit(scene, x, atom, extras=(), from_below=True)`: Stimulated emission: one photon arrives and two leave.
 - `draw_legs(scene, legs, fade=(), extra=())`: Move atoms along straight legs, drawing each trajectory in step.
 - `state_colors(atom, color)`: Recolour an atom's body to match a new internal state, keeping the highlight.
 - `state_label(tex, color, font_size=FONT_STATE)`: A ket or other state name as MathTex, in the lightened shade of its state's colour.
