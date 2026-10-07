@@ -840,7 +840,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - Scene `DarkMatterPhase(Scene)`: The same clock, with a dark-matter field oscillating through it.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
-  - `.split(at)`: The beamsplitter's output: two arms, each carrying its own hand.
+  - `.split(at)`: The beamsplitter's output, made here: two arms, each carrying its own hand. The continuous variant's; the stop-start one has the player make the arms, and only hands them to take_arms.
+  - `.take_arms(arm_lo, arm_hi)`: Each arm takes its own hand.
   - `.port_extra()`: What rides along with the output ports. Nothing, unless lab time does.
   - `.fly()`: Three pulses and two legs, one at a time.
   - `uv run manim -ql src/manim_atoms/aion/scenes/uldm.py DarkMatterPhase`
