@@ -36,6 +36,7 @@ A scene calls a no-op hook where a presenter would stop — `beat()`, the sequen
 - Annotations belong where the physics happens: don't offset a recoil arrow off its atom to dodge an overlap — the overlap is fine.
 - Measured data: `aion/plots/dai_fringes.py` → AION DAI fringes and Lissajous ellipse (Zenodo 19592552); `aion/plots/gw_sensitivity.py` → detector curves with merger tracks.
 - Stage explicit paths when committing; don't `git add -A` over work in progress.
+- Name a new branch for what it does, in kebab-case (`pulse-sequence-engine`, `fix-ladder-split-colour`), never a random or session-generated string of characters.
 - Every public function, class and module has a docstring whose first paragraph says what it is. A new public function or class in a non-scene module, or a new Scene class, goes in `docs/index.md` under the need it serves. Then run `python scripts/index.py --write` and commit `docs/reference.md` with it. CI runs `python scripts/index.py`, which fails on a stale reference, an unindexed name, a missing docstring, or an index entry that no longer exists.
 - `uv run pytest` runs the unit tests in `tests/` (numbers only, no rendering; CI runs them too). The pulse-sequence engine is tested by what physics demands of each sequence: a change to it gets a test.
 - The repo is private. Before it is ever made public, resolve every "check before redistributing" row in `data/README.md`.
