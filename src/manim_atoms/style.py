@@ -210,3 +210,17 @@ CITATION_OUTLINE = dict(color=PLOT_BACKGROUND, width=7, opacity=0.9)
 PLACEHOLDER_STYLE = dict(
     dash_length=0.15, stroke_width=2, stroke_opacity=0.6, color=GUIDE_COLOR
 )
+
+# --- phase ----------------------------------------------------------------
+# A phase is an angle, so its ramp is a wheel: it ends on the colour it began
+# with, and a mask that wraps from 2 pi back to 0 shows no edge there. The
+# stops run round the hue circle at one muted strength, every one clear of
+# the background.
+PHASE_COLORS = [ManimColor(c) for c in
+                ["#e0625c", "#e6b450", "#7cc470", "#4fc1c1", "#5b8cff", "#b07ce0", "#e0625c"]]
+# A lens and a modulator are furniture: the optics grey, with a faint fill so
+# they read as glass and as a panel rather than as outlines.
+LENS_STYLE = dict(stroke_width=3, stroke_color=OPTIC_COLOR, fill_color=OPTIC_COLOR,
+                  fill_opacity=0.12)
+SLM_STYLE = dict(stroke_width=3, stroke_color=OPTIC_COLOR, fill_color=OPTIC_COLOR,
+                 fill_opacity=0.3)

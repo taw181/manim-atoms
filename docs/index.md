@@ -156,6 +156,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **A beam seen side on**, or a spot seen end on, as a Gaussian profile. `core.optics`: `gaussian_band`, `gaussian_spot`.
 - **An optical cavity**: mirrors, mode, probe and detector, plus its vacuum-Rabi-split transmission with atoms in it. `core.optics`: `make_cavity`, `rabi_transmission`.
+- **A lens and a spatial light modulator**, edge on. `core.optics`: `make_lens`, `make_slm`.
 - **Atoms in the cavity mode** in the superposition's colour (spin squeezing's own). `interferometry.tools.squeezing`: `cavity_atoms`.
 
 ## Holograms and phase masks
@@ -165,6 +166,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **The focal plane a mask makes**, where a spot lands in it, and the field on each spot. `core.holography`: `far_field`, `spot_pixel`, `spot_fields`.
 - **Finding an array's mask** by Gerchberg–Saxton, plain or weighted, a step at a time, and how evenly it lights the spots. `core.holography`: `gs_step`, `wgs_step`, `uniformity`.
 - **Zernike modes**, by their place in the pyramid, and the Strehl ratio a wavefront error leaves. `core.holography`: `zernike`, `osa_to_nm`, `strehl`.
+- **A phase map as a picture**, coloured round a wheel that wraps so a 2π step shows no edge, and the key to it. `core.optics`: `PhaseMask`, `phase_rgb`, `phase_wheel`.
+- **A focal plane as a camera would see it**: one colour, as opaque as the light is bright. `core.optics`: `FocalImage`.
 
 ## Trapping apparatus
 

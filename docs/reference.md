@@ -27,6 +27,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
 - *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
 - *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `IMAGE_BORDER_STYLE`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
+- *phase*: `PHASE_COLORS`, `LENS_STYLE`, `SLM_STYLE`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
 
 ## core
@@ -83,12 +84,20 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.optics`
 
-`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, and an optical cavity.
+`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, an optical cavity, and the pictures and furniture of a hologram.
 
 - `gaussian_band(start, end, width, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
 - `gaussian_spot(center, radius, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
 - `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
 - `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
+- `phase_rgb(phase)`: The phase wheel's colour at each phase, as uint8 RGB: any phase, since only its value mod 2 pi counts.
+- class `PhaseMask(ImageMobject)`: A phase map as a picture, coloured round the phase wheel.
+  - `.paint(phase)`: Redraw from a new phase array of the same shape.
+- `phase_wheel(radius, pixels=160)`: The key to a PhaseMask: a ring coloured by angle, 0 at the right and rising anticlockwise.
+- class `FocalImage(ImageMobject)`: An intensity map as a picture: one colour, as opaque as the light is bright, the way a camera in the focal plane would show it.
+  - `.paint(intensity)`: Redraw from a new intensity array of the same shape.
+- `make_lens(center, height, bulge=40 * DEGREES)`: A thin lens seen edge on, its axis horizontal: two arcs meeting at the rim, ``height`` tall. ``bulge`` is the angle each arc turns through.
+- `make_slm(center, height, depth=0.16)`: A spatial light modulator seen edge on, facing right: the panel the light meets, drawn heavy, on the body behind it. Rotate it about its centre to turn it.
 
 ### `core.primitives`
 
