@@ -1,16 +1,12 @@
 """Large momentum transfer: sequences of single-photon pulses, each driving
 every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c).
 
-What is LMT's own: lmt_points, the ladder's corners one arm at a time, and
-lmz_pulses, the sequence of an LMT Mach-Zehnder of any odd order, for the
-engine in interferometry.tools.pulse_sequence to step through (it uses
-core.primitives.recoil for each kick). Pulses from either side are
-interferometry.tools.pulses.kick_worldline. Defaults bind to the LMT_* and
-LMZ_* geometry blocks below.
+What is LMT's own: its pulse sequences, written for the engine in
+interferometry.tools.pulse_sequence (run_sequence steps an atom through
+them, play_sequence animates them). lmz_pulses is the LMT Mach-Zehnder of
+any odd order, lmt_ladder_pulses the ladder of kicks on its own. Defaults
+bind to the LMT_* and LMZ_* geometry blocks below.
 """
-
-import numpy as np
-from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import recoil
@@ -28,15 +24,6 @@ LMT_STEP = 1.0  # time between kicks in the ladder
 LMT_TAIL = 1.3  # free flight after the last kick
 LMT_U = 0.052  # baseline covered per unit time, per photon recoil
 LMT_KICKS = 10
-
-
-def lmt_points(slope_per_kick):
-    """Worldline corners for an arm gaining `slope_per_kick(i)` on kick i."""
-    pts = [np.array([LMT_T0, LMT_Z, 0.0])]
-    for i in range(LMT_KICKS):
-        dt = LMT_TAIL if i == LMT_KICKS - 1 else LMT_STEP
-        pts.append(pts[-1] + np.array([dt, dt * slope_per_kick(i), 0.0]))
-    return pts
 
 
 # --- LMT sequences ----------------------------------------------------------

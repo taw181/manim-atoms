@@ -95,7 +95,6 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **The engine.** It steps one atom through any list of pulses. Each `Pulse` has an area (½ splits, 1 swaps), a direction, optionally the arms it drives and the arms it drops, and a stage. Merging is automatic: outputs that coincide after a π/2 become one, which is how an interferometer closes. It returns a `Sequence` of `Step`s, each with where the pulse lands, its splits, hits, merges and legs, plus every arm's corners and the output ports. It covers Mach–Zehnder, LMT, Ramsey–Bordé, and with a displacement (disp) a gravimeter or a fountain. `interferometry.tools.pulse_sequence`: `run_sequence`, `Pulse`, `Sequence`, `Step`, `Arm`.
 - **Animating a sequence**: one ray per pulse, a flash on every arm it kicks, the recolouring and splits, then the legs (bowed, if displaced). Hooks add captions and stops. `interferometry.tools.pulse_sequence`: `play_sequence`.
 - **Sequences already written**: the LMT Mach–Zehnder of any odd order, and the LMT ladder. `interferometry.tools.lmt`: `lmz_pulses`, `lmt_ladder_pulses`.
-- **Superseded, going in the next commit.** `interferometry.tools.pulse_sequence`: `lmt_history`. `interferometry.tools.lmt`: `lmt_points`. `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`.
 
 ## Displacements: gravity, a passing wave
 
@@ -256,7 +255,7 @@ Copy from these when building something similar.
 
 - **A geometry block and stop-start legs.** `interferometry.scenes.mach_zehnder`: `MachZehnder`, `SingleLaserKick`.
 - **Photons resolved, with a level diagram as the key.** `interferometry.scenes.single_photon`: `SinglePhotonMachZehnder`.
-- **The pulse-history engine, animated.** `interferometry.scenes.lmt`: `LMTMachZehnder`; the bare ladder is `LargeMomentumTransfer`.
+- **The pulse-sequence engine, animated** (with stage captions and pulse labels through the hooks). `interferometry.scenes.lmt`: `LMTMachZehnder`; the bare ladder is `LargeMomentumTransfer`.
 - **Phase as hands, a dial and a budget.** `interferometry.scenes.clock`: `ClockPhase`, `ClockPhaseTerms`.
 - **Displaced, bowed legs.** `aion.scenes.gradiometer_gw`: `GradiometerGWStretch`, `GradiometerGWStretchContinuous`.
 - **Pulses arriving early or late under a wave.** `aion.scenes.gradiometer_gw`: `GradiometerGW`, `GradiometerGWContinuous`, and the `WaveRunsContinuously` mixin.
@@ -281,8 +280,7 @@ These are general in what they draw but not yet in how they are called:
 they are fixed to one scene's layout, or live on a scene as methods. They
 are the candidates for the next round of generalisation.
 
-- `interferometry.scenes.lmt`: `LMTMachZehnder.play_history` (animating any pulse history), with `LMTMachZehnder.caption` and `LMTMachZehnder.pulse_label`, are methods on the scene.
-- `interferometry.tools.pulse_sequence`: `lmt_history` knows only split, up, down and merge pulses on one atom; a general engine would take any pulse area, direction and set of arms, and a displacement such as gravity.
+- `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
 - `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `Panel`, `wave` and `beam` are generic already.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
 - `core.primitives`: `absorb` and `emit` drive from below only.

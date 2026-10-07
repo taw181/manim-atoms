@@ -13,7 +13,9 @@ from manim import *
 from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.lmt import (
     LMT_KICKS,
+    LMT_STEP,
     LMT_T0,
+    LMT_TAIL,
     LMT_U,
     LMT_Z,
     LMZ_END,
@@ -24,16 +26,11 @@ from manim_atoms.interferometry.tools.lmt import (
     LMZ_T0,
     LMZ_U,
     LMZ_Z,
-    lmt_points,
+    lmt_ladder_pulses,
     lmz_pulses,
 )
-from manim_atoms.interferometry.tools.pulse_sequence import lmt_history
-from manim_atoms.interferometry.tools.pulses import kick_worldline
-from manim_atoms.core.primitives import (
-    draw_legs,
-    make_atom,
-    state_colors,
-)
+from manim_atoms.interferometry.tools.pulse_sequence import play_sequence, run_sequence
+from manim_atoms.core.primitives import make_atom
 
 
 class LargeMomentumTransfer(Scene):
@@ -55,9 +52,13 @@ class LargeMomentumTransfer(Scene):
         self.play(FadeIn(title), FadeIn(note), run_time=0.9)
 
         # the first kick (the pi/2) moves the upper arm only; every one after
-        # it drives both, pushing them apart by 2 hbar k
-        upper_pts = lmt_points(lambda i: (i + 1) * LMT_U)
-        lower_pts = lmt_points(lambda i: -i * LMT_U)
+        # it drives both, pushing them apart by 2 hbar k. Kicks alternate
+        # direction: the upper arm absorbs an upward photon, then emits into a
+        # downward one, so either way it is pushed up by hbar k, and the lower
+        # arm, always in the other state, is pushed down by the same pulses.
+        seq = run_sequence(lmt_ladder_pulses(), (LMT_T0, LMT_Z), LMT_U,
+                           until=LMT_T0 + (LMT_KICKS - 1) * LMT_STEP + LMT_TAIL)
+        upper_pts, lower_pts = seq.paths["1"], seq.paths["0"]
 
         # --- the atom arrives ---------------------------------------------
         atom = make_atom().move_to([-config.frame_x_radius + 0.3, LMT_Z, 0])
@@ -69,42 +70,14 @@ class LargeMomentumTransfer(Scene):
         )
         self.beat()
 
-        lower = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(upper_pts[0])
-        upper = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(upper_pts[0])
-        self.remove(atom)
-        self.add(lower, upper)
-
-        # --- the ladder -----------------------------------------------------
-        # Kicks alternate direction. The upper arm absorbs an upward photon,
-        # then emits into a downward one: either way it is pushed up by hbar k.
-        # The lower arm, always in the other state, is pushed down by the same
-        # pulses. Both flip their internal state at every kick.
-        states = [KICKED_COLOR, ATOM_COLOR]
-        for i in range(LMT_KICKS):
-            # the first two at full pace, while the idea lands; the rest quicker
-            pace = 1.0 if i < 2 else 0.6
-            from_below = i % 2 == 0
-            # a ray reaches through to the far arm
-            reach = upper_pts[i] if from_below else lower_pts[i]
-            ray = kick_worldline(reach, from_below, steepness=0.0,
-                                 span=(-config.frame_y_radius, note.get_bottom()[1] - 0.15))
-            self.play(Create(ray), rate_func=linear, run_time=0.45 * pace)
-            upper_color = states[i % 2]
-            lower_color = ATOM_COLOR if i == 0 else states[(i + 1) % 2]
-            hit = [upper] if i == 0 else [upper, lower]
-            self.play(
-                *[Flash(atom, **FLASH_STYLE) for atom in hit],
-                FadeOut(ray),
-                state_colors(upper, upper_color),
-                state_colors(lower, lower_color),
-                run_time=0.4 * pace,
-            )
-            draw_legs(self, [
-                (upper, upper_pts[i], upper_pts[i + 1], upper_color),
-                (lower, lower_pts[i], lower_pts[i + 1], lower_color),
-            ])
-            if i == 0:  # one kick explained; the rest of the ladder runs on
-                self.beat()
+        # --- the ladder: the first two kicks at full pace, the rest quicker;
+        # one kick explained, then the rest of the ladder runs on
+        play_sequence(
+            self, seq, {"": atom},
+            span=(-config.frame_y_radius, note.get_bottom()[1] - 0.15),
+            ray_time=0.45, flash_time=0.4, fast_after=2,
+            after_step=lambda step, k: self.beat() if k == 0 else None,
+        )
         self.beat()
 
         # --- what the ladder bought -----------------------------------------
@@ -185,9 +158,31 @@ class LMTMachZehnder(Scene):
         self.span = (self.LABEL_Y + 0.35, note.get_bottom()[1] - 0.15)
 
         start = np.array([LMZ_T0, LMZ_Z, 0.0])
-        history = lmt_history(lmz_pulses(LMZ_ORDER, LMZ_STEP, LMZ_T),
-                              LMZ_T0, LMZ_Z, LMZ_U, port=LMZ_PORT)
-        paths = self.play_history(history, start)
+        seq = run_sequence(lmz_pulses(LMZ_ORDER, LMZ_STEP, LMZ_T, t0=LMZ_T0), start,
+                           LMZ_U, port=LMZ_PORT)
+        atom = make_atom().move_to([-config.frame_x_radius + 0.3, start[1], 0])
+        self.play(FadeIn(atom, scale=0.5), run_time=0.4)
+        self.play(atom.animate.move_to(start), rate_func=linear,
+                  run_time=(start[0] - atom.get_center()[0]) / V)
+        self.beat()
+
+        shown = set()
+
+        def caption_stage(step, k):
+            """Each stage's caption, as its first pulse comes up."""
+            if step.pulse.stage not in shown:
+                shown.add(step.pulse.stage)
+                self.play(FadeIn(self.caption(seq, step.pulse.stage)), run_time=0.3)
+
+        def stop_after_stage(step, k):
+            """A stop once a stage's last pulse has flown its legs."""
+            if k + 1 == len(seq.steps) or seq.steps[k + 1].pulse.stage != step.pulse.stage:
+                self.beat()
+
+        play_sequence(self, seq, {"": atom}, span=self.span, fast_after=self.FAST_AFTER,
+                      before_pulse=caption_stage, with_pulse=lambda step: [self.pulse_label(step)],
+                      after_step=stop_after_stage)
+        paths = seq.paths
 
         # --- what it bought ---------------------------------------------------
         loop = Polygon(*paths["1"], *reversed(paths["0"]), **LOOP_AREA_STYLE)
@@ -214,77 +209,15 @@ class LMTMachZehnder(Scene):
         self.play(Write(scaling), run_time=1.0)
         self.wait(2.0)
 
-    def caption(self, history, stage):
+    def caption(self, seq, stage):
         """The stage's caption, centred under its pulses."""
-        xs = [h["x"] for h in history if h["stage"] == stage]
+        xs = [step.x for step in seq.steps if step.pulse.stage == stage]
         return Tex(
             self.STAGES[stage], font_size=FONT_LEGEND, color=LASER_COLOR,
         ).move_to([(xs[0] + xs[-1]) / 2, self.CAPTION_Y, 0])
 
     def pulse_label(self, step):
         """pi/2 or pi under the pulse's column, as the paper's sequence row."""
-        tex = r"\frac{\pi}{2}" if step["kind"] in ("split", "merge") else r"\pi"
+        tex = r"\frac{\pi}{2}" if step.pulse.area == 0.5 else r"\pi"
         return MathTex(tex, font_size=FONT_LEGEND - 4, color=LASER_COLOR).move_to(
-            [step["x"], self.LABEL_Y, 0])
-
-    def play_history(self, history, start):
-        """One ray per pulse, reaching through to the far arm, a flash on every
-        arm it drives, then the legs to the next pulse. Returns each arm's
-        corners, from the split to the merge."""
-        colors = {"g": ATOM_COLOR, "e": KICKED_COLOR}
-        atom = make_atom().move_to([-config.frame_x_radius + 0.3, start[1], 0])
-        self.play(FadeIn(atom, scale=0.5), run_time=0.4)
-        self.play(atom.animate.move_to(start), rate_func=linear,
-                  run_time=(start[0] - atom.get_center()[0]) / V)
-        self.beat()
-
-        atoms = {"": atom}
-        paths = {}
-        shown = set()
-        for k, step in enumerate(history):
-            stage = step["stage"]
-            if stage not in shown:
-                shown.add(stage)
-                self.play(FadeIn(self.caption(history, stage)), run_time=0.3)
-
-            pace = 1.0 if k < self.FAST_AFTER else 0.6
-            # the ray runs from its side through every arm to the furthest
-            points = [a.get_center() for a in atoms.values()]
-            furthest = max if step["from_below"] else min
-            reach = furthest(points, key=lambda p: p[1])
-            ray = kick_worldline(reach, step["from_below"], steepness=0.0,
-                                 span=self.span)
-            self.play(Create(ray), FadeIn(self.pulse_label(step)),
-                      rate_func=linear, run_time=0.3 * pace)
-
-            if step["kind"] == "merge":
-                flashes = [Flash(a, **FLASH_STYLE) for a in atoms.values()]
-            recolour = []
-            for parent, stay, kicked in step["splits"]:
-                split = atoms.pop(parent)
-                point = split.get_center()
-                atoms[stay] = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(point)
-                atoms[kicked] = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(point)
-                self.remove(split)
-                self.add(atoms[stay], atoms[kicked])
-                paths[stay], paths[kicked] = [point], [point]
-            if step["kind"] != "merge":
-                flashes = [Flash(atoms[arm], **FLASH_STYLE) for arm, _, _ in step["hits"]]
-                recolour = [state_colors(atoms[arm], colors[state])
-                            for arm, _, state in step["hits"]]
-            self.play(*flashes, *recolour, FadeOut(ray), run_time=0.35 * pace)
-            if step["kind"] == "merge":
-                self.remove(*atoms.values())
-                atoms = {}
-                for arm, point, _, state in step["legs"]:
-                    atoms[arm] = make_atom(colors[state], opacity=SUPERPOSITION_OPACITY)
-                    self.add(atoms[arm].move_to(point))
-
-            draw_legs(self, [(atoms[arm], a, b, colors[state])
-                             for arm, a, b, state in step["legs"]])
-            if step["kind"] != "merge":
-                for arm, _, b, _ in step["legs"]:
-                    paths[arm].append(b)
-            if k + 1 == len(history) or history[k + 1]["stage"] != stage:
-                self.beat()
-        return paths
+            [step.x, self.LABEL_Y, 0])
