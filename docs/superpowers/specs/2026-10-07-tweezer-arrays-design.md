@@ -1,6 +1,7 @@
 # Tweezer arrays and SLM light delivery: design
 
-Date: 2026-10-07. Status: awaiting review.
+Date: 2026-10-07. Status: approved; plan in
+`docs/superpowers/plans/2026-10-07-tweezer-arrays.md`.
 
 ## What this adds
 
@@ -54,15 +55,20 @@ src/manim_atoms/
   tweezers/
     __init__.py                 empty
     style.py                    star-imports the core style
-    physics/array.py            sites, loading, the rearrangement plan
-    tools/array.py              TweezerArray, the trap drawings
-    scenes/array.py             TweezerRearrangement, TweezerArray3D, loops
+    physics/rearrangement.py    sites, loading, the rearrangement plan
+    tools/tweezer_array.py      TweezerArray, the trap seen end on
+    tools/beams.py              the trap seen from the side
+    tools/holograms.py          what the hologram scenes share
+    scenes/rearrangement.py     TweezerRearrangement and its loop
+    scenes/array_3d.py          TweezerArray3D and its loop
     scenes/holography.py        OpticalTrain, PhaseMaskBuildingBlocks,
                                 HologramIteration, ZernikeCorrection
     scenes/rearrangement_hologram.py   RearrangementHologram
-tests/test_holography.py
-tests/test_tweezer_array.py
+tests/                         one file per module above
 ```
+
+No module is called `array`: manim loads a scene file under a module name
+taken from its path, and that one would shadow the standard library's.
 
 Also touched: `scripts/index.py` (`LAYERS` gains `tweezers`), `docs/index.md`,
 `docs/reference.md` (generated), `CLAUDE.md` (the layer line and layout),
@@ -71,7 +77,7 @@ Also touched: `scripts/index.py` (`LAYERS` gains `tweezers`), `docs/index.md`,
 
 ## Foundation
 
-### `tweezers/physics/array.py` (numbers)
+### `tweezers/physics/rearrangement.py` (numbers)
 
 - `square_sites(rows, cols, pitch)`: site positions, centred on the origin.
 - `load_sites(n, fill, rng)`: which sites caught an atom, from a seeded
@@ -93,7 +99,8 @@ holds the plan to that bound.
 All on a square pixel grid over the SLM aperture.
 
 - `pupil_grid(n)`: x, y, ρ, θ, with the unit disc as the aperture.
-- `zernike(n, m, rho, theta)`, `noll_index`, `ZERNIKE_NAMES`.
+- `zernike(n, m, rho, theta)`, `osa_to_nm` (the index that counts along the
+  pyramid's rows), `ZERNIKE_NAMES`.
 - `grating_phase`, `lens_phase`: the two building blocks.
 - `spot_phase(spots, phases)`: the phase of a sum of fields, one per spot.
 - `far_field(phase, amplitude, pad)`: focal-plane intensity by FFT.
@@ -121,7 +128,7 @@ things back to front. Elevation and azimuth can be read from trackers, so
 the view can tilt and turn. At an elevation of 90° it is the top-down
 picture. `BlochView` is left as it is.
 
-### `tweezers/tools/array.py`
+### `tweezers/tools/tweezer_array.py`
 
 `TweezerArray`: the traps and the atoms riding them, drawn through a view.
 
@@ -136,7 +143,9 @@ picture. `BlochView` is left as it is.
 
 ### 2D: `TweezerRearrangement` (`TweezerRearrangementLoop`)
 
-An 8×8 loading array into a 5×5 target; both are arguments.
+A 9×9 loading array into the 5×5 block at its centre; both are constants
+of the array's geometry. (Not 8×8: an odd block sits on an odd array's own
+sites, so atoms already in place stay put.)
 
 1. The array comes on as spots.
 2. About half the traps catch an atom.
@@ -168,7 +177,8 @@ top-down. The waist and Rayleigh range are exaggerated to be visible.
 
 ### Light: `OpticalTrain`
 
-Side on. Laser, SLM (reflective, a shallow fold), relay, objective, foci.
+Side on. Laser, SLM (reflective; the fold is drawn steep, so the incoming
+beam clears the relay), relay, objective, foci.
 
 1. A flat mask: one beam, one focus.
 2. The mask is shown enlarged beside the SLM. A grating on it deflects the
