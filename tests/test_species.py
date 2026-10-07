@@ -6,8 +6,9 @@ import pytest
 
 from manim_atoms.species.scheme import Manifold
 from manim_atoms.species.strontium import STRONTIUM
+from manim_atoms.species.ytterbium import YTTERBIUM
 
-SPECIES = [STRONTIUM]
+SPECIES = [STRONTIUM, YTTERBIUM]
 
 
 @pytest.mark.parametrize("species", SPECIES, ids=lambda s: s.symbol)
@@ -48,3 +49,10 @@ def test_strontium_is_strontium():
     assert STRONTIUM.upper_term("698") == r"{}^3P_0"
     assert STRONTIUM.upper_term("461") == r"{}^1P_1"
     assert STRONTIUM.spin == 9 / 2
+
+
+def test_ytterbium_is_ytterbium():
+    assert [YTTERBIUM.transition(r).key for r in ("cooling", "narrow", "clock")] == ["399", "556", "578"]
+    assert YTTERBIUM.upper_term("556") == r"{}^3P_1"
+    assert YTTERBIUM.spin == 1 / 2
+    assert "repump" not in YTTERBIUM.roles  # its MOT needs none

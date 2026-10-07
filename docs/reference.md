@@ -191,6 +191,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `make_level_diagram(center=SP_LEVELS)`: The Sr clock transition as a two-level system, with the gap labelled.
 - `transition_glow(upward=True, center=SP_LEVELS)`: The transition lit up in the laser's colour while a pulse drives it.
 
+### `species.ytterbium`
+
+`src/manim_atoms/species/ytterbium.py` — Ytterbium as a species (species.scheme): its levels and the lines a Yb experiment drives.
+
+- class `YbLevels(LevelScheme)`: The Yb levels, with its three transitions: the level scheme of YTTERBIUM.
+
 ## interferometry
 
 ### `interferometry.style`

@@ -176,6 +176,9 @@ class References(VGroup):
 
     def __init__(self, timeline, stages, refs, **kwargs):
         super().__init__(**kwargs)
+        self.marks, self.entries = VGroup(), VGroup()
+        if not refs:  # nothing to cite
+            return
         floor = timeline.labels.get_bottom()[1]
         self.marks = VGroup()
         for n in range(len(refs)):
