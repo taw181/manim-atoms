@@ -160,3 +160,108 @@ class PhaseMaskBuildingBlocks(Scene):
             self.wait(1.0)
         self.wait(HOLO_SETTLE)
         self.beat()
+
+
+# --- iteration geometry ------------------------------------------------------
+# The two planes side by side, joined by an arrow each way; under the focal
+# plane a bar per trap, and the uniformity they add up to.
+HI_MASK = np.array([-3.6, 0.5, 0.0])
+HI_FOCAL = np.array([2.4, 0.5, 0.0])
+HI_SIZE = 3.6  # each picture's height
+HI_BARS = np.array([0.6, -3.0, 0.0])  # the bar chart's lower left corner
+HI_BARS_SIZE = (3.6, 0.8)  # its width, and the height of an evenly lit trap's bar
+HI_READOUT = np.array([-6.2, -2.6, 0.0])  # the iteration count's left edge
+HI_STEPS = 40  # iterations run in all
+HI_SLOW = 3  # of them taken one at a time
+HI_RUN_TIME = 6.0  # the rest
+
+
+class HologramIteration(Scene):
+    """Weighted Gerchberg-Saxton finding an array's mask: the loop between
+    the SLM plane and the focal plane, three iterations one at a time, then
+    the run until the traps are evenly bright. A beat() on the loop, on the
+    starting mask, after each slow iteration and after the run."""
+
+    def beat(self):
+        """The pause after each step: nothing here, a click on the slide version."""
+
+    def construct(self):
+        x, y, rho, _ = pupil_grid(HG_N)
+        amplitude = illumination(rho)
+        pupil = round_aperture(HG_N)
+        spots = grid_spots(5, 5)
+        masks, intensities = iterate_hologram(x, y, amplitude, spots, HI_STEPS)
+        even = 1 / len(spots)  # each trap's share if the light were split evenly
+        step = ValueTracker(0)
+
+        def now():
+            return int(round(step.get_value()))
+
+        mask = PhaseMask(masks[0], pupil).set(height=HI_SIZE).move_to(HI_MASK)
+        focal = FocalImage(focal_view(masks[0], amplitude), FOCAL_SPOT_COLOR, full=even,
+                           gamma=HG_GAMMA).set(height=HI_SIZE).move_to(HI_FOCAL)
+        frame = framed(focal)
+        rim = Circle(radius=HI_SIZE / 2, **IMAGE_BORDER_STYLE).move_to(HI_MASK)
+        labels = VGroup(panel_label(r"SLM: brightness fixed, phase free", mask),
+                        panel_label(r"focal plane: brightness wanted", focal))
+        forward = Arrow(mask.get_right() + UP * 0.5, focal.get_left() + UP * 0.5,
+                        **TRANSFORM_ARROW_STYLE)
+        back = Arrow(focal.get_left() + DOWN * 0.5, mask.get_right() + DOWN * 0.5,
+                     **TRANSFORM_ARROW_STYLE)
+        arrow_labels = VGroup(
+            Tex("lens", font_size=FONT_STEP, color=STEP_COLOR).next_to(forward, UP, buff=0.08),
+            Tex("back", font_size=FONT_STEP, color=STEP_COLOR).next_to(back, DOWN, buff=0.08),
+        )
+        bars = always_redraw(lambda: bar_chart(intensities[now()], even, *HI_BARS_SIZE)
+                             .shift(HI_BARS))
+        level = DashedLine(HI_BARS + UP * HI_BARS_SIZE[1],
+                           HI_BARS + UP * HI_BARS_SIZE[1] + RIGHT * HI_BARS_SIZE[0],
+                           **GUIDE_STYLE)
+        bars_label = Tex("each trap's brightness", font_size=FONT_STEP, color=STEP_COLOR)
+        bars_label.move_to(HI_BARS + RIGHT * HI_BARS_SIZE[0] / 2 + DOWN * 0.3)
+        count_label = Tex("iteration", font_size=FONT_READOUT).move_to(HI_READOUT, aligned_edge=LEFT)
+        count = Integer(0, font_size=FONT_READOUT, group_with_commas=False)
+        count.add_updater(lambda m: m.set_value(now()).next_to(count_label, RIGHT, buff=0.2,
+                                                               aligned_edge=DOWN))
+        even_label = Tex("uniformity", font_size=FONT_READOUT)
+        even_label.next_to(count_label, DOWN, buff=0.3, aligned_edge=LEFT)
+        evenness = DecimalNumber(0, num_decimal_places=2, font_size=FONT_READOUT,
+                                 group_with_commas=False)
+        evenness.add_updater(lambda m: m.set_value(uniformity(intensities[now()]))
+                             .next_to(even_label, RIGHT, buff=0.2, aligned_edge=DOWN))
+        title = heading("Finding the mask").move_to(HOLO_HEADING, aligned_edge=UL)
+
+        self.add(step)
+        self.play(FadeIn(title), FadeIn(labels), GrowArrow(forward), GrowArrow(back),
+                  FadeIn(arrow_labels), FadeIn(rim), FadeIn(frame))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        self.play(FadeIn(mask), FadeIn(focal), FadeIn(bars), FadeIn(level), FadeIn(bars_label),
+                  FadeIn(count_label), FadeIn(count), FadeIn(even_label), FadeIn(evenness))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        def show(index):
+            mask.paint(masks[index])
+            focal.paint(focal_view(masks[index], amplitude))
+
+        for index in range(1, HI_SLOW + 1):
+            # back to the SLM with the dim traps weighted up, then forward again
+            self.play(ShowPassingFlash(back.copy().set_color(WHITE), time_width=0.6), run_time=0.7)
+            mask.paint(masks[index])
+            self.play(ShowPassingFlash(forward.copy().set_color(WHITE), time_width=0.6),
+                      run_time=0.7)
+            focal.paint(focal_view(masks[index], amplitude))
+            step.set_value(index)
+            # a wait runs no updaters unless one of them takes the time step:
+            # bring the bars and the numbers up to the new step by hand
+            self.update_mobjects(0)
+            self.wait(HOLO_SETTLE)
+            self.beat()
+
+        mask.add_updater(lambda m: show(now()))
+        self.play(step.animate.set_value(HI_STEPS), rate_func=linear, run_time=HI_RUN_TIME)
+        mask.clear_updaters()
+        self.wait(HOLO_SETTLE)
+        self.beat()

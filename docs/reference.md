@@ -599,6 +599,9 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - Scene `PhaseMaskBuildingBlocks(Scene)`: A phase mask beside the focal plane it makes: flat, a grating that steers the spot, a lens that defocuses it, and gratings summed into an array. One beat() per mask.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py PhaseMaskBuildingBlocks`
+- Scene `HologramIteration(Scene)`: Weighted Gerchberg-Saxton finding an array's mask: the loop between the SLM plane and the focal plane, three iterations one at a time, then the run until the traps are evenly bright. A beat() on the loop, on the starting mask, after each slow iteration and after the run.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py HologramIteration`
 
 ### `tweezers.scenes.rearrangement`
 
