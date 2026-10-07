@@ -107,8 +107,12 @@ than building atoms or pulses by hand — that is what keeps the
 animations looking like one set of figures. Pull anything visual from the
 style modules; if you need a new colour or width, add it to the topic's
 `style.py` (or the core one, if more than one topic uses it) rather than
-inline. Helpers go in `<topic>/tools/<module>.py`, the scene and layout only
-it uses in `<topic>/scenes/<module>.py`. A scene that will be a slide calls
+inline. A helper goes at the level of the most general thing it draws: in
+`core/` if it is generic physics or drawing (a Bloch sphere, a cavity, a
+plot axis), even if only your scene uses it so far; in
+`<topic>/tools/<module>.py` if it is the topic's own; and only the scene and
+layout nothing else uses in `<topic>/scenes/<module>.py`. Never import from
+another scene module except to subclass its scene. A scene that will be a slide calls
 `self.beat()` (a no-op method on the scene) where a presenter would stop;
 `manim_atoms.slides` turns it into a slide break.
 

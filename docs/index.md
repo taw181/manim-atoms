@@ -22,6 +22,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `tools/`: helpers, plus the geometry constants they use;
   - `scenes/`: Scene classes;
   - where it has them, `physics/` (numbers, no manim) and `plots/` (matplotlib).
+  - Generic concepts live in `core`, even when one topic uses them: the Bloch sphere (`core.bloch`), beams and cavities (`core.optics`), log-log axes and scatters (`core.plots`).
 - **Space-time diagrams.** x is lab time and y is height along the baseline, which is also the direction of the beam and of the recoil. Some consequences:
   - an atom at rest is a horizontal line;
   - a kicked arm climbs, and its slope is its momentum;
@@ -34,7 +35,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **Defaults bind at definition time.** Tools take their geometry from module constants as default arguments, e.g. `interferometry.tools.clock`: `draw_ports` defaults to `CP_SLOPE`. A new scene passes its own values; it does not rebind the constants.
 - **Colours** come from the style modules, never from inline values:
   - `style`: `ATOM_COLOR` is |g, p>, `KICKED_COLOR` is |e, p + ħk>, `LASER_COLOR` is the beams and their annotations.
-  - Each topic adds its own palette in its own style module: `interferometry.style`, `trapping.style`, `aion.style`.
+  - What one topic alone uses is in that topic's style module: `interferometry.style`, `trapping.style`, `aion.style`. What topics share is in `style`.
   - Every constant is listed under its section in [reference.md](reference.md).
 - **Slide stops** are no-op hooks a scene calls where a presenter would stop: `beat()`, `stage_break()`, `hold()`. See [Making a scene a slide](#making-a-scene-a-slide).
 
@@ -274,13 +275,16 @@ Copy from these when building something similar.
 - **A table revealed row by row.** `aion.scenes.km_challenges`: `KmScaleChallenges`.
 - **A lab picture with traps and a beam through them.** `aion.scenes.signal_injection`: `SignalInjection`.
 
-## General tools stuck in scenes
+## Still to generalise
 
-These are general but live on a scene or in a scene module, so another
-scene can only reach them by importing that scene. They are the first
-candidates to move down into `tools/` or `core/`.
+These are general in what they draw but not yet in how they are called:
+they are fixed to one scene's layout, or live on a scene as methods. They
+are the candidates for the next round of generalisation.
 
-- `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`, `LMTMachZehnder.caption`, `LMTMachZehnder.pulse_label`.
+- `interferometry.scenes.lmt`: `LMTMachZehnder.play_history` (animating any pulse history), with `LMTMachZehnder.caption` and `LMTMachZehnder.pulse_label`, are methods on the scene.
+- `interferometry.tools.pulse_sequence`: `lmt_history` knows only split, up, down and merge pulses on one atom; a general engine would take any pulse area, direction and set of arms, and a displacement such as gravity.
 - `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `Panel`, `wave` and `beam` are generic already.
+- `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
+- `core.primitives`: `absorb` and `emit` drive from below only.
 - `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.
