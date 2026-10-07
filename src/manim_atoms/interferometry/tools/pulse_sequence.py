@@ -449,3 +449,10 @@ def _ports(scene, step, atoms, colors, atom):
 def _other(state):
     """The other internal state."""
     return "e" if state == "g" else "g"
+
+
+def corners(seq):
+    """A Mach-Zehnder's four corners (a, b, b_up, c), from a run of pi/2, pi,
+    pi/2: the split, the two arms at the mirror (b the one left alone at the
+    split, b_up the one kicked there), and the recombination."""
+    return seq.paths["0"][0], seq.paths["0"][1], seq.paths["1"][1], seq.paths["0"][2]

@@ -14,12 +14,12 @@ noise is common to both and cancels in the difference.
 The slope is exaggerated by many orders of magnitude. For a 100 m baseline
 L/c is ~0.3 us against an interrogation time T of order a second.
 
-- GR_PULSES, cloud_sequence, corners, cloud_legs: the bookkeeping, done by
-  the pulse-sequence engine. Each cloud is one run_sequence over the same
+- GR_PULSES, cloud_sequence, cloud_legs: the bookkeeping, done by the
+  pulse-sequence engine. Each cloud is one run_sequence over the same
   sloped pulses, timed at the cloud's own arrival, with climb="leg" so the
-  corners stay pinned to the arrivals however the timing is modulated;
-  corners gives the four (a, b, b_up, c) the scenes index, cloud_legs the
-  legs a pulse launches.
+  corners stay pinned to the arrivals however the timing is modulated
+  (pulse_sequence.corners gives the four (a, b, b_up, c) the scenes
+  index); cloud_legs gives the legs a pulse launches.
 - gradiometer_frame: the title, laser line, time axis and baseline every
   gradiometer scene opens with.
 - laser_jumps: the laser's phase on a cloud's two hands, at the times each
@@ -82,13 +82,6 @@ def cloud_sequence(pulses, z0, disp=no_displacement):
     when a wave makes the intervals unequal; ``disp`` bows the legs."""
     return run_sequence(pulses, (pulses[0].arrival(z0), z0), GR_ARM, disp=disp,
                         port=GR_OUT, climb="leg")
-
-
-def corners(seq):
-    """A cloud's four corners (a, b, b_up, c): the split, the two arms at the
-    mirror (b the one left alone at the split, b_up the one kicked there),
-    and the recombination."""
-    return seq.paths["0"][0], seq.paths["0"][1], seq.paths["1"][1], seq.paths["0"][2]
 
 
 def cloud_legs(seq, k, pair, wavy=False):

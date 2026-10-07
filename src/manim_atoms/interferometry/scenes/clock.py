@@ -20,12 +20,12 @@ from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.clock import (
     budget_equation,
     clock_rate,
+    clock_sequence,
     CP_ARM,
     CP_DIAL,
     CP_LASER_PHASES,
     CP_OUT,
     CP_T,
-    CP_T0,
     CP_Z,
     dial_hand,
     draw_ports,
@@ -37,12 +37,12 @@ from manim_atoms.interferometry.tools.clock import (
     readout_equation,
     show_phase_budget,
 )
-from manim_atoms.interferometry.tools.pulses import fire_vertical_pulse, pulse_caption
+from manim_atoms.interferometry.tools.pulses import pulse_caption
+from manim_atoms.interferometry.tools.pulse_sequence import corners, play_sequence
 from manim_atoms.core.primitives import (
     arm_ket,
     draw_legs,
     make_atom,
-    state_colors,
 )
 
 
@@ -106,10 +106,8 @@ class ClockPhase(Scene):
         note.next_to(title, DOWN, buff=0.2).align_to(title, LEFT)
         self.play(FadeIn(title), FadeIn(note), run_time=0.9)
 
-        a = np.array([CP_T0, CP_Z, 0.0])
-        b = a + RIGHT * CP_T
-        b_up = b + UP * CP_ARM
-        c = b_up + RIGHT * CP_T
+        seq = clock_sequence()
+        a, b, b_up, c = corners(seq)
         rate = clock_rate(CP_T)
 
         # One tracker per arm, advanced only over the leg on which that arm is
@@ -133,81 +131,85 @@ class ClockPhase(Scene):
         draw_legs(self, [(seed, entry, a, ATOM_COLOR)], extra=[FadeIn(ket_in)])
         self.beat()
 
-        # --- the beamsplitter ----------------------------------------------
-        self.pulse(a[0], 1, [seed])
-        arm_lo = make_atom(
-            radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
-        ).move_to(a)
-        arm_hi = make_atom(
-            KICKED_COLOR, radius=CLOCK_ATOM_RADIUS, opacity=SUPERPOSITION_OPACITY
-        ).move_to(a)
-        self.remove(seed)
-        self.add(arm_lo, arm_hi)
-
-        # The dial hands take the state colour too, so the one that is turning
-        # is always the purple one -- which is the whole rule, shown rather
-        # than asserted.
-        big_lo = dial_hand(CP_DIAL, kicked_last, lighten(ATOM_COLOR))
-        big_hi = dial_hand(CP_DIAL, kicked_first, lighten(KICKED_COLOR))
-        hand_lo = make_clock_hand(arm_lo, kicked_last)
-        hand_hi = make_clock_hand(arm_hi, kicked_first)
-        self.add(hand_lo, hand_hi, big_lo, big_hi)
+        # --- the pulses ----------------------------------------------------
+        # Each pulse is captioned with the laser phase phi_n it writes in, and
+        # climbs a column through the arms it drives: bottom to top, following
+        # the beam. At the mirror the two arms are driven in opposite
+        # directions by the same pulse -- the ground-state arm absorbs a
+        # photon, the excited one emits -- so they swap states together, and
+        # each arm's hand on the dial takes its new colour with it.
         # The hands count -phase (they turn forwards while the ket's
         # -omega_A T grows), so a phase the laser adds turns a hand back.
         phi1, phi2, phi3 = CP_LASER_PHASES
-        self.laser_jump([(kicked_first, -phi1)])
+        arms = {"": seed}
+        dial_hands = {}
 
-        # --- leg 1: the kicked arm is the excited one ------------------------
-        kets = [
-            # below the leg, as the way in has it
-            arm_ket(False, font_size=CP_KET_FONT)
-            .next_to(midpoint(a, b), DOWN, buff=CP_GROUND_KET_BUFF),
-            # stacked: in one line it runs off the left of the frame
-            arm_ket(True, r"\phi_1 - \omega_A T", CP_KET_FONT, stacked=True)
-            .next_to(midpoint(a, b_up), UL, buff=CP_KET_BUFF),
-        ]
-        draw_legs(self, [
-            (arm_lo, a, b, ATOM_COLOR),
-            (arm_hi, a, b_up, KICKED_COLOR),
-        ], extra=[kicked_first.animate.increment_value(rate * CP_T),
-                  *[FadeIn(k) for k in kets]])
-        self.beat()
+        def caption(step, k):
+            """phi_n on the caption row as pulse n comes up."""
+            self.play(FadeIn(pulse_caption(rf"\phi_{k + 1}", step.x)), run_time=0.3)
 
-        # --- the mirror: the arms swap state ----------------------------------
-        # Bottom to top, following the beam. The two arms are driven in
-        # opposite directions by the same pulse: the ground-state arm absorbs
-        # a photon, and the excited one emits, so they swap states.
-        # One pulse crosses both arms, so they swap together -- and each
-        # arm's hand on the dial takes its new colour with it.
-        self.pulse(b[0], 2, [arm_lo, arm_hi])
-        self.play(
-            state_colors(arm_lo, KICKED_COLOR),
-            state_colors(arm_hi, ATOM_COLOR),
-            big_lo.animate.set_color(lighten(KICKED_COLOR)),
-            big_hi.animate.set_color(lighten(ATOM_COLOR)),
-            run_time=0.5,
+        def hand_colour(step, k, arm):
+            """At the mirror, an arm's dial hand takes its new state's colour
+            (at the split it has none yet)."""
+            if arm not in dial_hands:
+                return []
+            new = next(state for name, _, state in step.hits if name == arm)
+            colour = KICKED_COLOR if new == "e" else ATOM_COLOR
+            return [dial_hands[arm].animate.set_color(lighten(colour))]
+
+        def laser_phase(step, k):
+            """The laser writes its phase in, once the pulse has done its work.
+
+            At the split each arm gets its hand first, and the dial hands
+            take the state colour too, so the one that is turning is always
+            the purple one -- which is the whole rule, shown rather than
+            asserted. Index "0" is the arm left alone at the split, whose
+            excited leg is the last; "1" the one kicked there."""
+            if k == 0:
+                dial_hands["0"] = dial_hand(CP_DIAL, kicked_last, lighten(ATOM_COLOR))
+                dial_hands["1"] = dial_hand(CP_DIAL, kicked_first, lighten(KICKED_COLOR))
+                self.hands = [make_clock_hand(arms["0"], kicked_last),
+                              make_clock_hand(arms["1"], kicked_first)]
+                self.add(*self.hands, dial_hands["0"], dial_hands["1"])
+            self.laser_jump(([(kicked_first, -phi1)],
+                             [(kicked_first, +phi2), (kicked_last, -phi2)],
+                             [(kicked_first, -phi3)])[k])
+
+        def leg_kets(step, k):
+            """The hand that turns over this leg, and each leg's state with the
+            phase it has picked up by the end of it."""
+            if k == 0:
+                turning = kicked_first
+                kets = [
+                    # below the leg, as the way in has it
+                    arm_ket(False, font_size=CP_KET_FONT)
+                    .next_to(midpoint(a, b), DOWN, buff=CP_GROUND_KET_BUFF),
+                    # stacked: in one line it runs off the left of the frame
+                    arm_ket(True, r"\phi_1 - \omega_A T", CP_KET_FONT, stacked=True)
+                    .next_to(midpoint(a, b_up), UL, buff=CP_KET_BUFF),
+                ]
+            else:
+                turning = kicked_last
+                kets = [
+                    # the effect box that later spans the middle half of the
+                    # leg is drawn under it
+                    arm_ket(True, r"\phi_2 - \omega_A T", CP_KET_FONT)
+                    .next_to(midpoint(b, c), DR, buff=CP_KET_BUFF),
+                    arm_ket(False, r"\phi_1 - \phi_2 - \omega_A T", CP_KET_FONT)
+                    .next_to(midpoint(b_up, c), UP, buff=CP_KET_BUFF),
+                ]
+            return (), [turning.animate.increment_value(rate * CP_T),
+                        *[FadeIn(ket) for ket in kets]]
+
+        play_sequence(
+            self, seq, arms, style="column", kick_time=0.5, ports=False,
+            atom=lambda color, opacity: make_atom(
+                color, radius=CLOCK_ATOM_RADIUS, opacity=opacity),
+            before_pulse=caption, on_kick=hand_colour, before_legs=laser_phase,
+            with_legs=leg_kets, after_step=lambda step, k: self.beat(),
         )
-        self.laser_jump([(kicked_first, +phi2), (kicked_last, -phi2)])
-
-        # --- leg 2: and so the other hand turns --------------------------------
-        kets = [
-            # the effect box that later spans the middle half of the leg is
-            # drawn under it
-            arm_ket(True, r"\phi_2 - \omega_A T", CP_KET_FONT)
-            .next_to(midpoint(b, c), DR, buff=CP_KET_BUFF),
-            arm_ket(False, r"\phi_1 - \phi_2 - \omega_A T", CP_KET_FONT)
-            .next_to(midpoint(b_up, c), UP, buff=CP_KET_BUFF),
-        ]
-        draw_legs(self, [
-            (arm_lo, b, c, KICKED_COLOR),
-            (arm_hi, b_up, c, ATOM_COLOR),
-        ], extra=[kicked_last.animate.increment_value(rate * CP_T),
-                  *[FadeIn(k) for k in kets]])
-        self.beat()
-
-        # --- recombine ----------------------------------------------------------
-        self.pulse(c[0], 3, [arm_lo])
-        self.laser_jump([(kicked_first, -phi3)])
+        arm_lo, arm_hi = arms["0"], arms["1"]
+        hand_lo, hand_hi = self.hands
 
         # --- and the readout ----------------------------------------------------
         # The arms are spent: the pulse has mixed them into the two output
@@ -282,12 +284,6 @@ class ClockPhase(Scene):
             *[t.animate.increment_value(d) for t, d in jumps],
             run_time=0.5,
         )
-
-    def pulse(self, x, n, hits):
-        """Pulse n, captioned with the laser phase phi_n it writes in."""
-        caption = pulse_caption(rf"\phi_{n}", x)
-        self.play(FadeIn(caption), run_time=0.3)
-        fire_vertical_pulse(self, x, hits)
 
     def phase_budget(self, budget):
         """Hook: ClockPhaseTerms marks up what each term of the phase is worth.

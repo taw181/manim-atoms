@@ -46,7 +46,6 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_PULSES,
     cloud_legs,
     cloud_sequence,
-    corners,
     gr_fire_pulse,
     gr_laser_caption,
     gr_launch_time,
@@ -54,6 +53,7 @@ from manim_atoms.interferometry.tools.gradiometer import (
     gradiometer_frame,
     laser_jumps,
 )
+from manim_atoms.interferometry.tools.pulse_sequence import corners
 from manim_atoms.core.primitives import (
     draw_legs,
     make_atom,
