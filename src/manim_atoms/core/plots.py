@@ -1,4 +1,5 @@
-"""Plots drawn in manim: log-log axes, and scatters of thousands of dots.
+"""Plots drawn in manim: log-log and linear axes, keys, and scatters of
+thousands of dots.
 
 - log_axes: axes in decades with 10^n tick labels, as (axes, frame); each
   Axes carries its own log ranges, so plot_point and curve_points take just
@@ -7,6 +8,8 @@
   points are every dot's circle end to end, so cairo draws one path rather
   than walking thousands of mobjects; dot_cloud shows the first ``count``
   of them, so the dots can arrive one at a time.
+- ticked_axes: linear axes with MathTex x ticks, numbered y ticks and axis
+  labels, as (axes, frame); legend_row: a row of (label, colour) keys.
 """
 
 import numpy as np
@@ -98,3 +101,56 @@ def static_cloud(points, color, opacity):
     """Every dot of a series as one still VMobject."""
     return VMobject(fill_color=color, fill_opacity=opacity,
                     stroke_width=0).set_points(points)
+
+
+# --- linear axes and keys --------------------------------------------------
+def ticked_axes(x_range, y_range, x_length, y_length, x_ticks, y_numbers,
+                x_label, y_label):
+    """Linear axes with tick labels and axis labels, as (axes, frame).
+
+    The x ticks are (value, tex) pairs, set as MathTex, so they can read
+    "pi"; the y axis is numbered at ``y_numbers``. The frame is (axes, x
+    tick labels, y label, x label), x label last so a panel that loses it
+    can transform the rest. x_label=None leaves it empty. Place the frame by
+    shifting it so ``axes.c2p(0, 0)`` lands where the origin goes.
+    """
+    axes = Axes(
+        x_range=x_range,
+        y_range=y_range,
+        x_length=x_length,
+        y_length=y_length,
+        tips=False,
+        axis_config=dict(
+            color=PLOT_FOREGROUND, stroke_width=2, tick_size=0.06,
+            include_ticks=True,
+        ),
+        # the x ticks are MathTex set below, so the origin's 0 is the y axis's
+        y_axis_config=dict(numbers_to_include=y_numbers,
+                           font_size=FONT_TICK, numbers_to_exclude=[]),
+        x_axis_config=dict(include_numbers=False),
+    )
+    ticks = VGroup(*(
+        MathTex(tex, font_size=FONT_TICK, color=PLOT_FOREGROUND)
+        .next_to(axes.c2p(x, 0), DOWN, buff=0.18)
+        for x, tex in x_ticks
+    ))
+    axes.y_axis.numbers.set_color(PLOT_FOREGROUND)
+    yl = Tex(y_label, font_size=FONT_AXIS, color=PLOT_FOREGROUND).rotate(PI / 2)
+    yl.next_to(axes.y_axis.numbers, LEFT, buff=0.2)
+    xl = VGroup()
+    if x_label is not None:
+        xl = Tex(x_label, font_size=FONT_AXIS, color=PLOT_FOREGROUND)
+        xl.next_to(ticks, DOWN, buff=0.18).set_x(axes.x_axis.get_center()[0])
+    return axes, VGroup(axes, ticks, yl, xl)
+
+
+def legend_row(entries):
+    """A row of (label, colour) keys, each a dot and its label."""
+    rows = VGroup(*(
+        VGroup(
+            Dot(radius=0.07, color=color),
+            Tex(label, font_size=FONT_AXIS, color=PLOT_FOREGROUND),
+        ).arrange(RIGHT, buff=0.12)
+        for label, color in entries
+    ))
+    return rows.arrange(RIGHT, buff=0.4)

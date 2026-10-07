@@ -199,6 +199,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Plots drawn in manim
 
 - **Log-log axes in decades**, and points and curves on them. `core.plots`: `log_axes`, `plot_point`, `curve_points`.
+- **Linear axes with tick and axis labels**, the x ticks as MathTex (so they can read π). `core.plots`: `ticked_axes`.
+- **A row of keys**, each a dot and its label. `core.plots`: `legend_row`.
 - **The GW sensitivity plot's axes**, and a detector's curve with its region shaded. `aion.tools.gw_plot`: `sensitivity_axes`, `detector_region`.
 - **The ULDM reach inset.** `aion.tools.uldm_plot`:
   - the whole inset: `uldm_inset`;
@@ -285,5 +287,4 @@ are the candidates for the next round of generalisation.
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
 - `core.primitives`: `absorb` and `emit` drive from below only.
-- `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.

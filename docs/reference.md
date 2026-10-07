@@ -132,7 +132,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.plots`
 
-`src/manim_atoms/core/plots.py` — Plots drawn in manim: log-log axes, and scatters of thousands of dots.
+`src/manim_atoms/core/plots.py` — Plots drawn in manim: log-log and linear axes, keys, and scatters of thousands of dots.
 
 - `log_axes(log_x_range, log_y_range, origin, width, height, x_label=None, y_label=None, tick_font=FONT_TICK, label_font=FONT_AXIS, label_every=(1, 1), buff=0.15)`: Log-log axes in decades, with 10^n tick labels, as (axes, frame).
 - `plot_point(axes, log_x, log_y)`: The scene point of (log10 x, log10 y) on ``axes`` from log_axes.
@@ -140,6 +140,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `dot_points(axes, xs, ys)`: Every dot's circle, end to end, in the order the dots arrive.
 - `dot_cloud(points, per_dot, color, count, opacity)`: A series' dots as one VMobject, showing the first ``count`` of them as it runs.
 - `static_cloud(points, color, opacity)`: Every dot of a series as one still VMobject.
+- `ticked_axes(x_range, y_range, x_length, y_length, x_ticks, y_numbers, x_label, y_label)`: Linear axes with tick labels and axis labels, as (axes, frame).
+- `legend_row(entries)`: A row of (label, colour) keys, each a dot and its label.
 
 ## species
 
@@ -654,14 +656,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/aion/scenes/dai_data.py` — The AION DAI data built up shot by shot.
 
 - `load(run)`: One run's first N_SHOTS shots as {column: array}, sorted by laser phase step.
-- `plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label)`: Axes, tick labels and axis labels, as (axes, frame).
 - `fringe_plot(y_length, origin, x_label=True)`: The fringe panel's (axes, frame): excitation against phase step over 0 to 2 pi, its origin at ``origin``.
 - `lissajous_plot()`: The Lissajous panel's (axes, frame): upper against lower excitation, square.
 - `fringe_series(axes, data)`: (points, per_dot, colour) for each interferometer's fringe.
 - `arriving_shots(data, fringe_axes, liss_axes, ellipse_color, count, dim=False)`: Every layer one run's shots are drawn in, all driven by ``count``.
 - `build(scene, count, clouds, rings)`: Play one run's shots in, left to right, then freeze them.
 - `newest_ring(centres, color, count)`: A ring that follows the newest of the dots ``count`` has brought in.
-- `legend_row(entries)`: A row of (label, colour) keys, each a dot and its label.
 - `fringe_key()`: The key to the two fringe series: lower and upper interferometer.
 - `over_panel(title, key, axes)`: A panel's title over its left end and the fringe key over its right.
 - Scene `FringesToEllipse(Scene)`: The quiet run, shot by shot: each lands on the fringes twice and on the Lissajous ellipse once, ringed in all three places.
