@@ -17,7 +17,11 @@ from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band
-from manim_atoms.species.strontium import SrLevels
+from manim_atoms.species.strontium import (
+    SrLevels,
+    TRANSITION_461_COLOR,
+    TRANSITION_698_COLOR,
+)
 from manim_atoms.trapping.tools.sequence import (
     caption,
     stage_heading,

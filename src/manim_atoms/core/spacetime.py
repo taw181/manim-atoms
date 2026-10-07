@@ -138,7 +138,7 @@ def wound(clock, rate, t_from, t_to):
     return turn
 
 
-def growing_band(band, t_from, t_to, now, style=FIELD_WINDOW_STYLE):
+def growing_band(band, t_from, t_to, now, style=WINDOW_STYLE):
     """A band over a stretch of the diagram, filling in as that stretch is flown.
 
     Takes the finished band's height and redraws its width off the clock, so

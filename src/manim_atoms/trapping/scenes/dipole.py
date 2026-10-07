@@ -22,7 +22,7 @@ from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band, gaussian_spot
-from manim_atoms.species.strontium import SrLevels
+from manim_atoms.species.strontium import SrLevels, TRANSITION_488_COLOR
 from manim_atoms.trapping.tools.cooling import SweepFan
 from manim_atoms.trapping.tools.dipole import (
     DT_FALL_TIME,

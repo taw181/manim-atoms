@@ -83,7 +83,7 @@ class ExperimentSequence(Scene):
         # drawn over the video and its clock, since the frames can't be faded
         veil = Rectangle(width=self.VIDEO_SIZE, height=self.VIDEO_SIZE, stroke_width=0,
                          fill_color=PLOT_BACKGROUND, fill_opacity=1).move_to(video)
-        border = SurroundingRectangle(video, buff=0, **VIDEO_BORDER_STYLE)
+        border = SurroundingRectangle(video, buff=0, **IMAGE_BORDER_STYLE)
 
         self.add(video, clock, veil)
         self.play(*([FadeIn(levels)] if self.LEVELS else []), FadeIn(timeline),

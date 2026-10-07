@@ -13,6 +13,7 @@ from manim import *
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_spot
 from manim_atoms.trapping.tools.cooling import MOT_AXES, chevron
+from manim_atoms.species.strontium import TRANSITION_689_COLOR
 
 
 SPIN_HIST_WIDTH = 2.2

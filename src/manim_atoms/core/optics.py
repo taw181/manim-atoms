@@ -14,8 +14,8 @@ from manim import *
 from manim_atoms.style import *
 
 
-def gaussian_band(start, end, width, color, opacity=TRAP_BEAM_OPACITY,
-                  layers=TRAP_BEAM_LAYERS):
+def gaussian_band(start, end, width, color, opacity=BEAM_OPACITY,
+                  layers=BEAM_LAYERS):
     """A beam seen side on: nested bands, brightest along its axis, so it
     reads as a Gaussian profile rather than a flat bar."""
     start, end = np.array(start, dtype=float), np.array(end, dtype=float)
@@ -27,8 +27,8 @@ def gaussian_band(start, end, width, color, opacity=TRAP_BEAM_OPACITY,
     ])
 
 
-def gaussian_spot(center, radius, color, opacity=TRAP_BEAM_OPACITY,
-                  layers=TRAP_BEAM_LAYERS):
+def gaussian_spot(center, radius, color, opacity=BEAM_OPACITY,
+                  layers=BEAM_LAYERS):
     """A beam seen end on, the same way: nested discs."""
     return VGroup(*[
         Circle(radius=radius * (1 - k / layers), stroke_width=0, fill_color=color,

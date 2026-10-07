@@ -13,7 +13,12 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import LV_3P, LV_3P_X, TRANSITIONS
+from manim_atoms.species.strontium import (
+    LV_3P,
+    LV_3P_X,
+    TRANSITION_689_COLOR,
+    TRANSITIONS,
+)
 
 
 # --- the trap -------------------------------------------------------------

@@ -14,24 +14,19 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/style.py` — The house style shared by every manim_atoms figure.
 
-- *colour scheme*: `ATOM_COLOR`, `KICKED_COLOR`, `LASER_COLOR`, `GUIDE_COLOR`, `AREA_COLOR`, `SUPERPOSITION_OPACITY`
+- *colour scheme*: `ATOM_COLOR`, `KICKED_COLOR`, `LASER_COLOR`, `GUIDE_COLOR`
 - *type*: `FONT_TITLE`, `FONT_STATE`, `FONT_ANNOTATION`, `FONT_LEGEND`, `FONT_K`
 - *atoms*: `ATOM_RADIUS`, `LEGEND_ATOM_RADIUS`, `ATOM_STROKE_WIDTH`
 - *laser pulses*: `PULSE_LENGTH`, `PULSE_AMPLITUDE`, `PULSE_CYCLES`, `PULSE_STROKE_WIDTH`, `PULSE_TAPER`
 - *line styles*: `GUIDE_STYLE`, `TRAJECTORY_STYLE`, `RECOIL_ARROW_STYLE`, `K_ARROW_STYLE`, `FLASH_STYLE`
-- *pacing*: `V`, `PULSE_SPEED`, `PULSE_HOLD`, `PULSE_LINGER`
-- *a warm glow*: `HORIZON_GLOW`
-- *a window on a space-time diagram*: `FIELD_WINDOW_STYLE`
-- *an injected light shift*: `LIGHT_SHIFT_COLOR`
-- *the phase budget*: `SIGNAL_COLOR`, `NOISE_COLOR`
-- *energy levels*: `LEVEL_STROKE_WIDTH`, `LEVEL_GAP_ARROW_STYLE`, `LEVEL_GLOW_ARROW_STYLE`
-- *optical hardware*: `OPTIC_COLOR`
-- *data plots (matplotlib)*: `PLOT_BACKGROUND`, `PLOT_FOREGROUND`, `LLN_COLOR`, `SQL_COLOR`, `FONT_AXIS`, `FONT_TICK`, `DATA_DOT_RADIUS`, `GW_MERGER_TIME_COLORS`, `GW_BAND_EDGE_STYLE`
-- *the experimental sequence*: `TRANSITION_461_COLOR`, `TRANSITION_689_COLOR`, `TRANSITION_698_COLOR`, `TRANSITION_488_COLOR`, `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`, `REPUMP_COLOR`, `VIDEO_BORDER_STYLE`
-- *dipole traps*: `TRAP_BEAM_COLOR`, `TRAP_BEAM_OPACITY`, `TRAP_BEAM_LAYERS`
-- *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
+- *pacing*: `V`, `PULSE_SPEED`
+- *a window on a space-time diagram*: `WINDOW_STYLE`
+- *plots*: `PLOT_BACKGROUND`, `PLOT_FOREGROUND`, `FONT_AXIS`, `FONT_TICK`, `DATA_DOT_RADIUS`
+- *energy levels*: `LEVEL_STROKE_WIDTH`, `LEVEL_GAP_ARROW_STYLE`, `LEVEL_GLOW_ARROW_STYLE`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`
+- *fluorescence readout*: `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`
+- *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
 - *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
-- *an optical cavity*: `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
+- *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `IMAGE_BORDER_STYLE`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
 
 ## core
@@ -71,8 +66,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, and an optical cavity.
 
-- `gaussian_band(start, end, width, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
-- `gaussian_spot(center, radius, color, opacity=TRAP_BEAM_OPACITY, layers=TRAP_BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
+- `gaussian_band(start, end, width, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
+- `gaussian_spot(center, radius, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
 - `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
 - `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
 
@@ -109,7 +104,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `run_to(scene, clock, to, *anims, **kwargs)`: Advance lab time to `to` at V, playing `anims` while it runs.
 - `worldline(corners, disp=no_displacement)`: A function from lab time to where an arm is, given the corners it turns at.
 - `wound(clock, rate, t_from, t_to)`: An updater for the angle an arm excited from t_from to t_to has reached.
-- `growing_band(band, t_from, t_to, now, style=FIELD_WINDOW_STYLE)`: A band over a stretch of the diagram, filling in as that stretch is flown.
+- `growing_band(band, t_from, t_to, now, style=WINDOW_STYLE)`: A band over a stretch of the diagram, filling in as that stretch is flown.
 - `wound_with_shift(clock, rate, t_from, t_to, on, off, shift)`: wound(), with `shift` accrued on top of it across the window [on, off].
 - `wound_with_jumps(clock, rate, t_from, t_to, jumps)`: wound(), plus a step `delta` at each (t, delta) in `jumps` once lab time has passed t.
 - `carry(atom, path, clock)`: Pin an atom to its worldline for as long as lab time is running.
@@ -158,11 +153,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/style.py` — The interferometry scenes' style: the core house style plus phase drawn as a clock hand and its budget, output ports, the pulses' pacing, an injected perturbation, phase-shear readout and spin squeezing.
 
+- *colour scheme*: `AREA_COLOR`, `SUPERPOSITION_OPACITY`
 - *type*: `FONT_PHASE`
 - *line styles*: `LOOP_AREA_STYLE`
-- *pacing*: `STROBE_FLASH`
+- *pacing*: `STROBE_FLASH`, `PULSE_HOLD`, `PULSE_LINGER`
 - *an injected light shift*: `PERTURBATION_COLOR`, `PERTURBATION_STYLE`
-- *the phase budget*: `STRUCK_COLOR`, `STRUCK_OPACITY`, `CROSS_COLOR`, `CROSS_STROKE_WIDTH`, `RING_STROKE_WIDTH`, `RING_BUFF`
+- *the phase budget*: `SIGNAL_COLOR`, `NOISE_COLOR`, `STRUCK_COLOR`, `STRUCK_OPACITY`, `CROSS_COLOR`, `CROSS_STROKE_WIDTH`, `RING_STROKE_WIDTH`, `RING_BUFF`
 - *phase, drawn as a clock hand*: `CLOCK_ATOM_RADIUS`, `CLOCK_HAND_COLOR`, `CLOCK_HAND_WIDTH`, `CLOCK_HAND_RATIO`, `CLOCK_DIAL_RADIUS`, `CLOCK_SWEEP_OPACITY`
 - *output ports*: `PORT_EMPTY`, `PORT_EMPTY_OPACITY`
 - *phase-shear readout*: `SHEAR_BEAM_OPACITY`, `SHEAR_WAVEFRONT_STYLE`, `SHEAR_AXIS_STYLE`, `SHEAR_IMAGE_BORDER_STYLE`, `SHEAR_CONTRAST`, `SHEAR_PROFILE_WIDTH`, `SHEAR_DATA_DOT_RADIUS`
@@ -340,7 +336,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/trapping/style.py` — The trapping scenes' style: the core house style plus the experimental sequence's timeline, dipole traps, laser cooling, velocity slicing and the HiFAIS source.
 
 - *the experimental sequence*: `SEQUENCE_STAGE_COLORS`, `TIMELINE_AHEAD_OPACITY`, `TIMELINE_DONE_OPACITY`, `TIMELINE_ACTIVE_RING`, `FONT_TIMELINE`, `FONT_REFERENCE`, `REFERENCE_IDLE_OPACITY`, `VIDEO_DIM_OPACITY`, `FONT_VIDEO_CLOCK`
-- *dipole traps*: `TRANSPARENCY_OPACITY`, `MOT_GLOW_OPACITY`, `MOT_GLOW_LAYERS`, `FONT_CAPTION`
+- *dipole traps*: `TRAP_BEAM_COLOR`, `TRANSPARENCY_OPACITY`, `MOT_GLOW_OPACITY`, `MOT_GLOW_LAYERS`, `FONT_CAPTION`
 - *laser cooling*: `MOT_BEAM_WIDTH`, `MOT_BEAM_OPACITY`, `MOT_BEAM_EDGE_OPACITY`, `MOT_BEAM_EDGE_WIDTH`, `COIL_COLOR`, `COIL_STRONG_WIDTH`, `COIL_WEAK_WIDTH`, `CLOUD_DOT_RADIUS`, `DARK_ATOM_COLOR`, `DARK_ATOM_OPACITY`, `FONT_TEMPERATURE`, `OVEN_COLOR`, `OVEN_HEAT_COLOR`, `OVEN_HEAT_OPACITY`, `BAFFLE_COLOR`, `BAFFLE_WIDTH`, `HOT_ATOM_COLOR`
 - *velocity slicing*: `SLICE_HOT_COLOR`, `SLICE_COLD_COLOR`, `SLICE_FILL_OPACITY`, `SLICE_PROFILE_WIDTH`
 - *a high-flux atom source (HiFAIS)*: `CHAMBER_LABEL_COLOR`, `CHAMBER_LEADER_STYLE`, `CHAMBER_LEADER_DOT_RADIUS`, `FONT_CHAMBER_LABEL`, `FONT_CHAMBER_CAPTION`, `OVEN_TEMPERATURE_COLORS`, `LOADING_DOT_RADIUS`, `LOADING_ERROR_WIDTH`, `LOADING_FIT_WIDTH`, `LOADING_EXTRAPOLATION_DASH`, `LOADING_CUTOFF_STYLE`, `DIMENSION_COLOR`, `DIMENSION_STROKE_WIDTH`, `DIMENSION_TIP_LENGTH`, `DIMENSION_TICK`, `DIMENSION_OUTLINE`, `FONT_DIMENSION`
@@ -483,12 +479,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/aion/style.py` — The AION scenes' style: the interferometry and trapping styles (AION draws on both) plus AION's own palettes: the long-baseline cartoon, the spacetime sheet and gravitational waves, the dark-matter field and the solar system, the light-shift beam, LIGO's arms, the data plots (the DAI fringes, the GW and ULDM sensitivity curves) and the km-scale table.
 
 - *a long-baseline detector*: `SHAFT_COLOR`, `SHAFT_WALL_WIDTH`, `SOURCE_STROKE_WIDTH`, `BASELINE_BEAM_OPACITY`, `LAUNCH_STROKE_WIDTH`, `FONT_SOURCE`
-- *spacetime and gravitational waves*: `SHEET_COLOR`, `CREST_COLOR`, `TROUGH_COLOR`, `HORIZON_COLOR`, `SHEET_STROKE_WIDTH`, `HORIZON_MESH_WIDTH`, `HORIZON_MESH_OPACITY`, `BURST_STROKE_WIDTH`, `STRAIN_COLOR`, `STRAIN_STROKE_WIDTH`
+- *spacetime and gravitational waves*: `SHEET_COLOR`, `CREST_COLOR`, `TROUGH_COLOR`, `HORIZON_COLOR`, `HORIZON_GLOW`, `SHEET_STROKE_WIDTH`, `HORIZON_MESH_WIDTH`, `HORIZON_MESH_OPACITY`, `BURST_STROKE_WIDTH`, `STRAIN_COLOR`, `STRAIN_STROKE_WIDTH`
 - *an oscillating background field*: `FIELD_COLOR`, `FIELD_STROKE_WIDTH`, `EARTH_COLOR`, `MOON_COLOR`, `SUN_COLOR`, `BODY_OPACITY`, `BODY_MIN_RADIUS`
-- *an injected light shift*: `LIGHT_SHIFT_STYLE`
+- *an injected light shift*: `LIGHT_SHIFT_COLOR`, `LIGHT_SHIFT_STYLE`
 - *energy levels*: `LEVEL_RESONANCE_STYLE`
 - *an optical Michelson interferometer*: `X_ARM_COLOR`, `Y_ARM_COLOR`, `OUTPUT_COLOR`, `BEAM_STROKE_WIDTH`, `BEAM_GLOW_WIDTH`, `BEAM_GLOW_OPACITY`
-- *data plots (matplotlib)*: `LOWER_CLOUD_COLOR`, `UPPER_CLOUD_COLOR`, `LOWER_PULSE_MARK_COLOR`, `UPPER_PULSE_MARK_COLOR`, `HLN_COLOR`, `SQL_BAND_OPACITIES`, `IMPRINTED_SIGNAL_COLOR`, `RECOVERED_SIGNAL_COLOR`, `FRINGE_DOT_OPACITY`, `FRINGE_DIM_OPACITY`, `NEWEST_RING_RADIUS`, `NEWEST_RING_WIDTH`, `GW_DETECTOR_COLORS`, `GW_REGION_OPACITY`, `GW_MERGER_NEAR_COLOR`, `GW_MERGER_FAR_COLOR`, `GW_MERGER_Z_RANGE`, `GW_TRACK_WIDTH`, `GW_TRACK_AHEAD_OPACITY`, `GW_SOURCE_COLOR`, `GW_SOURCE_RADIUS`, `GW_SOURCE_GLOW_RADIUS`, `GW_SOURCE_GLOW_OPACITY`, `GW_DATA_WINDOW_COLOR`, `GW_TRACK_CROWD_WIDTH`, `ULDM_COLORS`, `ULDM_CURVE_WIDTH`, `ULDM_EXCLUDED_STYLE`, `ULDM_EXCLUDED_EDGE`, `ULDM_MARK_STYLE`, `ULDM_MARK_FAINT_OPACITY`, `ULDM_MARK_DOT_RADIUS`, `ULDM_LABEL_OUTLINE`, `FONT_INSET_TICK`, `FONT_INSET_LABEL`
+- *data plots (matplotlib)*: `LOWER_CLOUD_COLOR`, `UPPER_CLOUD_COLOR`, `LLN_COLOR`, `SQL_COLOR`, `LOWER_PULSE_MARK_COLOR`, `UPPER_PULSE_MARK_COLOR`, `HLN_COLOR`, `SQL_BAND_OPACITIES`, `IMPRINTED_SIGNAL_COLOR`, `RECOVERED_SIGNAL_COLOR`, `FRINGE_DOT_OPACITY`, `FRINGE_DIM_OPACITY`, `NEWEST_RING_RADIUS`, `NEWEST_RING_WIDTH`, `GW_DETECTOR_COLORS`, `GW_REGION_OPACITY`, `GW_MERGER_NEAR_COLOR`, `GW_MERGER_FAR_COLOR`, `GW_MERGER_Z_RANGE`, `GW_MERGER_TIME_COLORS`, `GW_BAND_EDGE_STYLE`, `GW_TRACK_WIDTH`, `GW_TRACK_AHEAD_OPACITY`, `GW_SOURCE_COLOR`, `GW_SOURCE_RADIUS`, `GW_SOURCE_GLOW_RADIUS`, `GW_SOURCE_GLOW_OPACITY`, `GW_DATA_WINDOW_COLOR`, `GW_TRACK_CROWD_WIDTH`, `ULDM_COLORS`, `ULDM_CURVE_WIDTH`, `ULDM_EXCLUDED_STYLE`, `ULDM_EXCLUDED_EDGE`, `ULDM_MARK_STYLE`, `ULDM_MARK_FAINT_OPACITY`, `ULDM_MARK_DOT_RADIUS`, `ULDM_LABEL_OUTLINE`, `FONT_INSET_TICK`, `FONT_INSET_LABEL`
 - *km-scale challenges table*: `FONT_TABLE_HEADING`, `FONT_TABLE_NAME`, `FONT_TABLE_NOTE`, `FONT_TABLE_CELL`, `TABLE_RULE_STYLE`
 - `merger_color(z)`: A merger track's shade: GW_MERGER_NEAR_COLOR at the low end of GW_MERGER_Z_RANGE fading to GW_MERGER_FAR_COLOR at the high end, in log z.
 

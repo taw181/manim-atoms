@@ -6,7 +6,14 @@ injected perturbation, phase-shear readout and spin squeezing.
     from manim_atoms.interferometry.style import *
 """
 
+from manim import BLUE_B, WHITE, ManimColor
+
 from manim_atoms.style import *
+
+# --- colour scheme --------------------------------------------------------
+AREA_COLOR = BLUE_B  # the area a closed interferometer encloses, and its phase
+# An interferometer arm is an amplitude, not a whole atom.
+SUPERPOSITION_OPACITY = 0.65
 
 # --- type -----------------------------------------------------------------
 FONT_PHASE = 40
@@ -20,6 +27,21 @@ LOOP_AREA_STYLE = dict(stroke_width=0, fill_color=AREA_COLOR, fill_opacity=0.09)
 # It has to be brief for that to read as one moment rather than as the atom
 # walking out of its own flash.
 STROBE_FLASH = 0.18  # wall seconds
+# The scenes with something passing through them -- a wave, a dark-matter field
+# -- are space-time diagrams, so the x axis *is* lab time and a pulse that
+# freezes the atoms freezes the field along with them. Their continuous
+# variants run one clock at V from the first pulse to the last and never stop
+# it, which costs them the dilated pulses: a photon crosses the baseline in
+# GR_LAG / V, a fifth of a second, so a pulse there is a strobe rather than an
+# event. That is the right trade for those scenes only. The explainers have
+# already said what a pulse does, and these ones are about what is passing
+# through.
+PULSE_HOLD = 0.4  # lab time a strobed column is held before it fades
+# ...and how long a pulse's worldline, its dashed reference and whatever it
+# was captioned with stay up once it has passed. Long enough to be read is
+# longer than the pulse itself lasts, so they linger into the next leg and
+# go out only as the next pulse comes up behind them.
+PULSE_LINGER = 1.2  # lab time
 
 # --- an injected light shift ----------------------------------------------
 # Bounded rather than a bare wash, unlike the field and strain windows: those
@@ -38,6 +60,13 @@ PERTURBATION_STYLE = dict(
 )
 
 # --- the phase budget -----------------------------------------------------
+# Breaking Phi into its terms sorts them into two kinds, and the colour does
+# the sorting: white for the term the measurement is after, and the usual
+# laser red for the one the light brings with it, circled or struck depending
+# on the instrument. A ring lends its colour to its label; a struck term takes
+# the grey instead, since the cross has already said the term is out of play.
+SIGNAL_COLOR = WHITE
+NOISE_COLOR = LASER_COLOR
 STRUCK_COLOR = GUIDE_COLOR
 STRUCK_OPACITY = 0.45  # what a crossed-out term dims to
 CROSS_COLOR = LASER_COLOR
@@ -74,22 +103,23 @@ SHEAR_WAVEFRONT_STYLE = dict(stroke_width=2.5, color=LASER_COLOR, stroke_opacity
 SHEAR_AXIS_STYLE = dict(dash_length=0.1, stroke_width=2, stroke_opacity=0.6,
                         color=LASER_COLOR)
 # A camera image of one output port: the port's state colour, bright where
-# the atoms are, framed like the videos. Measured fringes are never full
+# the atoms are, framed as a recorded picture. Measured fringes are never full
 # contrast, so neither are these.
-SHEAR_IMAGE_BORDER_STYLE = VIDEO_BORDER_STYLE
+SHEAR_IMAGE_BORDER_STYLE = IMAGE_BORDER_STYLE
 SHEAR_CONTRAST = 0.85
 SHEAR_PROFILE_WIDTH = 3.5  # the fitted fringe
 SHEAR_DATA_DOT_RADIUS = 0.05  # the binned profile it is fitted to
 
 # --- spin squeezing -------------------------------------------------------
+# The cavity counts the atoms in |g> on the 689 nm line, and core's probe red
+# is that line's red.
 # The quantum-noise blob of the collective spin. The coherent state is the
-# standard quantum limit, which the talk already draws in the guide grey (the
-# SQL band on the Allan plot); it stays up as a dashed outline once squeezed,
-# as the reference the squeezed state is held against. The squeezed state
-# takes the quiet run's green from the same plot: below the grey is where the
-# green sat there too.
-COHERENT_COLOR = SQL_COLOR
-SQUEEZED_COLOR = LLN_COLOR
+# standard quantum limit, a reference rather than something achieved, so it
+# takes the guide grey, and stays up as a dashed outline once squeezed, as
+# the reference the squeezed state is held against. The squeezed state is
+# the improvement, in a bright green.
+COHERENT_COLOR = GUIDE_COLOR
+SQUEEZED_COLOR = ManimColor("#44dd88")
 # (set_stroke() keywords: both are dashed curves, not DashedLines)
 COHERENT_OUTLINE_STROKE = dict(color=COHERENT_COLOR, width=2, opacity=0.7)
 MEASURED_WIDTH = 2.5  # the ring of fixed J_z the measurement pins the spin to

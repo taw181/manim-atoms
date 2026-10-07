@@ -9,6 +9,7 @@ fringes, the GW and ULDM sensitivity curves) and the km-scale table.
 """
 
 import numpy as np
+from manim import GREEN_C, GREY_B, WHITE, ManimColor, interpolate_color
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.trapping.style import *
@@ -34,6 +35,7 @@ SHEET_COLOR = ManimColor("#33607f")  # undisturbed spacetime
 CREST_COLOR = ManimColor("#a8e4ff")  # a wave crest
 TROUGH_COLOR = ManimColor("#54367f")  # a trough, and the floor of a gravitational well
 HORIZON_COLOR = ManimColor("#000000")  # the event horizon: darker than the background
+HORIZON_GLOW = ManimColor("#ffb26b")  # the rim light and the merger burst
 SHEET_STROKE_WIDTH = 1.5
 HORIZON_MESH_WIDTH = 0.6
 HORIZON_MESH_OPACITY = 0.14
@@ -63,6 +65,15 @@ BODY_OPACITY = 0.85
 BODY_MIN_RADIUS = 0.05  # below this a body drawn to scale is not there at all
 
 # --- an injected light shift ----------------------------------------------
+# A second laser, far enough off resonance to drive nothing, turned on across
+# one cloud to shift its clock levels. It gets a colour of its own rather than
+# the usual laser red, because the one thing the figure has to say about it is
+# that it is not the beam the pulses come from: different wavelength,
+# different job, one interferometer instead of both. Green is the only hue the
+# talk has left, and it samples furthest from everything already in use -- its
+# nearest neighbour is the construction grey, which is only ever a thin dashed
+# line and cannot be confused with a filled band.
+LIGHT_SHIFT_COLOR = GREEN_C
 LIGHT_SHIFT_STYLE = dict(
     stroke_width=2,
     stroke_color=LIGHT_SHIFT_COLOR,
@@ -95,8 +106,23 @@ BEAM_GLOW_WIDTH = 10  # the faint band a beam's wave rides on
 BEAM_GLOW_OPACITY = 0.18
 
 # --- data plots (matplotlib) ----------------------------------------------
-LOWER_CLOUD_COLOR = CREST_COLOR
-UPPER_CLOUD_COLOR = HORIZON_GLOW
+# Measured data shown alongside the animations. The two interferometers are
+# the two clouds of the gradiometer, not two states, so they take neither
+# state colour: the lower one a cool pale blue and the upper one a warm
+# orange, which sample as far apart as anything in the talk. Across the noise
+# runs the split is the phase budget's: green for the quiet laser, whose
+# ellipse is the signal, and laser red for the one with phase noise put on it.
+# Green rather than white, which sank into the grey of the SQL band; a bluish
+# green, kept apart from the light shift's, and further from the red for
+# anyone red-green colour-blind.
+LOWER_CLOUD_COLOR = ManimColor("#a8e4ff")
+UPPER_CLOUD_COLOR = ManimColor("#ffb26b")
+LLN_COLOR = ManimColor("#44dd88")
+# The standard quantum limit the two runs' Allan deviations are held against
+# is a reference, not a measurement, so it takes the guide grey: the paper's
+# grey band of Monte Carlo runs (68% denser inside 95%) and its dotted
+# 1/sqrt(tau) line.
+SQL_COLOR = GUIDE_COLOR
 # The differential dark-matter slide's marks on the field, where each pulse
 # reaches each cloud, and its dials' captions, which key them. The upper
 # cloud's is the data's; the lower's cannot be, as that is the field's own
@@ -144,6 +170,12 @@ GW_REGION_OPACITY = 0.15
 GW_MERGER_NEAR_COLOR = "#ffffff"
 GW_MERGER_FAR_COLOR = "#6e6e6e"
 GW_MERGER_Z_RANGE = (0.1, 10)  # redshifts the two shades are pinned to
+GW_MERGER_TIME_COLORS = ["#5e8fd9", "#4fc1c1", "#8fd46a", "#f0c24a", "#f06a4a"]
+# A band edge on a sensitivity plot: a reference, not data, so dashed and
+# in the axes' own colour.
+GW_BAND_EDGE_STYLE = dict(
+    dash_length=0.1, stroke_width=2, stroke_opacity=0.6, color=PLOT_FOREGROUND
+)
 def merger_color(z):
     """A merger track's shade: GW_MERGER_NEAR_COLOR at the low end of
     GW_MERGER_Z_RANGE fading to GW_MERGER_FAR_COLOR at the high end, in log z."""

@@ -6,6 +6,8 @@ HiFAIS source.
     from manim_atoms.trapping.style import *
 """
 
+from manim import BLUE_D, WHITE, ManimColor
+
 from manim_atoms.style import *
 
 # --- the experimental sequence --------------------------------------------
@@ -39,6 +41,10 @@ VIDEO_DIM_OPACITY = 0.5  # of the background-coloured veil drawn over it
 FONT_VIDEO_CLOCK = 24
 
 # --- dipole traps ---------------------------------------------------------
+# The trap beams are far off every resonance, so they drive nothing on the
+# level scheme and take no transition colour: a pale warm white, the colour
+# of light that holds atoms rather than addressing them.
+TRAP_BEAM_COLOR = ManimColor("#f3e3c8")
 TRANSPARENCY_OPACITY = 0.35
 MOT_GLOW_OPACITY = 0.22  # the red MOT's light, at its centre, beside the traps
 MOT_GLOW_LAYERS = 8
@@ -67,11 +73,11 @@ FONT_TEMPERATURE = FONT_ANNOTATION
 # Upstream of the MOT: the oven, the 2D MOT it feeds, and the push beam that
 # sends a stream of atoms from there through the vacuum baffle. The oven and
 # the baffle are hardware, so they take the optics grey; the oven gets a warm
-# wash inside, in the holes' rim-light orange, because what it does is get hot.
+# orange wash inside, because what it does is get hot.
 # An atom straight out of the oven has met no light yet and is drawn grey,
 # turning the 461 blue as it is caught.
 OVEN_COLOR = OPTIC_COLOR
-OVEN_HEAT_COLOR = HORIZON_GLOW
+OVEN_HEAT_COLOR = ManimColor("#ffb26b")
 OVEN_HEAT_OPACITY = 0.3
 BAFFLE_COLOR = OPTIC_COLOR
 BAFFLE_WIDTH = 8
@@ -100,17 +106,20 @@ CHAMBER_LEADER_DOT_RADIUS = 0.045
 FONT_CHAMBER_LABEL = FONT_AXIS
 FONT_CHAMBER_CAPTION = FONT_TICK
 # The MOT loading curves (Fig. 5 inset), one per oven temperature, coolest to
-# hottest on the cool-to-hot ramp the merger tracks' time dots already use --
-# its last four stops, which all sample clear of the dark background.
-OVEN_TEMPERATURE_COLORS = [ManimColor(c) for c in GW_MERGER_TIME_COLORS[1:]]
+# hottest on a cool-to-hot ramp whose stops all sample clear of the dark
+# background.
+OVEN_TEMPERATURE_COLORS = [ManimColor(c) for c in ["#4fc1c1", "#8fd46a", "#f0c24a", "#f06a4a"]]
 LOADING_DOT_RADIUS = 0.04
 LOADING_ERROR_WIDTH = 2
 LOADING_FIT_WIDTH = 2.5
 # A fit carried on past the points it was fitted to is dashed: it is the
 # model's prediction there, which the data are held against, not a fit.
 LOADING_EXTRAPOLATION_DASH = 0.09
-# The atom number the fits stop at: a reference, not data, like a band edge.
-LOADING_CUTOFF_STYLE = GW_BAND_EDGE_STYLE
+# The atom number the fits stop at: a reference, not data, so dashed and in
+# the axes' own colour.
+LOADING_CUTOFF_STYLE = dict(
+    dash_length=0.1, stroke_width=2, stroke_opacity=0.6, color=PLOT_FOREGROUND
+)
 # A dimension drawn across a render: in the photo labels' yellow, which holds
 # up against the CAD's greys and blues, outlined dark behind its line and text.
 DIMENSION_COLOR = PHOTO_LABEL_COLOR

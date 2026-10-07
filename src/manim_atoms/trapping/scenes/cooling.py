@@ -34,7 +34,11 @@ from manim_atoms.trapping.tools.cooling import (
     make_up_beam,
     oblique_ring,
 )
-from manim_atoms.species.strontium import SrLevels
+from manim_atoms.species.strontium import (
+    SrLevels,
+    TRANSITION_461_COLOR,
+    TRANSITION_689_COLOR,
+)
 from manim_atoms.trapping.tools.sequence import STAGES, Stage, Timeline, stage_heading
 
 # --- cooling layout -------------------------------------------------------
