@@ -187,6 +187,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **The array's numbers**: its sites, which of them load, and the plan that rearranges the loaded ones into a block, every trap moving at once. `tweezers.physics.rearrangement`: `square_sites`, `load_sites`, `plan_rearrangement`, `Plan`, `positions`, `longest_move`.
 - **A plane seen from an angle** on a flat scene, tilting and turning on trackers: where a point lands, what is in front, a circle in the plane. `core.projection`: `TiltedView`, with `TiltedView.point`, `TiltedView.depth`, `TiltedView.squash`, `TiltedView.rise`, `TiltedView.disc` and `TiltedView.outline`.
 - **A tweezer array**: traps as bright as their power, the atoms in them, and the unwanted traps going out and the rest moving, all on trackers. Drawn through a `core.projection.TiltedView`. `tweezers.tools.tweezer_array`: `TweezerArray`, with `spot_trap` as the trap seen end on.
+- **A tweezer seen from the side**: a focused Gaussian beam through a tilted view, fading away from its focus; and the outline of the focal plane. `tweezers.tools.beams`: `hourglass_trap`, `beam_half_width`, `axial_intensity`, `focal_plane`.
 - **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
@@ -281,6 +282,7 @@ Copy from these when building something similar.
 - **A staged sequence with a moving camera.** `trapping.scenes.cooling`: `CoolingSequence`. Also `trapping.scenes.dipole`: `DipoleTrapLoading`; and `trapping.scenes.slicing`: `VelocitySlicing`.
 - **Video on the scene's clock.** `trapping.scenes.sequence`: `ExperimentSequence`, `ExperimentSequenceSimple`.
 - **A tweezer array loaded, imaged and rearranged**, from above; and the same as a clip that loops. `tweezers.scenes.rearrangement`: `TweezerRearrangement`, `TweezerRearrangementLoop`.
+- **A top-down picture tilting into a view from an angle**, and a clip that turns it. `tweezers.scenes.array_3d`: `TweezerArray3D`, `TweezerArray3DLoop`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

@@ -527,6 +527,15 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `positions(plan, share)`: Every kept trap ``share`` of the way from its start to its end.
 - `longest_move(plan)`: The farthest any kept trap travels: what sets how long the move takes.
 
+### `tweezers.tools.beams`
+
+`src/manim_atoms/tweezers/tools/beams.py` — A tweezer seen from the side: a focused Gaussian beam through a tilted view.
+
+- `beam_half_width(z, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH)`: A Gaussian beam's 1/e^2 radius a distance z from its focus: w0 sqrt(1 + (z / z_R)^2).
+- `axial_intensity(z, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: How brightly the beam is drawn a distance z from its focus: the on-axis intensity 1 / (1 + (z / z_R)^2), brought to nothing at ``reach`` so the beam fades out rather than ending.
+- `hourglass_trap(view, at, power, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: One trap seen through a tilted view: the half of the beam below the focal plane, the half above, and the spot in the plane, at world point ``at`` and as bright as ``power``.
+- `focal_plane(view, half_width, half_height, shown)`: The outline of the focal plane, a rectangle about the view's origin, redrawn as the view moves and as visible as the tracker ``shown`` (0 to 1).
+
 ### `tweezers.tools.tweezer_array`
 
 `src/manim_atoms/tweezers/tools/tweezer_array.py` — The tweezer array as a drawing: traps, the atoms in them, and the moves.
@@ -544,6 +553,19 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `heading(text)`: A scene's heading, for its upper left corner.
 - `step_caption(text, under)`: The step being shown, in grey under the heading ``under``.
 - `next_step(old, text, under)`: (the new caption, the animation that swaps ``old`` for it): out, then in, so the two are never crossed.
+
+### `tweezers.scenes.array_3d`
+
+`src/manim_atoms/tweezers/scenes/array_3d.py` — A tweezer array seen from an angle: each trap a focused beam.
+
+- Scene `TweezerArray3D(Scene)`: The loaded array tilts from the top-down view into one from an angle, each trap a beam through its atom, and is rearranged there. One beat() per step.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `.build()`: Lay out the loaded array in a view that starts top-down, unadded.
+  - `.add_all()`: Put everything on, the trackers first so nothing lags them.
+  - `.say(text)`: The animation that swaps the caption for ``text``.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/array_3d.py TweezerArray3D`
+- Scene `TweezerArray3DLoop(TweezerArray3D)`: The rearranged block in the tilted view, turning a quarter turn about the optical axis: a square block comes back onto itself, so the clip loops.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/array_3d.py TweezerArray3DLoop`
 
 ### `tweezers.scenes.rearrangement`
 

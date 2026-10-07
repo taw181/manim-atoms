@@ -14,7 +14,7 @@ from manim_atoms.style import *
 # nothing, so it takes no transition's colour. A pale warm white. How
 # brightly a trap is drawn is its power; a trap switched off is not drawn.
 TWEEZER_COLOR = ManimColor("#f3e3c8")
-TWEEZER_OPACITY = 0.55  # on the axis, at the focus, at full power
+TWEEZER_OPACITY = 0.7  # on the axis, at the focus, at full power
 TWEEZER_LAYERS = 4  # nested shapes across the beam, as a Gaussian profile
 # Traps move at one speed, so a longer move takes visibly longer.
 TWEEZER_SPEED = 0.9

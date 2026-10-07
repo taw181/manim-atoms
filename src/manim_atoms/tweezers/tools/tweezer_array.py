@@ -26,9 +26,9 @@ TW_TARGET = (5, 5)  # rows and columns of the block wanted
 TW_PITCH = 0.5  # between neighbouring traps
 TW_FILL = 0.5  # the chance a trap catches an atom
 TW_SEED = 0  # of the loading the scenes show
-TW_SPOT_RADIUS = 0.15  # the waist as drawn: neighbours' spots stay clear of each other
-TW_ATOM_RADIUS = 0.08  # well inside its trap's spot
-TW_RING_RADIUS = 0.2  # a target ring, just outside the spot
+TW_SPOT_RADIUS = 0.12  # the waist as drawn: a quarter of the spacing, so beams stay apart
+TW_ATOM_RADIUS = 0.07  # well inside its trap's spot
+TW_RING_RADIUS = 0.17  # a target ring, just outside the spot
 
 
 def spot_trap(view, at, power):
