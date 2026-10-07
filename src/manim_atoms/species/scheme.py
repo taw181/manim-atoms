@@ -136,6 +136,12 @@ class Species:
         """The transition that does ``role``."""
         return self.transitions[self.roles[role]]
 
+    def path(self, role):
+        """The repump or decay path that does ``role``, or the path ``role``
+        names, wherever its Extra is."""
+        key = self.roles.get(role, role)
+        return next(extra.paths[key] for extra in self.extras.values() if key in extra.paths)
+
     def level_y(self, key, j=None):
         """A level's height, or a J's in a Manifold."""
         level = self.levels[key]

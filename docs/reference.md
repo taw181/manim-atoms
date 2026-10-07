@@ -170,6 +170,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - class `Species()`: An atom as a figure needs it.
   - `.ground()`: The ground level.
   - `.transition(role)`: The transition that does ``role``.
+  - `.path(role)`: The repump or decay path that does ``role``, or the path ``role`` names, wherever its Extra is.
   - `.level_y(key, j=None)`: A level's height, or a J's in a Manifold.
   - `.upper_term(key)`: A transition's upper term, with its J if it ends in a Manifold: {}^3P_J and J = 1 give {}^3P_1.
 - `transition_arrow(spec, color, width)`: A transition's arrow and its label, the wavelength over the linewidth, in ``color`` at stroke ``width``.
@@ -433,10 +434,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/tools/dipole.py` — Two crossed dipole traps loaded from the red MOT, drawn as a cartoon.
 
-- `make_mot_glow(center, radius, color=TRANSITION_689_COLOR)`: A MOT as a soft glow at ``center``, with a chevron at the end of each beam pointing in.
+- `make_mot_glow(center, radius, color)`: A MOT as a soft glow of its light's ``color`` at ``center``, with a chevron at the end of each beam pointing in.
 - `make_field_zero(y, x, color=lighten(GUIDE_COLOR))`: A pointer at the height of the quadrupole field's zero, from the side of the figure rather than on the traps, where it would hide the atoms.
 - class `LoadingAtoms(VGroup)`: The red MOT's atoms, shared out between two dipole traps.
-- class `SpinHistogram(VGroup)`: How the atoms are spread over m_F, pumped into +9/2 as ``pump`` goes 0 to 1.
+- class `SpinHistogram(VGroup)`: How the atoms are spread over the m_F of a ground state of spin ``spin`` (F), pumped into m_F = +F as ``pump`` goes 0 to 1.
 
 ### `trapping.tools.hifais`
 
@@ -472,7 +473,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/trapping/tools/slicing.py` — Velocity slicing: a long clock pulse picks the slowest atoms out of a cloud.
 
 - `excitation(u)`: The pi pulse's excitation probability at Doppler detuning u (in Omega).
-- `thermal(u, sigma=SLICE_THERMAL_SIGMA)`: The velocity distribution before the pulse, peak normalised to one.
+- `thermal(u, sigma)`: The velocity distribution before the pulse, peak normalised to one.
 - class `VelocityPlot(VGroup)`: The velocity distribution, stacked by internal state, with the pulse's excitation probability over it on the same scale.
   - `.c2p(u, y)`
 - class `SlicingCloud(VGroup)`: ``excite`` and ``push`` as on VelocityPlot; the drift runs by itself.
@@ -497,6 +498,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/trapping/scenes/dipole.py` — Loading the two dipole traps from the red MOT, then spin-polarising them.
 
 - Scene `DipoleTrapLoading(Scene)`: The red MOT shared out into two crossed dipole traps, then the atoms spin-polarised into m_F = +9/2, with the levels and the timeline beside them. One stage_break() per stage.
+  - settings: `SPECIES`
   - `.stage_break()`: The pause after each stage. A slide wrapper stops here instead.
   - `.recaption(step, text, heading)`
   - `.next_stage(timeline, i, heading, step, text)`: Move the timeline, heading and caption on to stage ``i`` of this scene's three; returns the new heading and caption.
@@ -529,6 +531,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `readout(when, values, color, plot)`: 'Before slicing T ~ ... pi-pulse fidelity ~ ...', over the plot's left end.
 - `recaption(step, text, heading)`: The next caption, and the animation swapping it in -- played alongside whatever the new step does, so the caption never holds the scene still.
 - Scene `VelocitySlicing(Scene)`: A long clock pulse excites the slowest atoms, a push beam clears the rest: the velocity distribution and the cloud side by side. One stage_break() per step.
+  - settings: `SPECIES`
   - `.stage_break()`: The pause after each step. A slide wrapper stops here instead.
   - `uv run manim -ql src/manim_atoms/trapping/scenes/slicing.py VelocitySlicing`
 

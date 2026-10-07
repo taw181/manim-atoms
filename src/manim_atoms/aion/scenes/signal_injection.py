@@ -10,11 +10,7 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.core.optics import gaussian_band
-from manim_atoms.species.strontium import (
-    SrLevels,
-    STRONTIUM,
-    TRANSITION_698_COLOR,
-)
+from manim_atoms.species.strontium import SrLevels, STRONTIUM
 from manim_atoms.trapping.tools.dipole import (
     DT_HEADING_CORNER,
     DT_HOLD,
@@ -89,7 +85,8 @@ class SignalInjection(Scene):
             TRAP_BEAM_COLOR,
         )
         traps = VGroup(vertical, horizontal)
-        atoms = LoadingAtoms(SI_N_ATOMS, DT_UPPER, DT_LOWER)
+        atoms = LoadingAtoms(SI_N_ATOMS, DT_UPPER, DT_LOWER,
+                             STRONTIUM.transition("narrow").color)
         for tracker in (
             atoms.load_upper,
             atoms.fall,
@@ -129,14 +126,14 @@ class SignalInjection(Scene):
             [DT_X, DT_VERTICAL_SPAN[0], 0],
             [DT_X, DT_VERTICAL_SPAN[1], 0],
             SI_CLOCK_BEAM_WIDTH,
-            TRANSITION_698_COLOR,
+            STRONTIUM.transition("clock").color,
             opacity=SI_BEAM_OPACITY,
             layers=SI_BEAM_LAYERS,
         )
         # beside the beam between the clouds: its top end is under the heading
         clock_label = VGroup(
             *[
-                Tex(line, font_size=FONT_LEGEND, color=TRANSITION_698_COLOR)
+                Tex(line, font_size=FONT_LEGEND, color=STRONTIUM.transition("clock").color)
                 for line in (r"698 nm", r"clock laser")
             ]
         ).arrange(DOWN, buff=0.1, aligned_edge=RIGHT)

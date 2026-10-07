@@ -17,12 +17,7 @@ from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band
-from manim_atoms.species.strontium import (
-    SrLevels,
-    STRONTIUM,
-    TRANSITION_461_COLOR,
-    TRANSITION_698_COLOR,
-)
+from manim_atoms.species.strontium import SrLevels, STRONTIUM
 from manim_atoms.trapping.tools.sequence import (
     caption,
     stage_heading,
@@ -68,6 +63,13 @@ VS_BEFORE = (r"2\,\mu\mathrm{K}", r"30\,\%")
 VS_AFTER = (r"10\,\mathrm{nK}", r"90\,\%")
 VS_READOUT_Y = 1.2  # just above the plot
 
+# Before slicing the clock line is Doppler broadened to 60 kHz FWHM, which at
+# 698 nm is a 3 uK cloud of 87Sr. A 200 us slicing pulse has
+# Omega = 2 pi x 2.5 kHz, and in those units the 3 uK cloud has sigma = 9.7,
+# while the pulse's core (FWHM 1.6, sigma ~0.68) is some fourteen times
+# narrower: a velocity spread that corresponds to ~10 nK.
+VS_THERMAL_SIGMA = 9.7
+
 
 def readout(when, values, color, plot):
     """'Before slicing  T ~ ...  pi-pulse fidelity ~ ...', over the plot's left end."""
@@ -90,6 +92,8 @@ def recaption(step, text, heading):
 class VelocitySlicing(Scene):
     """A long clock pulse excites the slowest atoms, a push beam clears the rest: the
     velocity distribution and the cloud side by side. One stage_break() per step."""
+
+    SPECIES = STRONTIUM  # the clock and push lines; the story is Sr's own
     def stage_break(self):
         """The pause after each step. A slide wrapper stops here instead."""
         self.wait(VS_HOLD)
@@ -97,22 +101,23 @@ class VelocitySlicing(Scene):
     def construct(self):
         levels = SrLevels().scale(VS_LEVELS_SCALE).move_to(VS_LEVELS_CENTER)
         timeline = Timeline(STAGES[VS_STAGE - 1:VS_STAGE + 2]).move_to(VS_TIMELINE_CENTER)
-        heading = stage_heading(STAGES[VS_STAGE], STRONTIUM).move_to(VS_HEADING_CORNER, aligned_edge=UL)
-        plot = VelocityPlot(center=VS_PLOT_CENTER, width=VS_PLOT_WIDTH,
-                            height=VS_PLOT_HEIGHT)
-        cloud = SlicingCloud(VS_CLOUD_CENTER)
+        heading = stage_heading(STAGES[VS_STAGE], self.SPECIES).move_to(VS_HEADING_CORNER, aligned_edge=UL)
+        clock, push = self.SPECIES.transition("clock"), self.SPECIES.transition("push")
+        plot = VelocityPlot(VS_THERMAL_SIGMA, clock.color, center=VS_PLOT_CENTER,
+                            width=VS_PLOT_WIDTH, height=VS_PLOT_HEIGHT)
+        cloud = SlicingCloud(VS_CLOUD_CENTER, VS_THERMAL_SIGMA)
 
         clock_beam = gaussian_band([VS_CLOUD_CENTER[0], VS_CLOCK_BEAM_SPAN[0], 0],
                                    [VS_CLOUD_CENTER[0], VS_CLOCK_BEAM_SPAN[1], 0],
-                                   VS_CLOCK_BEAM_WIDTH, TRANSITION_698_COLOR,
+                                   VS_CLOCK_BEAM_WIDTH, clock.color,
                                    opacity=VS_BEAM_OPACITY, layers=VS_BEAM_LAYERS)
-        clock_label = Tex("698 nm", font_size=FONT_LEGEND, color=TRANSITION_698_COLOR)
+        clock_label = Tex(f"{clock.key} nm", font_size=FONT_LEGEND, color=clock.color)
         clock_label.next_to(clock_beam, UP, buff=0.1)
         push_beam = gaussian_band([VS_PUSH_BEAM_START, VS_CLOUD_CENTER[1], 0],
                                   VS_CLOUD_CENTER + RIGHT * (VS_CLOCK_BEAM_WIDTH / 2 + 0.3),
-                                  VS_PUSH_BEAM_WIDTH, TRANSITION_461_COLOR,
+                                  VS_PUSH_BEAM_WIDTH, push.color,
                                   opacity=VS_BEAM_OPACITY, layers=VS_BEAM_LAYERS)
-        push_label = Tex("461 nm", font_size=FONT_LEGEND, color=TRANSITION_461_COLOR)
+        push_label = Tex(f"{push.key} nm", font_size=FONT_LEGEND, color=push.color)
         push_label.next_to(push_beam, DOWN, buff=0.15).align_to(push_beam, RIGHT)
 
         # --- a thermal spread of velocities ---
