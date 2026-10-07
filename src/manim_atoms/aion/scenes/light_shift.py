@@ -4,8 +4,7 @@ LightShiftSignal builds on GradiometerBase: a beam on one cloud across the
 middle of the sequence winds its hands on by the light shift
 (core.spacetime.wound_with_shift), and the readout ends in imaging pulses
 (and a camera image, where a subclass's readout_image hook gives one).
-LightShiftSignalContinuous is the same on one lab clock. along and along_port place points on a leg
-and on a port of any slope.
+LightShiftSignalContinuous is the same on one lab clock.
 """
 
 import numpy as np
@@ -13,6 +12,7 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.interferometry.tools.clock import (
+    along_port,
     clock_rate,
     ground_share,
     make_dial,
@@ -32,11 +32,10 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_T0,
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
-    fire_pulse,
     gradiometer_frame,
-    sweep_pulse,
     vertices,
 )
+from manim_atoms.interferometry.tools.pulses import fire_pulse, sweep_pulse
 from manim_atoms.core.primitives import (
     draw_legs,
     fluoresce,
@@ -110,11 +109,6 @@ LS_IMAGE_P = 3.6
 # image the slide ends on shows all four. A port below this share is drawn
 # at it rather than left as an empty guide.
 LS_PORT_FLOOR = 0.5
-
-
-def along_port(origin, rise, x):
-    """Where a port leaving `origin` at slope `rise` is at time x."""
-    return origin + (x - origin[0]) * (RIGHT + UP * rise)
 
 
 class LightShiftSignal(GradiometerBase):

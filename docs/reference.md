@@ -174,8 +174,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `dial_hand(center, phase, color, radius=CLOCK_DIAL_RADIUS)`: The same phase a clock hand shows, at a size you can actually read.
 - `phase_sweep(center, phase_a, phase_b, radius=CLOCK_DIAL_RADIUS)`: The angle between two arms' hands: what the interferometer reads out.
 - `ground_share(phase_a, phase_b)`: The share of the atoms the last pulse leaves in |g, p>.
-- `fire_vertical_pulse(scene, x, hits)`: One pulse climbing the diagram at time `x`, flashing what it crosses.
-- `strobe_pulse(scene, clock, x, top, flash_at, on_arrival=None, hold=PULSE_HOLD)`: fire_vertical_pulse with lab time running.
 - `ring_around(term, color)`: An ellipse drawn round one term of an equation.
 - `budget_equation(lhs, term_prefix='', font_size=FONT_STATE)`: The budget with `lhs` on the left, as one expression.
 - `leg_slope(start, end)`: How steeply a leg climbs: the rise per unit time from `start` to `end`.
@@ -185,26 +183,22 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `fly_ports(scene, ports, length, labels=True, extra=())`: draw_ports for a continuous scene: every port in one beat, clock running.
 - `readout_equation(center=CP_READOUT)`: What the angle on the dial becomes once the last pulse has fired.
 - `show_phase_budget(scene, center, laser_struck, laser_label, difference_lhs=None, max_width=None, eq=None, label_side=DOWN)`: Phi split into its two terms, each marked with what it is worth.
+- `along_port(origin, rise, x)`: Where a port leaving `origin` at slope `rise` is at time x.
 
 ### `interferometry.tools.gradiometer`
 
 `src/manim_atoms/interferometry/tools/gradiometer.py` — The atom gradiometer: two clock interferometers on one baseline, one laser.
 
-- `photon_worldline(x_at_lower, z_from, z_to, slope=GR_SLOPE, z_at=GR_LOWER_Z)`: The segment of a pulse's worldline between two points on the baseline.
 - `vertices(z0, lag)`: The four corners of one interferometer in the (time, baseline) plane.
 - `gradiometer_frame(scene, title_tex)`: The furniture every gradiometer scene shares, played onto the screen.
-- `fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None)`: Send one pulse up the baseline, reaching the far cloud `lag` later.
-- `climbing_pulse(clock, x_at_lower, slope, z_from, z_to, z_at)`: A photon's worldline, drawn as far up the baseline as it has got.
-- `sweep_pulse(scene, clock, x_at_lower, near, far, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None, fade=(), on_near=None, on_far=None)`: fire_pulse with lab time running: the pulse climbs, the atoms carry on.
+- `laser_jumps(v)`: The laser's phase on each of a cloud's two hands, as (lab time, delta).
 
 ### `interferometry.tools.lmt`
 
 `src/manim_atoms/interferometry/tools/lmt.py` — Large momentum transfer: sequences of single-photon pulses, each driving every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c).
 
 - `lmt_points(slope_per_kick)`: Worldline corners for an arm gaining `slope_per_kick(i)` on kick i.
-- `kick_worldline(point, from_below, steepness=0.12, span=None)`: A photon's worldline arriving at `point` from below or from above: from the frame's edge, or from the (bottom, top) of `span`, to keep it out of a title or a caption row.
 - `lmz_pulses(n, step, T, t0=0.0, stage=0)`: The LMT Mach-Zehnder of order n (odd): pi/2 and (n - 1)/2 pulses out, a mirror of n pulses, (n - 1)/2 pulses back and a pi/2. Every pulse drives both arms, so each opens or closes the gap by 2 hbar k. It is symmetric in time about the middle of the mirror, so the arms close. Stages ``stage`` to ``stage + 2``: beam splitter, mirror, beam splitter.
-- `lmt_history(pulses, t0, z0, u, port=LMT_PORT)`: Step through a sequence: for each event, where it lands and what it does to each arm, and the legs flown until the next one.
 
 ### `interferometry.tools.phase_shear`
 
@@ -216,6 +210,27 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `make_beam(center, width, below, above, spacing)`: The last pulse as a beam rising to ``center``: a band ``width`` wide, from ``below`` under the centre to ``above`` over it, with a wavefront every ``spacing`` counted from the one through the centre, and a dashed axis. Built upright; rotate it about ``center`` to tilt it.
 - class `PortImage(ImageMobject)`: A camera image of one output port: a Gaussian cloud, lit in the port's colour by the share of the atoms that came out there.
   - `.paint(share)`
+
+### `interferometry.tools.pulse_sequence`
+
+`src/manim_atoms/interferometry/tools/pulse_sequence.py` — Stepping an atom through a sequence of pulses: which arms each one splits, kicks or merges, where it lands on them, and the legs flown in between.
+
+- `lmt_history(pulses, t0, z0, u, port=LMT_PORT)`: Step through a sequence: for each event, where it lands and what it does to each arm, and the legs flown until the next one.
+
+### `interferometry.tools.pulses`
+
+`src/manim_atoms/interferometry/tools/pulses.py` — Laser pulses on a space-time diagram: lab time across, height up.
+
+- `photon_worldline(x_at_lower, z_from, z_to, slope=GR_SLOPE, z_at=GR_LOWER_Z)`: The segment of a pulse's worldline between two points on the baseline.
+- `fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None)`: Send one pulse up the baseline, reaching the far cloud `lag` later.
+- `climbing_pulse(clock, x_at_lower, slope, z_from, z_to, z_at)`: A photon's worldline, drawn as far up the baseline as it has got.
+- `sweep_pulse(scene, clock, x_at_lower, near, far, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None, fade=(), on_near=None, on_far=None)`: fire_pulse with lab time running: the pulse climbs, the atoms carry on.
+- `launch_time(x_at_lower, z_at=GR_LOWER_Z)`: When a pulse that crosses height `z_at` at `x_at_lower` leaves the laser.
+- `laser_caption(n, x_at_lower, z_at=GR_LOWER_Z)`: phi_n on the laser line, just right of where pulse n leaves it.
+- `fire_vertical_pulse(scene, x, hits)`: One pulse climbing the diagram at time `x`, flashing what it crosses.
+- `strobe_pulse(scene, clock, x, top, flash_at, on_arrival=None, hold=PULSE_HOLD)`: fire_vertical_pulse with lab time running.
+- `kick_worldline(point, from_below, steepness=0.12, span=None)`: A photon's worldline arriving at `point` from below or from above: from the frame's edge, or from the (bottom, top) of `span`, to keep it out of a title or a caption row.
+- `pulse_caption(tex, x)`: A pulse label on the caption row, offset clear of the beam it names.
 
 ### `interferometry.tools.squeezing`
 
@@ -241,9 +256,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/scenes/gradiometer.py` — Two clock interferometers on one baseline, driven by one laser.
 
-- `laser_jumps(v)`: The laser's phase on each of a cloud's two hands, as (lab time, delta).
-- `launch_time(x_at_lower, z_at=GR_LOWER_Z)`: When a pulse that crosses height `z_at` at `x_at_lower` leaves the laser.
-- `laser_caption(n, x_at_lower, z_at=GR_LOWER_Z)`: phi_n on the laser line, just right of where pulse n leaves it.
 - Scene `GradiometerBase(Scene)`: The machinery every gradiometer scene shares: two clouds on one baseline, each split into two arms carrying a clock hand, each read out on its own dial and closed into a pair of ports.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
   - `.vertices(cloud)`
@@ -292,7 +304,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py SingleLaserKick`
 - Scene `MachZehnder(Scene)`: The full pi/2 - pi - pi/2 sequence: split, mirror, recombine.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
-  - `.pulse_caption(tex, x)`: A pulse label on the caption row, offset clear of the beam it names.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder`
 
 ### `interferometry.scenes.phase_shear`
@@ -736,7 +747,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/aion/scenes/light_shift.py` — A light shift injected into one interferometer of the gradiometer.
 
-- `along_port(origin, rise, x)`: Where a port leaving `origin` at slope `rise` is at time x.
 - Scene `LightShiftSignal(GradiometerBase)`: A signal put in on purpose, to see whether the gradiometer catches it.
   - `.readout_image()`: Hook: a camera image of the two clouds, shown once they are read out, in place of the dials. None here.
   - `.close(sweeps)`: Read both dials, then fly the ports into the two imaging pulses.

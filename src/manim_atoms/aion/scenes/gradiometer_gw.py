@@ -39,13 +39,12 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_UPPER_Z,
     GR_MID_Z,
     gradiometer_frame,
-    fire_pulse,
     GR_TERMS_WIDTH,
     GR_SIGNAL,
     GR_DIAL_RADIUS,
     GR_DIALS,
-    sweep_pulse,
 )
+from manim_atoms.interferometry.tools.pulses import fire_pulse, sweep_pulse
 from manim_atoms.interferometry.tools.clock import (
     clock_rate,
     make_dial,

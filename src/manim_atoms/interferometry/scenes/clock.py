@@ -18,17 +18,17 @@ from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.interferometry.tools.clock import (
+    budget_equation,
+    clock_rate,
     CP_ARM,
     CP_DIAL,
+    CP_LASER_PHASES,
     CP_OUT,
     CP_T,
     CP_T0,
     CP_Z,
-    budget_equation,
-    clock_rate,
     dial_hand,
     draw_ports,
-    fire_vertical_pulse,
     ground_share,
     live_ports,
     make_clock_hand,
@@ -37,7 +37,7 @@ from manim_atoms.interferometry.tools.clock import (
     readout_equation,
     show_phase_budget,
 )
-from manim_atoms.interferometry.scenes.mach_zehnder import MachZehnder
+from manim_atoms.interferometry.tools.pulses import fire_vertical_pulse, pulse_caption
 from manim_atoms.core.primitives import (
     arm_ket,
     draw_legs,
@@ -57,12 +57,6 @@ CP_READOUT_BELOW = CP_TERMS + DOWN * 0.9
 # -omega_A T for a leg spent in |e>. Smaller than the Mach-Zehnder's, since
 # the phases make them long.
 CP_KET_FONT = FONT_AXIS
-# The laser's phase at each pulse, in radians. Arbitrary, but not special: an
-# arm picks phi_n up when it absorbs from pulse n and gives it back when it
-# emits, so the hands jump at the pulses by exactly the phases the kets carry,
-# and what is left between them at the end is phi_1 - 2 phi_2 + phi_3 -- here
-# 1.3 rad, a split between the ports that reads at a glance.
-CP_LASER_PHASES = (1.2, 0.1, 0.3)
 # Something acting on the atoms over the middle of the second leg, as a
 # fraction of it, and the extra phase it leaves on the arm excited there.
 CP_EFFECT_SPAN = (0.25, 0.75)
@@ -291,7 +285,7 @@ class ClockPhase(Scene):
 
     def pulse(self, x, n, hits):
         """Pulse n, captioned with the laser phase phi_n it writes in."""
-        caption = MachZehnder.pulse_caption(rf"\phi_{n}", x)
+        caption = pulse_caption(rf"\phi_{n}", x)
         self.play(FadeIn(caption), run_time=0.3)
         fire_vertical_pulse(self, x, hits)
 

@@ -1,28 +1,18 @@
 """Large momentum transfer: sequences of single-photon pulses, each driving
 every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c).
 
-Three of these are general, not LMT's own:
-
-- recoil: what one pulse does to one arm -- the velocity change and the new
-  internal state -- for a pulse from below or from above;
-- kick_worldline: a photon's worldline arriving at a point from below or
-  from above;
-- lmt_history: the arm bookkeeping engine. Give it a sequence of (time,
-  kind, stage) pulses and it steps one atom through them, splitting,
-  kicking and merging arms, and returns per pulse where it lands, what it
-  does to each arm and the legs flown to the next. lmz_pulses writes the
-  sequence for an LMT Mach-Zehnder of any odd order; LMTMachZehnder's
-  play_history is the scene that animates a history.
-
-lmt_points is the simpler ladder's corners, one arm at a time. Defaults bind
-to the LMT_* and LMZ_* geometry blocks below.
+What is LMT's own: lmt_points, the ladder's corners one arm at a time, and
+lmz_pulses, the sequence of an LMT Mach-Zehnder of any odd order, for the
+engine in interferometry.tools.pulse_sequence to step through (it uses
+core.primitives.recoil for each kick). Pulses from either side are
+interferometry.tools.pulses.kick_worldline. Defaults bind to the LMT_* and
+LMZ_* geometry blocks below.
 """
 
 import numpy as np
 from manim import *
 
 from manim_atoms.interferometry.style import *
-from manim_atoms.core.primitives import recoil
 
 
 # --- large momentum transfer geometry -------------------------------------
@@ -47,28 +37,7 @@ def lmt_points(slope_per_kick):
     return pts
 
 
-def kick_worldline(point, from_below, steepness=0.12, span=None):
-    """A photon's worldline arriving at `point` from below or from above:
-    from the frame's edge, or from the (bottom, top) of `span`, to keep it
-    out of a title or a caption row."""
-    bottom, top = span or (-config.frame_y_radius, config.frame_y_radius)
-    edge = bottom if from_below else top
-    dx = steepness * abs(point[1] - edge)
-    return Line(
-        [point[0] - dx, edge, 0], point,
-        color=LASER_COLOR, stroke_width=PULSE_STROKE_WIDTH,
-    )
-
-
 # --- LMT sequences ----------------------------------------------------------
-# A sequence is a list of (time, kind, stage). The kinds:
-#   "split"  a pi/2 from below: every arm splits into itself, left alone
-#            (name + "0"), and a kicked copy (name + "1"). The two form a pair.
-#   "up"     a pi pulse that drives every arm, from whichever side pushes the
-#   "down"   kicked arm of each pair up (or down); its partner, in the other
-#            state, goes the other way.
-#   "merge"  the closing pi/2: each pair, met again, leaves by two ports.
-LMT_PORT = 0.7  # how far the output ports are drawn
 
 
 def lmz_pulses(n, step, T, t0=0.0, stage=0):
@@ -85,65 +54,6 @@ def lmz_pulses(n, step, T, t0=0.0, stage=0):
     pulses += [(end - j * step, "up", stage + 2) for j in range(m, 0, -1)]
     pulses.append((end, "merge", stage + 2))
     return [(t0 + t, kind, s) for t, kind, s in pulses]
-
-
-def lmt_history(pulses, t0, z0, u, port=LMT_PORT):
-    """Step through a sequence: for each event, where it lands and what it
-    does to each arm, and the legs flown until the next one.
-
-    Starts from one arm, "", in |g> and at rest at (t0, z0). Returns a list of
-    dicts: ``x``, ``from_below``, ``stage``, ``kind``,
-    ``splits`` [(parent, left alone, kicked)], ``hits`` [(arm, point, new
-    state)], and ``legs`` [(arm, start, end, state)] from this event to the
-    next -- after the merge, the output ports, named pair + "g"/"e".
-    """
-    arms = {"": dict(z=z0, v=0, state="g")}
-    pairs = []
-    history = []
-    for k, (t, kind, stage) in enumerate(pulses):
-        x = t0 + t
-        from_below, splits, hits, legs = True, [], [], []
-
-        def at(arm):
-            return np.array([x, arm["z"], 0.0])
-
-        if kind == "split":
-            pairs = []
-            for name, arm in list(arms.items()):
-                dv, state = recoil(arm["state"], True)
-                arms[name + "0"] = dict(arm)
-                arms[name + "1"] = dict(arm, v=arm["v"] + dv, state=state)
-                del arms[name]
-                pairs.append((name + "0", name + "1"))
-                splits.append((name, name + "0", name + "1"))
-                hits.append((name + "1", at(arm), state))
-        elif kind in ("up", "down"):
-            # the side that gives the kicked arms the push asked for
-            dv, _ = recoil(arms[pairs[0][1]]["state"], True)
-            from_below = dv == (1 if kind == "up" else -1)
-            for name, arm in arms.items():
-                dv, arm["state"] = recoil(arm["state"], from_below)
-                arm["v"] += dv
-                hits.append((name, at(arm), arm["state"]))
-        if kind == "merge":
-            for stay, kicked in pairs:
-                a, b = arms[stay], arms[kicked]
-                assert abs(a["z"] - b["z"]) < 1e-9, "the arms have not closed"
-                ground = a if a["state"] == "g" else b
-                start = at(ground)
-                for state, v in (("g", ground["v"]), ("e", ground["v"] + 1)):
-                    legs.append((stay[:-1] + state, start,
-                                 start + [port, port * v * u, 0], state))
-        else:
-            dt = pulses[k + 1][0] - t
-            for name, arm in arms.items():
-                start = at(arm)
-                arm["z"] += arm["v"] * u * dt
-                legs.append((name, start, np.array([x + dt, arm["z"], 0.0]),
-                             arm["state"]))
-        history.append(dict(x=x, from_below=from_below, stage=stage, kind=kind,
-                            splits=splits, hits=hits, legs=legs))
-    return history
 
 
 # --- the LMT Mach-Zehnder (Rudolph et al., Fig. 1c) -------------------------

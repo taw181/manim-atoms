@@ -12,6 +12,7 @@ arms are drawn in.
 from manim import *
 
 from manim_atoms.interferometry.style import *
+from manim_atoms.interferometry.tools.pulses import pulse_caption
 from manim_atoms.core.primitives import (
     absorb,
     arm_ket,
@@ -80,7 +81,7 @@ class SinglePhotonMachZehnder(MachZehnder):
             self,
             MZ_A[0],
             atom,
-            extras=[self.pulse_caption(r"\pi/2", MZ_A[0]), k_arrow, glow],
+            extras=[pulse_caption(r"\pi/2", MZ_A[0]), k_arrow, glow],
             fade=[k_arrow, glow],
         )
 
@@ -120,7 +121,7 @@ class SinglePhotonMachZehnder(MachZehnder):
             self,
             MZ_B[0],
             lower,
-            extras=[self.pulse_caption(r"\pi", MZ_B[0]), glow_up],
+            extras=[pulse_caption(r"\pi", MZ_B[0]), glow_up],
             fade=[glow_up],
         )
         self.play(state_colors(lower, KICKED_COLOR), *grow(gain), run_time=0.6)
@@ -152,7 +153,7 @@ class SinglePhotonMachZehnder(MachZehnder):
             self,
             MZ_C[0],
             lower,
-            extras=[self.pulse_caption(r"\pi/2", MZ_C[0]), glow],
+            extras=[pulse_caption(r"\pi/2", MZ_C[0]), glow],
             fade=[glow],
         )
 

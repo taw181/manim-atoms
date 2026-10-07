@@ -54,18 +54,19 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **A wavepacket** travelling along +y. `core.primitives`: `make_laser_pulse`.
 - **A photon absorbed (|g> → |e>, +ħk) or stimulating emission (|e> → |g>, −ħk)**, played on one atom. `core.primitives`: `absorb`, `emit`. Both drive from below only.
-- **A pulse from below or from above**, as a worldline arriving at a point. `interferometry.tools.lmt`: `kick_worldline(from_below=...)`.
-- **A vertical pulse column** where light travel time is ignored. `interferometry.tools.clock`:
+- **A pulse from below or from above**, as a worldline arriving at a point. `interferometry.tools.pulses`: `kick_worldline(from_below=...)`.
+- **A vertical pulse column** where light travel time is ignored. `interferometry.tools.pulses`:
   - `fire_vertical_pulse` climbs to each atom with lab time stopped;
   - `strobe_pulse` flashes whole with lab time running.
-- **A pulse with light travel time**, reaching the far end of the baseline later. `interferometry.tools.gradiometer`:
+- **A pulse with light travel time**, reaching the far end of the baseline later. `interferometry.tools.pulses`:
   - `photon_worldline` is the line;
   - `fire_pulse` plays it with lab time stopped;
   - `sweep_pulse` plays it with lab time running, calling back at each crossing;
-  - `climbing_pulse` draws it as far as the clock has got.
+  - `climbing_pulse` draws it as far as the clock has got;
+  - `launch_time` is when it left the laser, and `laser_caption` names the phase it carries there.
 - **The k-vector marker** beside a beam. `core.primitives`: `make_k_arrow`.
 - **A beam with its wavefronts**, which can be tilted. `interferometry.tools.phase_shear`: `make_beam`.
-- **A pulse's caption on the caption row.** `interferometry.scenes.mach_zehnder`: `MachZehnder.pulse_caption` (it lives on the scene).
+- **A pulse's caption on the caption row.** `interferometry.tools.pulses`: `pulse_caption`.
 
 ## Recoil and momentum
 
@@ -90,7 +91,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 ## Pulse sequences and arm bookkeeping
 
-- **The engine.** It steps one atom through a list of (time, kind, stage) pulses ("split", "up", "down", "merge"), splitting, kicking and merging arms. For each pulse it returns where the pulse lands, what it does to each arm, and the legs flown to the next pulse. `interferometry.tools.lmt`: `lmt_history`.
+- **The engine.** It steps one atom through a list of (time, kind, stage) pulses ("split", "up", "down", "merge"), splitting, kicking and merging arms. For each pulse it returns where the pulse lands, what it does to each arm, and the legs flown to the next pulse. `interferometry.tools.pulse_sequence`: `lmt_history`.
 - **An LMT Mach–Zehnder sequence** of any odd order, written for the engine. `interferometry.tools.lmt`: `lmz_pulses`.
 - **Animating a history**: one ray per pulse, a flash on every arm it drives, then the legs. `interferometry.scenes.lmt`: `LMTMachZehnder.play_history` (on the scene).
 - **The corners of a simple kick ladder**, one arm at a time. `interferometry.tools.lmt`: `lmt_points`.
@@ -110,7 +111,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `wound` turns it only while the arm is excited;
   - `wound_with_shift` adds a light shift across a window;
   - `wound_with_jumps` adds the laser's phase steps at each pulse.
-- **The laser phase steps on a gradiometer's hands.** `interferometry.scenes.gradiometer`: `laser_jumps`, `laser_caption`, `launch_time` (in the scene module).
+- **The laser phase steps on a gradiometer's hands.** `interferometry.tools.gradiometer`: `laser_jumps`.
 - **The phase budget**: an equation, its terms marked and struck out, and a term ringed. `interferometry.tools.clock`: `budget_equation`, `show_phase_budget`, `readout_equation`, `ring_around`.
 
 ## Output ports and readout
@@ -122,7 +123,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `live_ports` keeps drawn ports following the phase;
   - `ground_share` is the share left in |g>.
 - **A point a fraction of the way along a straight leg.** `core.spacetime`: `along`.
-- **A point on a port of any slope.** `aion.scenes.light_shift`: `along_port` (in a scene module).
+- **A point on a port of any slope.** `interferometry.tools.clock`: `along_port`.
 - **The excited fraction at a phase**, and a phase sheared across a cloud. `interferometry.tools.phase_shear`: `excited_fraction`, `shear_phase`, `phase_reading`.
 - **A camera image of a port**, striped by the phase. `interferometry.tools.phase_shear`: `PortImage`.
 - **Imaging the ports** with a 461 nm pulse. `aion.scenes.light_shift`: `LightShiftSignal.imaging_pulse`, `LightShiftSignal.imaging_line`.
@@ -271,11 +272,7 @@ These are general but live on a scene or in a scene module, so another
 scene can only reach them by importing that scene. They are the first
 candidates to move down into `tools/` or `core/`.
 
-- `interferometry.scenes.mach_zehnder`: `MachZehnder.pulse_caption`.
 - `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`, `LMTMachZehnder.caption`, `LMTMachZehnder.pulse_label`.
-- `interferometry.scenes.gradiometer`: `laser_jumps`, `launch_time`, `laser_caption`.
-- `aion.scenes.light_shift`: `along_port`.
 - `aion.scenes.ligo`: `Panel` (a drawing shrunk into a panel), `make_mirror`, `make_laser`, `make_detector`, `wave`, `beam`.
 - `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.
-- `interferometry.tools.lmt`: `kick_worldline` and `lmt_history` are general engines in LMT's module.
