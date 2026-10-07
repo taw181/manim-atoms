@@ -197,8 +197,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/tools/lmt.py` — Large momentum transfer: sequences of single-photon pulses, each driving every arm it crosses (after Rudolph et al., PRL 124, 083604 (2020), Fig. 1c).
 
-- `lmt_points(slope_per_kick)`: Worldline corners for an arm gaining `slope_per_kick(i)` on kick i.
-- `lmz_pulses(n, step, T, t0=0.0, stage=0)`: The LMT Mach-Zehnder of order n (odd): pi/2 and (n - 1)/2 pulses out, a mirror of n pulses, (n - 1)/2 pulses back and a pi/2. Every pulse drives both arms, so each opens or closes the gap by 2 hbar k. It is symmetric in time about the middle of the mirror, so the arms close. Stages ``stage`` to ``stage + 2``: beam splitter, mirror, beam splitter.
+- `lmz_pulses(n, step, T, t0=0.0, stage=0)`: The LMT Mach-Zehnder of order n (odd), as Pulse objects for run_sequence: a pi/2 and (n - 1)/2 pulses out, a mirror of n pulses, (n - 1)/2 pulses back and a pi/2. Every pulse drives both arms, from whichever side opens (or, at the mirror and after it, closes) the gap by 2 hbar k; the sequence is symmetric in time about the middle of the mirror, so the arms close. Stages ``stage`` to ``stage + 2``: beam splitter, mirror, beam splitter.
+- `lmt_ladder_pulses(kicks=LMT_KICKS, step=LMT_STEP, t0=LMT_T0)`: A pi/2 that splits the atom, then pi pulses alternating from below and above: each drives both arms, which reach it in opposite states, so one absorbs and the other is stimulated to emit and they are pushed apart by 2 hbar k a pulse.
 
 ### `interferometry.tools.phase_shear`
 
@@ -213,9 +213,14 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `interferometry.tools.pulse_sequence`
 
-`src/manim_atoms/interferometry/tools/pulse_sequence.py` — Stepping an atom through a sequence of pulses: which arms each one splits, kicks or merges, where it lands on them, and the legs flown in between.
+`src/manim_atoms/interferometry/tools/pulse_sequence.py` — Stepping an atom through any sequence of laser pulses, and playing it.
 
-- `lmt_history(pulses, t0, z0, u, port=LMT_PORT)`: Step through a sequence: for each event, where it lands and what it does to each arm, and the legs flown until the next one.
+- class `Pulse()`: One laser pulse: when it fires, its area in units of pi (0.5 splits, 1 swaps), which side it comes from, which arms it drives (None: all), which arms leave the figure after it, and the stage it belongs to.
+- class `Arm()`: One arm of the atom: its internal state ("g" or "e"), its velocity in recoils, and where it is in the free-falling frame (time, height).
+- class `Step()`: What one pulse did. ``x`` is its lab time.
+- class `Sequence()`: A run of the engine: one Step per pulse, every arm's corners (``paths``: name -> points, from where it was born to where it ended), the arms left after the last pulse (``ports``), and ``disp``.
+- `run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None, port=SEQUENCE_PORT)`: Step one atom, in |g> at ``start`` (lab time, height) with velocity ``v0`` recoils, through ``pulses`` (in time order). After the last pulse the arms fly on to ``until`` (default: ``port`` past it): those legs are the output ports. ``disp(t)`` displaces everything (gravity: -g t^2 / 2 from the launch). Returns a Sequence.
+- `play_sequence(scene, seq, atoms, *, span=None, ray_time=0.3, flash_time=0.35, fast_after=None, fast_pace=0.6, colors=None, before_pulse=None, with_pulse=None, after_step=None)`: Animate ``seq``: one ray per pulse, reaching from its side through to the furthest arm; a flash on every arm it kicks, recoloured to its new state; then the legs to the next pulse. ``atoms`` maps arm names to the atoms already on screen (``{"": atom}`` to start); the dict returned maps the arms left at the end.
 
 ### `interferometry.tools.pulses`
 
@@ -291,9 +296,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - Scene `LMTMachZehnder(Scene)`: pi/2 - pi - pi/2 with every pulse stretched into many, after Rudolph et al., Fig. 1c: an N = LMZ_ORDER interferometer, (N - 1)/2 pulses out, N at the mirror and (N - 1)/2 back. Every pulse drives both arms, and each is labelled pi/2 or pi along the bottom as it fires.
   - settings: `STAGES`, `FAST_AFTER`, `CAPTION_Y`, `LABEL_Y`
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
-  - `.caption(history, stage)`: The stage's caption, centred under its pulses.
+  - `.caption(seq, stage)`: The stage's caption, centred under its pulses.
   - `.pulse_label(step)`: pi/2 or pi under the pulse's column, as the paper's sequence row.
-  - `.play_history(history, start)`: One ray per pulse, reaching through to the far arm, a flash on every arm it drives, then the legs to the next pulse. Returns each arm's corners, from the split to the merge.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/lmt.py LMTMachZehnder`
 
 ### `interferometry.scenes.mach_zehnder`

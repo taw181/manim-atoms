@@ -1,121 +1,191 @@
 ---
 name: manim-atoms
-description: Create or edit manim animations in the manim-atoms package — atom interferometry (beamsplitter/mirror pulses, Mach–Zehnder geometries, photon recoil, clock-phase readout, gradiometers), laser cooling and trapping (MOTs, dipole traps), AION science (GW, ULDM, signal injection), and the slides layer. Use this whenever the user asks for a manim animation, scene, or figure-in-motion, wants to add to or change an existing scene (a new pulse, output ports, a phase sweep), or mentions animating atoms, laser pulses, traps or an interferometer — even if they just say "animate X" or "make a scene showing Y" without naming manim. Also use it for any other manim work in this repo, since the render-and-check loop and the shared style modules apply regardless of subject.
+description: Create or edit manim animations in the manim-atoms package — atom interferometry, laser cooling and trapping, AION science, data plots and slides. Use this whenever the user asks for a manim animation, scene, or figure-in-motion, wants to add to or change an existing scene, or mentions animating atoms, laser pulses, traps or an interferometer — even if they just say "animate X" or "make a scene showing Y" without naming manim. It is the base for all manim work in this repo: how to build a scene here, where code goes, the render-and-check loop, and the manim traps. Load the family skill for the kind of scene too (interferometry-scenes, trapping-scenes, aion-scenes, data-plots, slides).
 ---
 
-# Manim animations of atomic physics
+# Building scenes in manim-atoms
 
-## Where things are
+The repo is `manim-atoms` (uv, manim 0.21, Python 3.13): the package
+`src/manim_atoms/`, layered `core` → `species` → {`interferometry`,
+`trapping`} → `aion`. CLAUDE.md has the layout and the house rules. This
+skill is how to work with them.
 
-**Start at `docs/index.md`.** It lists what the package can draw, organised
-by need (curved arms, a pulse from above, a Bloch sphere, ports at any
-slope, a pulse-sequence engine, ...), with the module and function for each
-and a scene to copy for each pattern. `docs/reference.md` has every
-signature and docstring. Read those two before opening source files; open a
-module only for the pieces you are going to use.
+## The family skills
 
-The project is the `manim-atoms` repo (uv, manim 0.21, Python 3.13), the
-package `src/manim_atoms/`. Run manim **from the repo root** so the root
-`manim.cfg` applies — it sets `media_dir=./media`, medium quality, and a
-`#101010` background. A talk that uses the package keeps its own `manim.cfg`
-and slide wrappers; CLAUDE.md has the layout.
+Load the one that matches the scene. Each has the recipes and physics
+conventions for its kind of figure.
 
-- `src/manim_atoms/style.py` — the core visual vocabulary: colour scheme,
-  type sizes, `*_STYLE` dicts to splat into constructors, and pacing (`V`).
-  `interferometry/`, `trapping/` and `aion/` each add their own palettes in
-  a `style.py` that star-imports it.
-- `src/manim_atoms/core/primitives.py` — mobject helpers (`make_atom`,
-  `make_laser_pulse`, `momentum_arrow`, `make_guide`), pulse primitives
-  (`absorb`, `emit`), motion (`draw_legs`, `state_colors`).
-- `src/manim_atoms/interferometry/scenes/mach_zehnder.py` — `SingleLaserKick`
-  and `MachZehnder`, the simplest scenes built from them.
-- Each topic (`interferometry`, `trapping`, `aion`) has `tools/` (helpers and
-  their geometry) and `scenes/` (Scene classes), paired by module name.
+| Scene | Skill |
+|---|---|
+| atoms, pulses and arms on a space-time diagram: Mach–Zehnder, LMT, clock phase, gradiometer | `interferometry-scenes` |
+| MOT stages, dipole traps, a staged sequence beside a level scheme and timeline | `trapping-scenes` |
+| a gravitational wave or dark-matter field through the gradiometer, LIGO, signal injection | `aion-scenes` (with `interferometry-scenes`) |
+| plots drawn in manim, matplotlib figures, the data behind them | `data-plots` |
+| turning scenes into slides and decks | `slides` |
+| a change meant to leave every picture as it was | `verify-refactor` |
 
-After the index, read primitives and mach_zehnder before writing anything —
-they are commented and explain what each piece is for. Everything below is what they
-*don't* say.
+## Building a scene, step by step
 
-Scene files start `from manim import *` then their topic's style
-(`from manim_atoms.interferometry.style import *`),
-and import everything else by absolute name — relative imports break because
-manim loads a scene file by path.
+1. **Find what exists.** Read `docs/index.md`; it is organised by what you
+   want to draw. Look names up in `docs/reference.md`. Open a source file
+   only for the pieces you will use. Find the worked example nearest to
+   your scene (the index's last sections list one per pattern) and read
+   that scene: copying its structure beats inventing one.
+2. **Decide where the code goes**, before writing it:
+   - **core** — generic physics or drawing (a Bloch sphere, a cavity, a
+     plot axis), even if only your scene uses it so far;
+   - **`<topic>/tools/<module>.py`** — what is the topic's own;
+   - **`<topic>/scenes/<module>.py`** — the Scene classes and the layout
+     nothing else uses;
+   - **`species/`** — a species' levels and its line colours.
 
-## You can't watch the video, so build a look-at-it loop
+   Never import from another scene module except to subclass its scene.
+3. **Write the geometry block.** Named module constants, one prefix per
+   scene (`MZ_*`, `CP_*`, `GR_*`), every position derived from a few of
+   them, each commented with what it is and why it has that value.
+   Tuning the scene later should mean editing this block, nothing else.
+4. **Build from the helpers.** Never draw an atom, pulse, beam or level by
+   hand: `make_atom`, `absorb`/`emit`, `draw_legs`, `gaussian_band`,
+   `SrLevels` and their kin are what keep the figures one set.
+5. **Pace by physics.** A leg's `run_time` is `distance / V`; a pulse
+   climbs at `PULSE_SPEED`. Never hand-tune a run time on a moving atom.
+6. **Put in the slide stops.** Call the no-op hooks a presenter would stop
+   at: `beat()`, `stage_break()` or `hold()`. Define the hook on the scene
+   as a no-op, or a wait for a settling pause. The `slides` skill says
+   where the stops go.
+7. **Render and look** (below), every beat, not just the end.
+8. **Finish:**
+   - every public function and class gets a docstring whose first
+     paragraph says what it is;
+   - a new public name goes under its need in `docs/index.md`;
+   - run `python scripts/index.py --write` and commit `docs/reference.md`
+     with the code. CI fails otherwise.
 
-This is the single most important habit. Render fast, pull out the frames that
-matter, and Read the PNGs — never declare an animation good because it
-rendered without error.
+## A scene file
 
-```bash
-uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder
-.venv/bin/python <skill>/scripts/frames.py \
-    media/videos/mach_zehnder/480p15/MachZehnder.mp4 \
-    -t 3.6 7.8 9.3 --final -o /tmp/frames
+```python
+"""One line: what the scene shows.
+
+A paragraph: what the viewer should come away with, and the physics choices
+the drawing makes (what is exaggerated, what is left out). Name the scenes
+here and the stops each one makes.
+"""
+
+import numpy as np
+from manim import *
+
+from manim_atoms.interferometry.style import *      # the topic's style, star-imported
+from manim_atoms.core.primitives import draw_legs, make_atom   # everything else by name
+
+# --- my-scene geometry -------------------------------------------------------
+# Why the figure is laid out like this: what has to stay clear of what.
+MY_A = np.array([-5.0, -2.0, 0.0])  # the first pulse
+MY_L = 3.0  # each leg's length in lab time
+MY_B = MY_A + RIGHT * MY_L
+
+
+class MyScene(Scene):
+    """What it shows, in a sentence; then the stops it makes."""
+
+    def beat(self):
+        """The pause after each step: nothing here, a click on the slide version."""
+
+    def construct(self):
+        ...
 ```
 
-Then Read the PNGs. Check one frame per *beat* of the animation (each pulse,
-each leg, the final state), not just the end — a mobject can be correct
-mid-flight and wrong at rest. That is not hypothetical: `TracedPath` collapses
-once the point it follows stops moving, so trajectories drawn with it look
-perfect during the motion and then vanish during the closing `wait`. Use
-`draw_legs`, which creates a `Line` in step with the atom, instead.
+Imports are absolute: manim loads a scene file by path, so relative imports
+break. Star-import only `manim` and one style module. Topic modules share
+names (`strain`, `make_strain_trace`), so import those by name. Package
+`__init__.py` files import nothing.
 
-`-ql` is 480p15 and takes seconds; save `-qh` (1080p60) for the final render.
-`-s` renders only the last frame if that is all you need.
+## Style: where a constant goes
 
-## Check colours by sampling pixels, not by trusting the names
+Pull every colour, width and size from a style module, never inline.
 
-`frames.py --sample X,Y` takes manim scene coordinates and prints the pixel
-there. Manim's palette names are misleading about perceptual distance:
-`BLUE_D` and `TEAL` sample as `(93,152,167)` and `(126,195,175)` — all but
-identical at a 4px stroke, and useless on a projector. `BLUE_D` vs `PURPLE_B`
-gives `(84,158,177)` vs `(172,147,188)`, which separates. When two things must
-be told apart, sample them and look at the numbers.
+**Where a new constant goes:**
+- in the topic's `style.py` if it is the topic's own;
+- in core `style.py` only if it is generic and generically named;
+- a species' line colours go with the species.
 
-## Physics that is easy to draw wrong
+**If you want a value another topic happens to use**, define your own
+constant with that value. Write `X = Y` only where X *is* Y
+(`GW_SOURCE_COLOR = HORIZON_GLOW`: the dot is the black holes).
 
-- **A beam from below imparts a *vertical* recoil.** The 45° path is the
-  resultant of the forward momentum and ħk, so draw the ħk arrow vertical. A
-  45° arrow also gets painted over by the arm's own trajectory.
-- **At a π pulse the two arms do different things.** The ground-state arm
-  absorbs a photon (`absorb`, +ħk). The excited arm undergoes stimulated
-  emission — one photon arrives and *two* leave, into the mode of the driving
-  field, so it recoils by −ħk (`emit`). Flashing both atoms with one rising
-  beam reads as both absorbing, which is wrong.
-- **Equal horizontal velocity on every arm** is what makes the geometry work:
-  the arms always share an x coordinate, so one vertical beam catches both at
-  each pulse, and every leg takes the same `run_time`. Derive run times as
-  `distance / V` rather than hand-tuning them, or the atom appears to speed up
-  when it splits.
+**When two things must be told apart on a projector**, sample them and
+compare the RGB numbers, rather than trusting manim's colour names.
 
-## Keep the pulse columns clear
+## You can't watch the video, so look at frames
 
-Pulses travel straight up a fixed x, so anything sitting at that x gets
-crossed: a title, a recoil arrow, a caption. The fixes already in use are
-worth copying — the `MachZehnder` title sits in the upper *right* with the
-legend on the left to leave the mirror's column open, and the `+ħk` arrow is
-offset `LEFT * 0.4` off the beam line. Check this in a frame; it is invisible
-in the code.
+Never call an animation good because it rendered without error.
 
-## Adding a scene
+```bash
+uv run manim -ql src/manim_atoms/<topic>/scenes/<module>.py MyScene
+.venv/bin/python .claude/skills/manim-atoms/scripts/frames.py \
+    media/videos/<module>/480p15/MyScene.mp4 -t 3.6 7.8 --final -o /tmp/frames
+```
 
-Give it its own geometry block of named constants at module level (see the
-`# --- Mach-Zehnder geometry ---` block in `interferometry/scenes/mach_zehnder.py`), derive
-every position from them so the shape can be retuned in one place, and reuse the existing helpers rather
-than building atoms or pulses by hand — that is what keeps the
-animations looking like one set of figures. Pull anything visual from the
-style modules; if you need a new colour or width, add it to the topic's
-`style.py` (the core one only if it is generic and generically named; a
-species' line colours go with the species) rather than inline. Reusing a
-value another topic happens to use? Define your own constant with that
-value: alias one constant to another only where they mean the same thing. A helper goes at the level of the most general thing it draws: in
-`core/` if it is generic physics or drawing (a Bloch sphere, a cavity, a
-plot axis), even if only your scene uses it so far; in
-`<topic>/tools/<module>.py` if it is the topic's own; and only the scene and
-layout nothing else uses in `<topic>/scenes/<module>.py`. Never import from
-another scene module except to subclass its scene. A scene that will be a slide calls
-`self.beat()` (a no-op method on the scene) where a presenter would stop;
-`manim_atoms.slides` turns it into a slide break.
+Then Read the PNGs.
 
-Manim 0.21 has `DEGREES` but not the `DEG` alias.
+**Which frames to take:** one per beat — each pulse, each leg, each stop,
+the final state. A mobject can be right mid-flight and wrong at rest.
+
+**Rendering:**
+- `-ql` (480p15) takes seconds; `-qh` is for the final render;
+- `-s` renders only the last frame;
+- run from the repo root, so `manim.cfg` sets the background and `media/`;
+- `manim --dry_run` runs `construct` without writing frames: the fastest
+  way to find a crash.
+
+**Check colours by sampling.** `frames.py --sample X,Y` prints the pixel at
+scene coordinates. Manim's names mislead about perceptual distance:
+- `BLUE_D` and `TEAL` sample as (93,152,167) and (126,195,175), all but
+  identical at a 4 px stroke;
+- `BLUE_D` and `PURPLE_B` give (84,158,177) and (172,147,188), which
+  separate.
+
+**Check what is crossed.** Anything at a pulse's x is crossed by the pulse:
+a title, an arrow, a caption. That is invisible in code and obvious in a
+frame. Annotations still belong on the atom they describe. Don't offset a
+recoil arrow to dodge an overlap; move the title instead.
+
+## Manim traps (each one has bitten this repo)
+
+- **`TracedPath` vanishes when its point stops.** A trail drawn with it
+  collapses during the closing `wait`. Use `draw_legs`, which creates a
+  `Line` in step with the atom.
+- **`Create` on a curve and an atom moved along it come apart.** `Create`
+  paints by point index; the atom moves by arc length. On a bowed leg the
+  atom trails the line by a fifth of the leg. `draw_wavy_legs` drives both
+  from one parameter.
+- **`Tex` wraps silently.** Text longer than LaTeX's line width (about 11
+  units at caption size) breaks onto a second line on its own. Break lines
+  yourself with `\\`, and check `.width` and `.height` of anything long.
+- **A changing number moves.** `DecimalNumber` and `Integer` are placed by
+  their centre, and their height changes with the digits. `1,000` is 25%
+  taller than `42`, because the comma hangs below the line. Pass
+  `group_with_commas=False` to anything that counts. Place it with
+  `next_to(label, RIGHT, aligned_edge=DOWN)` in an updater, not
+  `move_to`.
+- **`Scene.play` kwargs apply to every animation in the call.**
+  `run_time=` on a play with a quarter-second `Flash` stretches the flash
+  too. Put pacing on the animation that needs it (`core.spacetime.run_to`
+  does).
+- **A `ValueTracker`'s updaters only run if it is in the scene.** It must
+  be added *before* the mobjects that read it, or they lag a frame.
+  `self.add(tracker)` first.
+- **`Flash` snapshots its target's centre when built.** On a moving atom
+  the ring is left behind. Flash the point where the event happens (the
+  vertex), not the atom.
+- **A `DashedLine` rebuilt every frame shimmers.** Its dashes reshuffle.
+  Put a dashed reference on whole.
+- **A zero-length `ParametricFunction` fails.** Clamp a growing curve's
+  parameter to at least `1e-4`; `growing_trail` does.
+- **`draw_wavy_legs` clears the atoms' updaters when it ends.** Don't mix
+  it with `carry` on the same atom.
+- **A method looks up globals in the module that defines it.** Moving a
+  scene or mixin means moving its imports too.
+- **Parallel renders share `media/Tex`.** Several manim processes at once
+  should each get their own `--media_dir`; the `verify-refactor` scripts
+  do this.
+- **Manim 0.21 has `DEGREES`, not `DEG`.**

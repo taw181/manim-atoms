@@ -1,0 +1,19 @@
+name: tests
+
+# The unit tests: pure numbers (the pulse-sequence engine), no rendering.
+# Importing manim still needs cairo and pango, so they are installed first.
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libpango1.0-dev pkg-config
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: uv sync
+      - run: uv run pytest -q
