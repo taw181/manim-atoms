@@ -54,7 +54,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Laser pulses and photons
 
 - **A wavepacket** travelling along +y. `core.primitives`: `make_laser_pulse`.
-- **A photon absorbed (|g> → |e>) or stimulating emission (|e> → |g>)**, played on one atom, with light from below (absorbing gives +ħk, emitting −ħk) or from above (the reverse). `core.primitives`: `absorb`, `emit`, each with `from_below`.
+- **A photon absorbed (|g> → |e>) or stimulating emission (|e> → |g>)**, played on one atom, with light from below (absorbing gives +ħk, emitting −ħk) or from above (the reverse). `core.primitives`: `absorb(from_below=...)`, `emit(from_below=...)`.
 - **A pulse from below or from above**, as a worldline arriving at a point. `interferometry.tools.pulses`: `kick_worldline(from_below=...)`.
 - **A vertical pulse column** where light travel time is ignored. `interferometry.tools.pulses`:
   - `fire_vertical_pulse` climbs to each atom with lab time stopped;
