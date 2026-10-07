@@ -54,13 +54,17 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.layout`
 
-`src/manim_atoms/core/layout.py` — The furniture of a static slide: a heading, a list, a picture, a slot.
+`src/manim_atoms/core/layout.py` — Layout: the furniture of a static slide, and a panel to set a drawing in.
 
 - `slide_title(text)`: A slide's heading, top left, where every animation puts its own.
 - `load_image(path, height=None, width=None, lift=False)`: An image file as an ImageMobject, sized by height or width.
 - `image_point(image, px, py)`: Pixel (px, py) of an ImageMobject, counted from its upper left, on screen.
 - `numbered_list(items, font_size=FONT_CONTENTS, buff=0.45)`: 1. first, 2. second, ... with the numbers in a column of their own.
 - `placeholder_frame(width, height, label)`: A dashed slot, labelled, for a figure that has yet to be dropped in.
+- class `Panel()`: Where a drawing goes inside another scene's frame: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
+  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
+  - `.point(p)`: Where the drawing's point ``p`` lands.
+  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
 
 ### `core.optics`
 
@@ -562,10 +566,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/aion/tools/ligo.py` — LIGO's Michelson interferometer, drawn to be lit by a passing wave.
 
 - `strain(t)`: h(t), normalised to a peak of 1: a few cycles under a smooth envelope.
-- class `Panel()`: Where the drawing goes: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
-  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
-  - `.point(p)`
-  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
 - `phase_difference(t, h=strain)`: phi_x - phi_y at the detector: 2k (L_x - L_y), which is linear in h.
 - `mirror_positions(t, h=strain)`: Plus polarisation: the x arm stretches exactly as the y arm squeezes.
 - `wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT)`: A sine riding the segment start -> end, drawn out to `frac` of its length.

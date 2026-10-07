@@ -193,7 +193,6 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **Its parts.** `aion.tools.ligo`: `make_laser`, `make_splitter`, `make_mirror`, `make_detector`, `detector_glow`, `wave`, `beam`. These are drawn at LIGO's own positions.
 - **The physics.** `aion.tools.ligo`: `strain`, `mirror_positions`, `phase_difference`.
 - **The readout**: h(t), the returning waves overlaid, and the equation. `aion.tools.ligo`: `make_strain_trace`, `returning_waves`, `make_equation`.
-- **A drawing shrunk into part of the frame.** `aion.tools.ligo`: `Panel`, which the builders all take.
 
 ## Plots drawn in manim
 
@@ -234,6 +233,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `format_reference` formats an entry under a `CiteFormat`;
   - `Reference` and `Name` are the entry and its authors.
 - **A citation line**, placed in the footer. `core.citations`: `citation`, `labelled_citation`, `place_citation`.
+- **A drawing set into part of another scene's frame**, scaled and shifted, so one builder can fill a scene or sit in a corner of another. `core.layout`: `Panel` (LIGO's builders all take one).
 - **A video playing inside a scene**, frame by frame, off any tracker. `core.video`: `load_video_frames`, `VideoFrame`.
 - **Shipped data files.** `resources`: `data_path`. Sources and licences are in `src/manim_atoms/data/README.md`.
 
@@ -281,7 +281,7 @@ they are fixed to one scene's layout, or live on a scene as methods. They
 are the candidates for the next round of generalisation.
 
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
-- `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `Panel`, `wave` and `beam` are generic already.
+- `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `wave` and `beam` are generic already.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
 - `core.primitives`: `absorb` and `emit` drive from below only.
 - `aion.scenes.dai_data`: `plot_axes`, `legend_row`.

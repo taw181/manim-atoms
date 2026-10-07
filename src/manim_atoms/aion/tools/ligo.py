@@ -6,7 +6,7 @@ whose phase is chained from beam to beam, the readout (h(t), the two
 returning waves overlaid, the light reaching the detector) and the
 equation for the phase difference -- all driven off one lab clock, `now`.
 
-The builders take the wave as `h` and a `panel` (Panel) to draw into, so a
+The builders take the wave as `h` and a `panel` (core.layout.Panel) to draw into, so a
 scene can set the interferometer, already lit, in part of its own frame
 and drive it with a wave of its own: LIGOMichelson draws it full frame,
 MergerOnSensitivityPlot beside a merger. The layout below is the drawing's
@@ -18,6 +18,7 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.core.primitives import make_guide
+from manim_atoms.core.layout import Panel
 
 # --- the apparatus --------------------------------------------------------
 # The beam splitter sits left of centre so the right third of the frame is
@@ -92,35 +93,6 @@ def strain(t):
         return 0.0
     envelope = np.sin(PI * s / GW_DURATION) ** 2
     return envelope * np.sin(TAU * s / GW_PERIOD)
-
-
-class Panel:
-    """Where the drawing goes: shrunk by `scale` about the origin (strokes
-    too), then moved by `shift`. The default leaves it filling the frame."""
-
-    def __init__(self, scale=1.0, shift=ORIGIN):
-        self.scale = scale
-        self.shift = np.asarray(shift, dtype=float)
-
-    @classmethod
-    def at(cls, scale, source, target):
-        """The panel of `scale` that puts the drawing's point `source` on
-        `target`."""
-        source, target = (np.append(np.asarray(v, dtype=float), 0.0)[:3]
-                          for v in (source, target))
-        return cls(scale, target - scale * source)
-
-    def point(self, p):
-        return self.scale * np.asarray(p, dtype=float) + self.shift
-
-    def __call__(self, mob):
-        if self.scale != 1.0:
-            mob.scale(self.scale, scale_stroke=True, about_point=ORIGIN)
-        return mob.shift(self.shift)
-
-    def redraw(self, draw):
-        """always_redraw, with each redrawn mobject placed."""
-        return always_redraw(lambda: self(draw()))
 
 
 FULL_FRAME = Panel()

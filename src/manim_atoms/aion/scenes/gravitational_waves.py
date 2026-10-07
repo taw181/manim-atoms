@@ -42,9 +42,9 @@ from manim_atoms.aion.tools.ligo import (
     make_equation,
     make_light,
     make_strain_trace,
-    Panel,
     returning_waves,
 )
+from manim_atoms.core.layout import Panel
 from manim_atoms.aion.style import *
 
 # --- sheet geometry -------------------------------------------------------
