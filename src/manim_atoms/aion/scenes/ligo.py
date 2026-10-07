@@ -183,6 +183,7 @@ def beam(start, end, frac=1.0, opacity=1.0):
 
 
 def make_mirror(vertical):
+    """A test mass: a thin slab, upright if ``vertical``, else lying flat."""
     w, h = (MIRROR_THICKNESS, MIRROR_LENGTH) if vertical else (
         MIRROR_LENGTH, MIRROR_THICKNESS
     )
@@ -202,6 +203,7 @@ def make_splitter():
 
 
 def make_laser():
+    """The laser: a box at LASER, labelled under it."""
     box = RoundedRectangle(
         width=1.2, height=0.55, corner_radius=0.08, stroke_color=LASER_COLOR,
         stroke_width=3, fill_color=BLACK, fill_opacity=1,

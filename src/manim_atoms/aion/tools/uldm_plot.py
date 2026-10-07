@@ -158,6 +158,7 @@ def uldm_curves(axes, stems=tuple(ULDM_SCENARIOS)):
 
 
 def uldm_labels(axes):
+    """Each AION stage's name beside its curve, in its colour, outlined against the plot."""
     labels = VGroup()
     for name, ((x, y), side) in ULDM_LABELS.items():
         labels.add(Tex(

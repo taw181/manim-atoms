@@ -76,16 +76,19 @@ def deck_fonts():
 
 
 def hexed(color):
+    """A matplotlib colour from a manim one (or a hex string, passed through)."""
     return color if isinstance(color, str) else color.to_hex()
 
 
 def load(run):
+    """One run's CSV from data/dai_fringes/ as {column: array}, comment lines skipped."""
     with open(DATA_DIR / f"{run}.csv") as f:
         rows = list(csv.DictReader(line for line in f if not line.startswith("#")))
     return {k: np.array([float(r[k]) for r in rows]) for k in rows[0]}
 
 
 def load_adev():
+    """The Allan deviation CSV, as load() returns it."""
     return load("adev")
 
 
@@ -113,6 +116,8 @@ def load_signals():
 
 
 def dark_axes(ax):
+    """Style matplotlib axes for the dark slide background: no top or right spine,
+    foreground-coloured ticks and labels."""
     ax.set_facecolor(PLOT_BACKGROUND)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -126,6 +131,7 @@ def dark_axes(ax):
 
 
 def legend(ax, markerscale=3, **kwargs):
+    """A frameless legend in the slide's foreground, its scatter keys made solid."""
     leg = ax.legend(
         frameon=False, labelcolor=PLOT_FOREGROUND, fontsize=TICK_SIZE,
         handletextpad=0.1, markerscale=markerscale, **kwargs,
@@ -137,6 +143,8 @@ def legend(ax, markerscale=3, **kwargs):
 
 
 def fringes_figure(lln, hln):
+    """Excitation against laser phase step for both interferometers, the quiet run
+    (``lln``) above the noisy one (``hln``)."""
     fig, axes = plt.subplots(2, 1, figsize=(6.4, 5.4), sharex=True)
     fig.set_facecolor(PLOT_BACKGROUND)
     for ax, run, title in zip(axes, (lln, hln), ("Low laser noise", "High laser noise")):

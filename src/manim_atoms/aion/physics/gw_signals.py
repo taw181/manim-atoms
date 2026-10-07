@@ -100,6 +100,7 @@ def luminosity_distance(z):
 
 
 def symmetric_mass_ratio(q):
+    """eta = m1 m2 / (m1 + m2)^2 for a mass ratio q = m2 / m1."""
     return q / (1 + q) ** 2
 
 

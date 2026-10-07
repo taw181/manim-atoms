@@ -1,4 +1,12 @@
-"""A light shift injected into one interferometer of the gradiometer."""
+"""A light shift injected into one interferometer of the gradiometer.
+
+LightShiftSignal builds on GradiometerBase: a beam on one cloud across the
+middle of the sequence winds its hands on by the light shift
+(core.spacetime.wound_with_shift), and the readout ends in imaging pulses
+(and a camera image, where a subclass's readout_image hook gives one).
+LightShiftSignalContinuous is the same on one lab clock. along and along_port place points on a leg
+and on a port of any slope.
+"""
 
 import numpy as np
 from manim import *

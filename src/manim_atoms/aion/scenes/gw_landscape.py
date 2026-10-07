@@ -12,7 +12,7 @@ The curves are the digitised ones in manim_atoms/data/gw_sensitivity/ and the tr
 from manim_atoms.aion.physics.gw_signals, so this is the same figure as
 manim_atoms.aion.plots.gw_sensitivity, on the source figure's axes.
 
-    uv run manim -qh src/manim_atoms/scenes/gw_landscape.py SensitivityBuildUp
+    uv run manim -qh src/manim_atoms/aion/scenes/gw_landscape.py SensitivityBuildUp
 
 Every pause between steps goes through beat(), so a manim-slides subclass
 that makes beat() a next_slide() turns it into one slide per step, advancing
@@ -83,6 +83,7 @@ def detector(axes, name):
 
 
 def merger(axes, M, z, width=GW_TRACK_CROWD_WIDTH):
+    """A merger's characteristic-strain track at mass ``M`` and redshift ``z`` on ``axes``."""
     f, h = merger_track(M, z)
     track = VMobject(stroke_color=merger_color(z), stroke_width=width)
     track.set_points_as_corners(curve_points(axes, f, h))
@@ -101,6 +102,7 @@ def mass_label(axes, M, z):
 
 
 def redshift_key(axes, redshifts):
+    """One line per redshift in its track colour, labelled, in the plot's lower left."""
     rows = VGroup(*(
         VGroup(
             Line(ORIGIN, RIGHT * 0.45, stroke_color=merger_color(z),
@@ -115,6 +117,8 @@ def redshift_key(axes, redshifts):
 
 class SensitivityBuildUp(Scene):
     # The mid-band detectors brought in last, in order, one step each.
+    """The GW sensitivity plot built up a beat at a time: LIGO and one merger, the
+    other mergers, LISA, ET, then the mid-band detectors (GAP_FILLERS)."""
     GAP_FILLERS = ("AION-10", "AION-100", "AION-km", "AEDGE")
     # None: the plot fills the slide. A title needs the plot brought down
     # under it, so a subclass that sets one moves the plot too.

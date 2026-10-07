@@ -143,6 +143,7 @@ def hole_positions(t):
 
 # --- the field ------------------------------------------------------------
 def smooth_step(x):
+    """The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends."""
     x = np.clip(x, 0.0, 1.0)
     return x * x * (3.0 - 2.0 * x)
 

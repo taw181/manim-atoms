@@ -63,10 +63,12 @@ def sensitivity_axes(log_f_range, log_h_range, origin, width, height,
 
 
 def plot_point(axes, log_f, log_h):
+    """The scene point of (log10 f, log10 h) on log-log ``axes`` from sensitivity_axes."""
     return axes.c2p(log_f - axes.log_origin[0], log_h - axes.log_origin[1])
 
 
 def curve_points(axes, f, h):
+    """Scene points of a curve given as linear (f, h) arrays, for set_points_as_corners."""
     return np.array([plot_point(axes, x, y) for x, y in zip(np.log10(f), np.log10(h))])
 
 
