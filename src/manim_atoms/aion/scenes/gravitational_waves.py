@@ -25,7 +25,8 @@ import numpy as np
 from manim import *
 from PIL import Image
 
-from manim_atoms.aion.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from manim_atoms.aion.tools.gw_plot import detector_region, sensitivity_axes
+from manim_atoms.core.plots import curve_points, plot_point
 from manim_atoms.aion.physics.gw_signals import (
     TRACK_START,
     YEAR,

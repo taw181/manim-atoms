@@ -96,6 +96,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `arm_ket(excited, phase=None, font_size=FONT_LEGEND, stacked=False)`: The state an arm is in: |g, p> or |e, p + hbar k>, in that state's colour.
 - `fluorescence(atoms)`: What fluoresce plays, unplayed: (halos, the animations lighting them).
 - `fluoresce(scene, atoms, fade=(), run_time=0.8)`: Atoms caught by an imaging pulse light up in its blue.
+- `recoil(state, from_below)`: (velocity change in recoils, new state) for an arm in ``state`` ("g" or "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm absorbs, moving with the photon; an |e> arm is stimulated to emit into the pulse, recoiling against it.
+- `state_legend()`: The key to the two states: an atom in each colour beside |g, p> and |e, p + hbar k>, one above the other.
 
 ### `core.spacetime`
 
@@ -114,6 +116,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `carry(atom, path, clock)`: Pin an atom to its worldline for as long as lab time is running.
 - `growing_trail(corners, color, clock, disp=no_displacement)`: The trajectory behind an arm, drawn as far as lab time has got.
 - `draw_wavy_legs(scene, legs, fade=(), extra=())`: draw_legs for clouds whose worldlines carry the wave's displacement.
+- `along(start, end, f)`: A fraction f of the way from one corner to the next.
 
 ### `core.video`
 
@@ -122,6 +125,17 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `load_video_frames(path, every=1, crop=None)`: Every ``every``-th frame of the video at ``path``, as RGBA arrays.
 - class `VideoFrame(ImageMobject)`: An image whose pixels can be swapped for another frame of a video.
   - `.show(index)`: Show frame ``index``, clamped to the frames there are.
+
+### `core.plots`
+
+`src/manim_atoms/core/plots.py` — Plots drawn in manim: log-log axes, and scatters of thousands of dots.
+
+- `log_axes(log_x_range, log_y_range, origin, width, height, x_label=None, y_label=None, tick_font=FONT_TICK, label_font=FONT_AXIS, label_every=(1, 1), buff=0.15)`: Log-log axes in decades, with 10^n tick labels, as (axes, frame).
+- `plot_point(axes, log_x, log_y)`: The scene point of (log10 x, log10 y) on ``axes`` from log_axes.
+- `curve_points(axes, x, y)`: Scene points of a curve given as linear (x, y) arrays, for set_points_as_corners.
+- `dot_points(axes, xs, ys)`: Every dot's circle, end to end, in the order the dots arrive.
+- `dot_cloud(points, per_dot, color, count, opacity)`: A series' dots as one VMobject, showing the first ``count`` of them as it runs.
+- `static_cloud(points, color, opacity)`: Every dot of a series as one still VMobject.
 
 ## species
 
@@ -189,7 +203,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - `lmt_points(slope_per_kick)`: Worldline corners for an arm gaining `slope_per_kick(i)` on kick i.
 - `kick_worldline(point, from_below, steepness=0.12, span=None)`: A photon's worldline arriving at `point` from below or from above: from the frame's edge, or from the (bottom, top) of `span`, to keep it out of a title or a caption row.
-- `recoil(state, from_below)`: (velocity change in recoils, new state) for an arm in ``state`` ("g" or "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm absorbs, moving with the photon; an |e> arm is stimulated to emit into the pulse, recoiling against it.
 - `lmz_pulses(n, step, T, t0=0.0, stage=0)`: The LMT Mach-Zehnder of order n (odd): pi/2 and (n - 1)/2 pulses out, a mirror of n pulses, (n - 1)/2 pulses back and a pi/2. Every pulse drives both arms, so each opens or closes the gap by 2 hbar k. It is symmetric in time about the middle of the mirror, so the arms close. Stages ``stage`` to ``stage + 2``: beam splitter, mirror, beam splitter.
 - `lmt_history(pulses, t0, z0, u, port=LMT_PORT)`: Step through a sequence: for each event, where it lands and what it does to each arm, and the legs flown until the next one.
 
@@ -279,7 +292,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py SingleLaserKick`
 - Scene `MachZehnder(Scene)`: The full pi/2 - pi - pi/2 sequence: split, mirror, recombine.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
-  - `.make_legend()`
   - `.pulse_caption(tex, x)`: A pulse label on the caption row, offset clear of the beam it names.
   - `uv run manim -ql src/manim_atoms/interferometry/scenes/mach_zehnder.py MachZehnder`
 
@@ -518,9 +530,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/aion/tools/gw_plot.py` — Log-log characteristic-strain plots in manim.
 
-- `sensitivity_axes(log_f_range, log_h_range, origin, width, height, x_label='Frequency / Hz', y_label='Characteristic strain', tick_font=FONT_TICK, label_font=FONT_AXIS, label_every=(1, 1), buff=0.15)`: Log-log axes in decades, with 10^n tick labels, as (axes, frame).
-- `plot_point(axes, log_f, log_h)`: The scene point of (log10 f, log10 h) on log-log ``axes`` from sensitivity_axes.
-- `curve_points(axes, f, h)`: Scene points of a curve given as linear (f, h) arrays, for set_points_as_corners.
+- `sensitivity_axes(log_f_range, log_h_range, origin, width, height, x_label='Frequency / Hz', y_label='Characteristic strain', **kwargs)`: log_axes labelled for characteristic strain against frequency.
 - `detector_region(axes, stem, color)`: A detector's curve, and its region shaded up to the top of the axes.
 
 ### `aion.tools.uldm`
@@ -598,9 +608,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label)`: Axes, tick labels and axis labels, as (axes, frame).
 - `fringe_plot(y_length, origin, x_label=True)`: The fringe panel's (axes, frame): excitation against phase step over 0 to 2 pi, its origin at ``origin``.
 - `lissajous_plot()`: The Lissajous panel's (axes, frame): upper against lower excitation, square.
-- `dot_points(axes, xs, ys)`: Every dot's circle, end to end, in the order the dots arrive.
-- `dot_cloud(points, per_dot, color, count, opacity)`: A series' dots as one VMobject, showing the first ``count`` of them as it runs.
-- `static_cloud(points, color, opacity)`: Every dot of a series as one still VMobject.
 - `fringe_series(axes, data)`: (points, per_dot, colour) for each interferometer's fringe.
 - `arriving_shots(data, fringe_axes, liss_axes, ellipse_color, count, dim=False)`: Every layer one run's shots are drawn in, all driven by ``count``.
 - `build(scene, count, clouds, rings)`: Play one run's shots in, left to right, then freeze them.
@@ -729,7 +736,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/aion/scenes/light_shift.py` — A light shift injected into one interferometer of the gradiometer.
 
-- `along(start, end, f)`: A fraction f of the way from one corner to the next.
 - `along_port(origin, rise, x)`: Where a port leaving `origin` at slope `rise` is at time x.
 - Scene `LightShiftSignal(GradiometerBase)`: A signal put in on purpose, to see whether the gradiometer catches it.
   - `.readout_image()`: Hook: a camera image of the two clouds, shown once they are read out, in place of the dials. None here.

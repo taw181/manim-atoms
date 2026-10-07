@@ -22,6 +22,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.interferometry.style import *
+from manim_atoms.core.primitives import recoil
 
 
 # --- large momentum transfer geometry -------------------------------------
@@ -57,17 +58,6 @@ def kick_worldline(point, from_below, steepness=0.12, span=None):
         [point[0] - dx, edge, 0], point,
         color=LASER_COLOR, stroke_width=PULSE_STROKE_WIDTH,
     )
-
-
-def recoil(state, from_below):
-    """(velocity change in recoils, new state) for an arm in ``state`` ("g" or
-    "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm
-    absorbs, moving with the photon; an |e> arm is stimulated to emit into
-    the pulse, recoiling against it."""
-    direction = 1 if from_below else -1
-    if state == "g":
-        return direction, "e"
-    return -direction, "g"
 
 
 # --- LMT sequences ----------------------------------------------------------

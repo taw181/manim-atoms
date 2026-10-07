@@ -232,3 +232,31 @@ def fluoresce(scene, atoms, fade=(), run_time=0.8):
     halos, light = fluorescence(atoms)
     scene.play(*light, run_time=run_time)
     scene.play(*[FadeOut(m) for m in (*halos, *fade)], run_time=0.5)
+
+
+def recoil(state, from_below):
+    """(velocity change in recoils, new state) for an arm in ``state`` ("g" or
+    "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm
+    absorbs, moving with the photon; an |e> arm is stimulated to emit into
+    the pulse, recoiling against it."""
+    direction = 1 if from_below else -1
+    if state == "g":
+        return direction, "e"
+    return -direction, "g"
+
+
+def state_legend():
+    """The key to the two states: an atom in each colour beside |g, p> and
+    |e, p + hbar k>, one above the other."""
+    rows = VGroup()
+    for color, tex in (
+        (ATOM_COLOR, r"|g,\,p\rangle"),
+        (KICKED_COLOR, r"|e,\,p + \hbar k\rangle"),
+    ):
+        rows.add(
+            VGroup(
+                make_atom(color, radius=LEGEND_ATOM_RADIUS),
+                state_label(tex, color, FONT_LEGEND),
+            ).arrange(RIGHT, buff=0.22)
+        )
+    return rows.arrange(DOWN, buff=0.28, aligned_edge=LEFT)

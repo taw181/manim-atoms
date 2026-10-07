@@ -22,6 +22,7 @@ from manim_atoms.core.primitives import (
     draw_legs,
     state_colors,
     state_label,
+    state_legend,
 )
 
 # --- single-kick geometry -------------------------------------------------
@@ -135,7 +136,7 @@ class MachZehnder(Scene):
             r"Mach--Zehnder atom interferometer: $\pi/2 - \pi - \pi/2$",
             font_size=FONT_TITLE,
         ).to_corner(UR)
-        legend = self.make_legend().to_corner(UL)
+        legend = state_legend().to_corner(UL)
         guide = make_guide([-config.frame_x_radius, MZ_A[1], 0], MZ_A)
         self.play(FadeIn(title), FadeIn(legend), FadeIn(guide), run_time=1.0)
         self.beat()
@@ -233,21 +234,6 @@ class MachZehnder(Scene):
         self.wait(2.0)
 
     # --- helpers ---------------------------------------------------------
-    @staticmethod
-    def make_legend():
-        rows = VGroup()
-        for color, tex in (
-            (ATOM_COLOR, r"|g,\,p\rangle"),
-            (KICKED_COLOR, r"|e,\,p + \hbar k\rangle"),
-        ):
-            rows.add(
-                VGroup(
-                    make_atom(color, radius=LEGEND_ATOM_RADIUS),
-                    state_label(tex, color, FONT_LEGEND),
-                ).arrange(RIGHT, buff=0.22)
-            )
-        return rows.arrange(DOWN, buff=0.28, aligned_edge=LEFT)
-
     @staticmethod
     def pulse_caption(tex, x):
         """A pulse label on the caption row, offset clear of the beam it names."""

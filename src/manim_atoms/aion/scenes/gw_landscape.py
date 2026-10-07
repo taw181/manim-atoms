@@ -22,7 +22,8 @@ on the presenter's click instead of a timed hold.
 import numpy as np
 from manim import *
 
-from manim_atoms.aion.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from manim_atoms.aion.tools.gw_plot import detector_region, sensitivity_axes
+from manim_atoms.core.plots import curve_points, plot_point
 from manim_atoms.core.layout import slide_title
 from manim_atoms.aion.physics.gw_signals import mass_tex, merger_track, phenom_a_frequencies
 from manim_atoms.aion.style import *

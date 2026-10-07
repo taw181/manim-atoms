@@ -45,6 +45,7 @@ from manim_atoms.core.primitives import (
     state_colors,
 )
 from manim_atoms.core.spacetime import (
+    along,
     carry,
     growing_band,
     growing_trail,
@@ -109,11 +110,6 @@ LS_IMAGE_P = 3.6
 # image the slide ends on shows all four. A port below this share is drawn
 # at it rather than left as an empty guide.
 LS_PORT_FLOOR = 0.5
-
-
-def along(start, end, f):
-    """A fraction f of the way from one corner to the next."""
-    return start + (end - start) * f
 
 
 def along_port(origin, rise, x):

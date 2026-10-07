@@ -270,3 +270,8 @@ def draw_wavy_legs(scene, legs, fade=(), extra=()):
     scene.remove(*trails)
     scene.add(*[wavy_path(l[1], l[2], l[3], l[4]) for l in legs])
     scene.bring_to_front(*[l[0] for l in legs])
+
+
+def along(start, end, f):
+    """A fraction f of the way from one corner to the next."""
+    return start + (end - start) * f

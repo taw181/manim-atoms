@@ -38,6 +38,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.resources import data_path
+from manim_atoms.core.plots import dot_cloud, dot_points, static_cloud
 from manim_atoms.aion.style import *
 
 DATA_DIR = data_path("dai_fringes")
@@ -137,33 +138,6 @@ def lissajous_plot():
     )
     frame.shift(LISSAJOUS_ORIGIN - axes.c2p(0, 0))
     return axes, frame
-
-
-def dot_points(axes, xs, ys):
-    """Every dot's circle, end to end, in the order the dots arrive."""
-    template = Circle(radius=DATA_DOT_RADIUS, num_components=5).points
-    centres = np.array([axes.c2p(x, y) for x, y in zip(xs, ys)])
-    return (centres[:, None, :] + template[None, :, :]).reshape(-1, 3), len(template)
-
-
-def dot_cloud(points, per_dot, color, count, opacity):
-    """A series' dots as one VMobject, showing the first ``count`` of them as it runs."""
-    cloud = VMobject(fill_color=color, fill_opacity=opacity, stroke_width=0)
-
-    def grow(mob):
-        n = int(count.get_value())
-        # set_points on an empty array leaves cairo nothing to draw, which is
-        # what zero dots should look like.
-        mob.set_points(points[: n * per_dot])
-
-    cloud.add_updater(grow)
-    return cloud
-
-
-def static_cloud(points, color, opacity):
-    """Every dot of a series as one still VMobject."""
-    return VMobject(fill_color=color, fill_opacity=opacity,
-                    stroke_width=0).set_points(points)
 
 
 def fringe_series(axes, data):

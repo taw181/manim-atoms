@@ -42,6 +42,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **An atom** (a disc you recolour through `atom[0]`), recoloured on a state change. `core.primitives`: `make_atom`, `state_colors`.
 - **A state's ket** in its colour. `core.primitives`: `state_label`, and `arm_ket` for |g, p> or |e, p + ħk> with an optional phase factor.
+- **The key to the two states**: an atom of each colour beside |g, p> and |e, p + ħk>. `core.primitives`: `state_legend`.
 - **A still cartoon cloud** (dots in a Gaussian heap). `core.primitives`: `make_cloud`.
 - **A trapped cloud that loads, cools, shrinks and glows.** `trapping.tools.cooling`: `AtomCloud`. Its knobs (radius, temperature, arrived, dark, glow) are all trackers. It can load from a source point and be stretched into a cigar.
 - **A stream of atoms** from an oven or a 2D MOT. `trapping.tools.cooling`: `AtomBeam`.
@@ -64,12 +65,12 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `climbing_pulse` draws it as far as the clock has got.
 - **The k-vector marker** beside a beam. `core.primitives`: `make_k_arrow`.
 - **A beam with its wavefronts**, which can be tilted. `interferometry.tools.phase_shear`: `make_beam`.
-- **A pulse's caption on the caption row**, and the |g>/|e> legend. `interferometry.scenes.mach_zehnder`: `MachZehnder.pulse_caption`, `MachZehnder.make_legend` (they live on the scene).
+- **A pulse's caption on the caption row.** `interferometry.scenes.mach_zehnder`: `MachZehnder.pulse_caption` (it lives on the scene).
 
 ## Recoil and momentum
 
 - **A recoil arrow** with its label (draw ħk vertical for a beam from below), and the animation that brings it on. `core.primitives`: `momentum_arrow`, `grow`.
-- **What one pulse does to one arm**: the velocity change in recoils and the new internal state, for a pulse from below or from above. `interferometry.tools.lmt`: `recoil`.
+- **What one pulse does to one arm**: the velocity change in recoils and the new internal state, for a pulse from below or from above. `core.primitives`: `recoil`.
 
 ## Arms and worldlines
 
@@ -120,7 +121,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `port_parts` is the pieces;
   - `live_ports` keeps drawn ports following the phase;
   - `ground_share` is the share left in |g>.
-- **A point on a leg, or on a port of any slope.** `aion.scenes.light_shift`: `along`, `along_port` (in a scene module).
+- **A point a fraction of the way along a straight leg.** `core.spacetime`: `along`.
+- **A point on a port of any slope.** `aion.scenes.light_shift`: `along_port` (in a scene module).
 - **The excited fraction at a phase**, and a phase sheared across a cloud. `interferometry.tools.phase_shear`: `excited_fraction`, `shear_phase`, `phase_reading`.
 - **A camera image of a port**, striped by the phase. `interferometry.tools.phase_shear`: `PortImage`.
 - **Imaging the ports** with a 461 nm pulse. `aion.scenes.light_shift`: `LightShiftSignal.imaging_pulse`, `LightShiftSignal.imaging_line`.
@@ -186,14 +188,15 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 ## Plots drawn in manim
 
-- **Log-log GW sensitivity axes**, points and curves on them, a detector's shaded region. `aion.tools.gw_plot`: `sensitivity_axes`, `plot_point`, `curve_points`, `detector_region`.
+- **Log-log axes in decades**, and points and curves on them. `core.plots`: `log_axes`, `plot_point`, `curve_points`.
+- **The GW sensitivity plot's axes**, and a detector's curve with its region shaded. `aion.tools.gw_plot`: `sensitivity_axes`, `detector_region`.
 - **The ULDM reach inset.** `aion.tools.uldm_plot`:
   - the whole inset: `uldm_inset`;
   - its pieces: `uldm_axes`, `uldm_curves`, `uldm_labels`, `excluded_region`, `excluded_label`;
   - a mass marked across it: `mass_mark`, `mass_label`;
   - lookups: `reach`, `deepest_reach`, `clipped`, `log_x_range`.
 - **MOT loading curves.** `trapping.tools.hifais`: `loading_axes`, `loading_points`, `loading_fit`, `loading_rate_line`, `loading_cutoff`, `temperature_key`.
-- **Shot-by-shot scatter as one fast VMobject** (thousands of dots). `aion.scenes.dai_data`: `dot_cloud`, `dot_points`, `plot_axes` (in a scene module).
+- **A scatter of thousands of dots as one fast VMobject**, arriving one at a time or all at once. `core.plots`: `dot_points`, `dot_cloud`, `static_cloud`.
 
 ## Matplotlib figures (static)
 
@@ -268,11 +271,11 @@ These are general but live on a scene or in a scene module, so another
 scene can only reach them by importing that scene. They are the first
 candidates to move down into `tools/` or `core/`.
 
-- `interferometry.scenes.mach_zehnder`: `MachZehnder.make_legend`, `MachZehnder.pulse_caption`.
+- `interferometry.scenes.mach_zehnder`: `MachZehnder.pulse_caption`.
 - `interferometry.scenes.lmt`: `LMTMachZehnder.play_history`, `LMTMachZehnder.caption`, `LMTMachZehnder.pulse_label`.
 - `interferometry.scenes.gradiometer`: `laser_jumps`, `launch_time`, `laser_caption`.
-- `aion.scenes.light_shift`: `along`, `along_port`.
+- `aion.scenes.light_shift`: `along_port`.
 - `aion.scenes.ligo`: `Panel` (a drawing shrunk into a panel), `make_mirror`, `make_laser`, `make_detector`, `wave`, `beam`.
-- `aion.scenes.dai_data`: `dot_cloud`, `dot_points`, `plot_axes`, `legend_row`.
+- `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
 - `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.
-- `interferometry.tools.lmt`: `recoil`, `kick_worldline` and `lmt_history` are general engines in LMT's module.
+- `interferometry.tools.lmt`: `kick_worldline` and `lmt_history` are general engines in LMT's module.
