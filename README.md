@@ -9,6 +9,8 @@
 | `manim_atoms.aion` | AION: a gravitational wave or an ultralight dark-matter field passing through the gradiometer, signal injection by a light shift, LIGO, the GW sensitivity landscape, AEDGE, the km-scale detector, and the prototype's measured data |
 | `manim_atoms.slides` | Any scene as a [manim-slides](https://github.com/jeertmans/manim-slides) slide, decks of them, and a web player |
 
+[`docs/index.md`](docs/index.md) says what's where, organised by what you want to draw; [`docs/reference.md`](docs/reference.md) lists every module and name.
+
 Under them sit `manim_atoms.core` (atoms, pulses, worldlines, beams, layout, citations, video), `manim_atoms.species` (two-level and Sr level schemes) and `manim_atoms.style`.
 
 ## Install

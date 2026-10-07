@@ -6,6 +6,8 @@ Manim animations of atomic physics, as an installable package (`src/manim_atoms/
 
 ## Layout
 
+To find what exists, read `docs/index.md` before any source: it is organised by what you want to draw (curved arms, a pulse from above, a Bloch sphere, ...) and names the module and function for each. `docs/reference.md` is every module and public name with its signature and docstring, generated from the source; look a name up there before opening its file.
+
 Topics depend one way only, `core` → `species` → {`interferometry`, `trapping`} → `aion`; `slides` depends on `core` alone. Never import upward or sideways: `interferometry` and `trapping` don't know each other, and nothing outside `aion` imports it.
 
 - `style.py` — the core house style: every shared colour, stroke width, font size, and the pacing constant `V`. A topic's own palettes live in `<topic>/style.py`, which star-imports the core one (`aion/style.py` star-imports the interferometry and trapping ones); a topic's modules star-import their own topic's style. Add to a style module rather than hardcoding inline; a colour more than one topic uses goes in the core one.
@@ -31,5 +33,6 @@ A scene calls a no-op hook where a presenter would stop — `beat()`, the sequen
 - Annotations belong where the physics happens: don't offset a recoil arrow off its atom to dodge an overlap — the overlap is fine.
 - Measured data: `aion/plots/dai_fringes.py` → AION DAI fringes and Lissajous ellipse (Zenodo 19592552); `aion/plots/gw_sensitivity.py` → detector curves with merger tracks.
 - Stage explicit paths when committing; don't `git add -A` over work in progress.
+- Every public function, class and module has a docstring whose first paragraph says what it is. A new public function or class in a non-scene module, or a new Scene class, goes in `docs/index.md` under the need it serves. Then run `python scripts/index.py --write` and commit `docs/reference.md` with it. CI runs `python scripts/index.py`, which fails on a stale reference, an unindexed name, a missing docstring, or an index entry that no longer exists.
 - The repo is private. Before it is ever made public, resolve every "check before redistributing" row in `data/README.md`.
 - Render-and-check loop, colour sampling, manim traps: the `manim-atoms` skill.
