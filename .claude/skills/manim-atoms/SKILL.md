@@ -19,6 +19,7 @@ conventions for its kind of figure.
 |---|---|
 | atoms, pulses and arms on a space-time diagram: Mach–Zehnder, LMT, clock phase, gradiometer | `interferometry-scenes` |
 | MOT stages, dipole traps, a staged sequence beside a level scheme and timeline | `trapping-scenes` |
+| a tweezer array, phase masks and holograms, Zernike aberration correction, an SLM's optical train | `tweezer-scenes` |
 | a gravitational wave or dark-matter field through the gradiometer, LIGO, signal injection | `aion-scenes` (with `interferometry-scenes`) |
 | plots drawn in manim, matplotlib figures, the data behind them | `data-plots` |
 | turning scenes into slides and decks | `slides` |
@@ -177,6 +178,16 @@ recoil arrow to dodge an overlap; move the title instead.
 - **A `ValueTracker`'s updaters only run if it is in the scene.** It must
   be added *before* the mobjects that read it, or they lag a frame.
   `self.add(tracker)` first.
+- **A `wait` runs no updaters unless one of them takes `dt`.** Set a
+  tracker by hand and then wait, and whatever reads it stays a step
+  behind: the picture is frozen at the last frame played. Call
+  `self.update_mobjects(0)` after the `set_value`, or animate the tracker.
+- **A mobject that replaces its submobjects every frame leaves the old
+  ones on screen.** A scene lists what a play moves when the play begins
+  and paints that list on every frame, so replaced pieces are painted
+  again, frozen. Reuse the pieces, or empty the old ones' points
+  (`TweezerArray.redraw` does). `always_redraw` is safe while the pieces
+  keep their number.
 - **`Flash` snapshots its target's centre when built.** On a moving atom
   the ring is left behind. Flash the point where the event happens (the
   vertex), not the atom.

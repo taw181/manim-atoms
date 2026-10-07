@@ -1,6 +1,6 @@
 # Tweezer arrays and SLM light delivery: design
 
-Date: 2026-10-07. Status: approved; plan in
+Date: 2026-10-07. Status: implemented; plan in
 `docs/superpowers/plans/2026-10-07-tweezer-arrays.md`.
 
 ## What this adds
