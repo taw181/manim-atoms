@@ -509,6 +509,13 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ## tweezers
 
+### `tweezers.style`
+
+`src/manim_atoms/tweezers/style.py` — The tweezer scenes' style: the core house style plus the tweezer array, its beams and the holograms that make it.
+
+- *the tweezers*: `TWEEZER_COLOR`, `TWEEZER_OPACITY`, `TWEEZER_LAYERS`, `TWEEZER_SPEED`, `TARGET_RING_STYLE`, `FOCAL_PLANE_STYLE`, `FONT_STEP`, `STEP_COLOR`
+- *holograms*: `FOCAL_SPOT_COLOR`, `BAR_COLOR`, `BAR_BASELINE_STYLE`, `FONT_READOUT`, `FONT_MODE`, `TRANSFORM_ARROW_STYLE`
+
 ### `tweezers.physics.rearrangement`
 
 `src/manim_atoms/tweezers/physics/rearrangement.py` — A tweezer array's numbers: its sites, which of them load, and the moves that rearrange the loaded ones into a defect-free block.
@@ -519,6 +526,24 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `plan_rearrangement(sites, loaded, targets)`: Pair loaded traps with target sites so the summed squared distance is least, and drop the loaded traps left over.
 - `positions(plan, share)`: Every kept trap ``share`` of the way from its start to its end.
 - `longest_move(plan)`: The farthest any kept trap travels: what sets how long the move takes.
+
+### `tweezers.tools.tweezer_array`
+
+`src/manim_atoms/tweezers/tools/tweezer_array.py` — The tweezer array as a drawing: traps, the atoms in them, and the moves.
+
+- `spot_trap(view, at, power)`: One trap seen end on: a Gaussian spot at world point ``at``, as bright as its ``power`` (0 to 1).
+- class `TweezerArray(VGroup)`: An array of traps at ``sites`` ((N, 2), in the view's plane), drawn through ``view`` and redrawn every frame from its trackers:
+  - `.load(loaded)`: Say which traps hold an atom (a boolean per site).
+  - `.rearrange(plan)`: Take a physics.rearrangement.Plan: its kept traps move with ``moved``, and the rest go out with ``off``.
+  - `.reset()`: Back to an empty array with no plan, its traps where they started.
+  - `.kept()`: Which traps stay on: all of them, until there is a plan.
+  - `.trap_positions()`: Where every trap is now, (N, 2).
+  - `.trap_powers()`: Every trap's power now, 0 to 1.
+  - `.atom_opacities()`: How solidly each trap's atom is drawn: 0 for a trap with none.
+  - `.redraw()`: Rebuild the drawing from the trackers: target rings, then each trap and its atom, far ones first.
+- `heading(text)`: A scene's heading, for its upper left corner.
+- `step_caption(text, under)`: The step being shown, in grey under the heading ``under``.
+- `next_step(old, text, under)`: (the new caption, the animation that swaps ``old`` for it): out, then in, so the two are never crossed.
 
 ## aion
 

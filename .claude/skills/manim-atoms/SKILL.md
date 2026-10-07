@@ -127,6 +127,9 @@ uv run manim -ql src/manim_atoms/<topic>/scenes/<module>.py MyScene
 
 Then Read the PNGs.
 
+`scripts/stops.py <dotted module> <Scene>` prints the times just before
+each of a scene's stops, ready to paste after `-t`.
+
 **Which frames to take:** one per beat — each pulse, each leg, each stop,
 the final state. A mobject can be right mid-flight and wrong at rest.
 

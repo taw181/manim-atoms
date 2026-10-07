@@ -186,6 +186,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **The array's numbers**: its sites, which of them load, and the plan that rearranges the loaded ones into a block, every trap moving at once. `tweezers.physics.rearrangement`: `square_sites`, `load_sites`, `plan_rearrangement`, `Plan`, `positions`, `longest_move`.
 - **A plane seen from an angle** on a flat scene, tilting and turning on trackers: where a point lands, what is in front, a circle in the plane. `core.projection`: `TiltedView`, with `TiltedView.point`, `TiltedView.depth`, `TiltedView.squash`, `TiltedView.rise`, `TiltedView.disc` and `TiltedView.outline`.
+- **A tweezer array**: traps as bright as their power, the atoms in them, and the unwanted traps going out and the rest moving, all on trackers. Drawn through a `core.projection.TiltedView`. `tweezers.tools.tweezer_array`: `TweezerArray`, with `spot_trap` as the trap seen end on.
+- **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
 
