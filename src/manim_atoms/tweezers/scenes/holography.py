@@ -23,7 +23,7 @@ that wraps shows no edge.
   is taken out, and after the array is corrected.
 
 Angles in the train are exaggerated and its relay is two lenses. The
-aberration is a few radians, far more than a good objective has.
+aberration is about a radian, far more than a good objective has.
 """
 
 import numpy as np
@@ -91,7 +91,7 @@ class PhaseMaskBuildingBlocks(Scene):
     def construct(self):
         x, y, rho, _ = pupil_grid(HG_N)
         amplitude = illumination(rho)
-        pupil = round_aperture(HG_N)
+        aperture = round_aperture(HG_N)
         periods, angle, waves = ValueTracker(0), ValueTracker(0), ValueTracker(0)
 
         def phase():
@@ -99,7 +99,7 @@ class PhaseMaskBuildingBlocks(Scene):
             return (grating_phase(x, y, k * np.cos(a), k * np.sin(a))
                     + lens_phase(rho, waves.get_value()))
 
-        mask = PhaseMask(phase(), pupil).set(height=PB_SIZE).move_to(PB_MASK)
+        mask = PhaseMask(phase(), aperture).set(height=PB_SIZE).move_to(PB_MASK)
         focal = FocalImage(focal_view(phase(), amplitude), FOCAL_SPOT_COLOR, gamma=HG_GAMMA)
         focal.set(height=PB_SIZE).move_to(PB_FOCAL)
         frame = framed(focal)
@@ -188,7 +188,7 @@ class HologramIteration(Scene):
     def construct(self):
         x, y, rho, _ = pupil_grid(HG_N)
         amplitude = illumination(rho)
-        pupil = round_aperture(HG_N)
+        aperture = round_aperture(HG_N)
         spots = grid_spots(5, 5)
         masks, intensities = iterate_hologram(x, y, amplitude, spots, HI_STEPS)
         even = 1 / len(spots)  # each trap's share if the light were split evenly
@@ -197,7 +197,7 @@ class HologramIteration(Scene):
         def now():
             return int(round(step.get_value()))
 
-        mask = PhaseMask(masks[0], pupil).set(height=HI_SIZE).move_to(HI_MASK)
+        mask = PhaseMask(masks[0], aperture).set(height=HI_SIZE).move_to(HI_MASK)
         focal = FocalImage(focal_view(masks[0], amplitude), FOCAL_SPOT_COLOR, full=even,
                            gamma=HG_GAMMA).set(height=HI_SIZE).move_to(HI_FOCAL)
         frame = framed(focal)
@@ -263,5 +263,133 @@ class HologramIteration(Scene):
         mask.add_updater(lambda m: show(now()))
         self.play(step.animate.set_value(HI_STEPS), rate_func=linear, run_time=HI_RUN_TIME)
         mask.clear_updaters()
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+
+# --- Zernike geometry --------------------------------------------------------
+# First the pyramid: a row per radial order, widening downwards. Then the
+# pupil's wavefront on the left, a bar per mode in the middle and the focal
+# spot on the right.
+ZC_PYRAMID_TOP = np.array([0.6, 2.6, 0.0])  # the centre of the top disc
+ZC_DISC = 1.0  # each disc's height
+ZC_PITCH = (1.45, 1.38)  # between discs along a row, and between rows
+ZC_AMPLITUDE = 1.4  # each pyramid mode's rms, in radians: enough to go once round the wheel
+ZC_NAMED = {(1, 1): "tilt", (2, 0): "defocus", (2, 2): "astigmatism",
+            (3, 1): "coma", (3, 3): "trefoil", (4, 0): "spherical"}
+# The aberration, rms radians per mode: together they leave a Strehl ratio near
+# 0.2, a spot plainly spoilt but still a spot, and each one taken out shows.
+ZC_ERROR = {(2, 2): 0.9, (3, 1): 0.7, (4, 0): 0.5}
+ZC_PUPIL = np.array([-4.3, -0.6, 0.0])
+ZC_SPOT = np.array([4.3, -0.6, 0.0])
+ZC_SIZE = 3.4  # the wavefront's and the spot's height
+ZC_BARS = np.array([-1.8, -1.6, 0.0])  # the bar chart's lower left corner
+ZC_BARS_SIZE = (3.6, 1.6)  # its width, and the height of the largest mode's bar
+ZC_WHEEL = np.array([-6.3, -3.0, 0.0])  # the phase key, clear of the wavefront
+ZC_SPOT_VIEW = 7  # the single spot is shown closer in than an array
+ZC_FIX_TIME = 1.6  # taking one mode out
+
+
+class ZernikeCorrection(Scene):
+    """The Zernike modes as a pyramid of phase maps; then a wavefront made of
+    three of them, the smeared focal spot it gives, and the spot sharpening
+    as each mode is taken out of the mask; then the same correction on an
+    array. A beat() on the pyramid, on the aberration, per mode and on the
+    array."""
+
+    def beat(self):
+        """The pause after each step: nothing here, a click on the slide version."""
+
+    def construct(self):
+        x, y, rho, theta = pupil_grid(HG_N)
+        amplitude = illumination(rho)
+        aperture = round_aperture(HG_N)
+        title = heading("Aberrations, in Zernike modes").move_to(HOLO_HEADING, aligned_edge=UL)
+
+        # --- the pyramid ---
+        discs, names = Group(), VGroup()
+        for j in range(15):
+            n, m = osa_to_nm(j)
+            at = ZC_PYRAMID_TOP + DOWN * n * ZC_PITCH[1] + RIGHT * m / 2 * ZC_PITCH[0]
+            disc = PhaseMask(ZC_AMPLITUDE * zernike(n, m, rho, theta), aperture)
+            discs.add(disc.set(height=ZC_DISC).move_to(at))
+            if (n, m) in ZC_NAMED:
+                names.add(Tex(ZC_NAMED[n, m], font_size=FONT_MODE, color=STEP_COLOR)
+                          .next_to(disc, DOWN, buff=0.04))
+        wheel = phase_wheel(0.45).move_to(ZC_WHEEL)
+        self.play(FadeIn(title), FadeIn(discs), FadeIn(names), FadeIn(wheel))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        # --- an aberrated wavefront and its spot ---
+        modes = list(ZC_ERROR)
+        left = {mode: ValueTracker(ZC_ERROR[mode]) for mode in modes}
+
+        def error():
+            return sum(left[mode].get_value() * zernike(*mode, rho, theta) for mode in modes)
+
+        pupil = PhaseMask(error(), aperture).set(height=ZC_SIZE).move_to(ZC_PUPIL)
+        spot = FocalImage(focal_view(error(), amplitude, ZC_SPOT_VIEW), FOCAL_SPOT_COLOR,
+                          gamma=HG_GAMMA).set(height=ZC_SIZE).move_to(ZC_SPOT)
+        frame = framed(spot)
+        labels = VGroup(panel_label("wavefront error", pupil), panel_label("focal spot", spot))
+        full = max(ZC_ERROR.values())
+        bars = always_redraw(lambda: bar_chart([left[mode].get_value() for mode in modes],
+                                               full, *ZC_BARS_SIZE).shift(ZC_BARS))
+        slot = ZC_BARS_SIZE[0] / len(modes)
+        bar_names = VGroup(*[
+            Tex(ZC_NAMED[mode], font_size=FONT_MODE, color=STEP_COLOR)
+            .move_to(ZC_BARS + RIGHT * slot * (i + 0.5) + DOWN * 0.25)
+            for i, mode in enumerate(modes)
+        ])
+        strehl_label = Tex("Strehl ratio", font_size=FONT_READOUT)
+        strehl_label.next_to(spot, DOWN, buff=0.35).shift(LEFT * 0.5)
+        ratio = DecimalNumber(0, num_decimal_places=2, font_size=FONT_READOUT,
+                              group_with_commas=False)
+        ratio.add_updater(lambda m: m.set_value(strehl(error(), amplitude))
+                          .next_to(strehl_label, RIGHT, buff=0.2, aligned_edge=DOWN))
+        self.add(*left.values())
+        self.play(FadeOut(discs), FadeOut(names))
+        self.play(FadeIn(pupil), FadeIn(spot), FadeIn(frame), FadeIn(labels), FadeIn(bars),
+                  FadeIn(bar_names), FadeIn(strehl_label), FadeIn(ratio))
+        pupil.add_updater(lambda m: m.paint(error()))
+        spot.add_updater(lambda m: m.paint(focal_view(error(), amplitude, ZC_SPOT_VIEW)))
+        self.wait(HOLO_SETTLE)
+        self.beat()
+
+        # --- the correction, a mode at a time ---
+        for mode in modes:
+            self.play(left[mode].animate.set_value(0), run_time=ZC_FIX_TIME)
+            self.wait(HOLO_SETTLE)
+            self.beat()
+
+        # --- the same correction on an array's hologram ---
+        spots = grid_spots(5, 5)
+        hologram = iterate_hologram(x, y, amplitude, spots, 30)[0][-1]
+        aberration = sum(ZC_ERROR[mode] * zernike(*mode, rho, theta) for mode in modes)
+        corrected = ValueTracker(0)
+        even = 1 / len(spots)
+
+        def shown_mask():
+            return hologram - corrected.get_value() * aberration
+
+        def seen():
+            return focal_view(shown_mask() + aberration, amplitude)
+
+        pupil.clear_updaters()
+        spot.clear_updaters()
+        array_mask = PhaseMask(shown_mask(), aperture).set(height=ZC_SIZE).move_to(ZC_PUPIL)
+        array_spots = FocalImage(seen(), FOCAL_SPOT_COLOR, full=even, gamma=HG_GAMMA)
+        array_spots.set(height=ZC_SIZE).move_to(ZC_SPOT)
+        new_labels = VGroup(panel_label("SLM: hologram minus the error", array_mask),
+                            panel_label("focal plane", array_spots))
+        self.add(corrected)
+        self.play(FadeOut(pupil), FadeOut(spot), FadeOut(labels), FadeOut(bars),
+                  FadeOut(bar_names), FadeOut(strehl_label), FadeOut(ratio))
+        self.play(FadeIn(array_mask), FadeIn(array_spots), FadeIn(new_labels))
+        array_mask.add_updater(lambda m: m.paint(shown_mask()))
+        array_spots.add_updater(lambda m: m.paint(seen()))
+        self.wait(HOLO_SETTLE)
+        self.play(corrected.animate.set_value(1), run_time=2 * ZC_FIX_TIME)
         self.wait(HOLO_SETTLE)
         self.beat()

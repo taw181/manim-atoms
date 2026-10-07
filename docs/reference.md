@@ -602,6 +602,9 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - Scene `HologramIteration(Scene)`: Weighted Gerchberg-Saxton finding an array's mask: the loop between the SLM plane and the focal plane, three iterations one at a time, then the run until the traps are evenly bright. A beat() on the loop, on the starting mask, after each slow iteration and after the run.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py HologramIteration`
+- Scene `ZernikeCorrection(Scene)`: The Zernike modes as a pyramid of phase maps; then a wavefront made of three of them, the smeared focal spot it gives, and the spot sharpening as each mode is taken out of the mask; then the same correction on an array. A beat() on the pyramid, on the aberration, per mode and on the array.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py ZernikeCorrection`
 
 ### `tweezers.scenes.rearrangement`
 
