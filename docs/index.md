@@ -54,7 +54,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Laser pulses and photons
 
 - **A wavepacket** travelling along +y. `core.primitives`: `make_laser_pulse`.
-- **A photon absorbed (|g> → |e>, +ħk) or stimulating emission (|e> → |g>, −ħk)**, played on one atom. `core.primitives`: `absorb`, `emit`. Both drive from below only.
+- **A photon absorbed (|g> → |e>) or stimulating emission (|e> → |g>)**, played on one atom, with light from below (absorbing gives +ħk, emitting −ħk) or from above (the reverse). `core.primitives`: `absorb(from_below=...)`, `emit(from_below=...)`.
 - **A pulse from below or from above**, as a worldline arriving at a point. `interferometry.tools.pulses`: `kick_worldline(from_below=...)`.
 - **A vertical pulse column** where light travel time is ignored. `interferometry.tools.pulses`:
   - `fire_vertical_pulse` climbs to each atom with lab time stopped;
@@ -152,10 +152,12 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A Bloch sphere in perspective** on a flat scene. `core.bloch`: `BlochView`, with `BlochView.point`, `BlochView.ring`, `BlochView.curve`, `BlochView.patch` and `BlochView.outline`.
 - **Quantum noise as a patch on the sphere** (a coherent or squeezed spin state). `core.bloch`: `noise_patch`.
 
-## Optics: beams and cavities
+## Optics: beams, cavities, interferometer parts
 
 - **A beam seen side on**, or a spot seen end on, as a Gaussian profile. `core.optics`: `gaussian_band`, `gaussian_spot`.
 - **An optical cavity**: mirrors, mode, probe and detector, plus its vacuum-Rabi-split transmission with atoms in it. `core.optics`: `make_cavity`, `rabi_transmission`.
+- **The parts of an optical interferometer**, seen from above and placed by the caller: a flat mirror or test mass, a beam splitter, a laser, a photodetector. `core.optics`: `make_mirror`, `make_beam_splitter`, `make_laser`, `make_photodetector`.
+- **Light drawn as a wave riding a beam**, its phase chained from beam to beam, and the faint band under it. `core.optics`: `light_wave`, `beam_glow`.
 - **Atoms in the cavity mode** in the superposition's colour (spin squeezing's own). `interferometry.tools.squeezing`: `cavity_atoms`.
 
 ## Trapping apparatus
@@ -187,17 +189,25 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **Light travel time under a wave**, and the early or late arrivals it causes. `aion.tools.gradiometer_gw`: `gw_lag`, `gw_arrival_lags`, `quiet_arrival`, `arrival_note`.
 - **An ultralight dark-matter field**, its trace, its marker, and the phase an arm winds up in it. `aion.tools.uldm`: `dm_field`, `make_field_trace`, `field_marker`, `dm_phase`.
 
+## Surfaces in 3D
+
+- **A wireframe sheet whose height is any field z(x, y)**, redrawn each frame and coloured by height (a merger's spacetime; a trap's potential). `core.surfaces`: `make_sheet`, `refresh_sheet`, `height_ramp`.
+- **Keeping the sheet behind what sits on it** in ThreeDCamera's depth sort. `core.surfaces`: `SheetLine`, `BEHIND_EVERYTHING`.
+- **An off-centre 3D camera whose frame-fixed overlay stays put.** `core.surfaces`: `SideCamera`.
+- **A smooth 0-to-1 taper or blend** across a field. `core.surfaces`: `smooth_step`.
+
 ## LIGO's Michelson interferometer
 
 - **The apparatus and its light**, on one lab clock: laser, splitter, arms, test masses, detector, and waves whose phase runs on from beam to beam. `aion.tools.ligo`: `make_apparatus`, `make_light`, `run`.
-- **Its parts.** `aion.tools.ligo`: `make_laser`, `make_splitter`, `make_mirror`, `make_detector`, `detector_glow`, `wave`, `beam`. These are drawn at LIGO's own positions.
+- **The light pooling on its detector.** `aion.tools.ligo`: `detector_glow`. Its parts are `core.optics`' (above), placed at LIGO's own positions.
 - **The physics.** `aion.tools.ligo`: `strain`, `mirror_positions`, `phase_difference`.
 - **The readout**: h(t), the returning waves overlaid, and the equation. `aion.tools.ligo`: `make_strain_trace`, `returning_waves`, `make_equation`.
-- **A drawing shrunk into part of the frame.** `aion.tools.ligo`: `Panel`, which the builders all take.
 
 ## Plots drawn in manim
 
 - **Log-log axes in decades**, and points and curves on them. `core.plots`: `log_axes`, `plot_point`, `curve_points`.
+- **Linear axes with tick and axis labels**, the x ticks as MathTex (so they can read π). `core.plots`: `ticked_axes`.
+- **A row of keys**, each a dot and its label. `core.plots`: `legend_row`.
 - **The GW sensitivity plot's axes**, and a detector's curve with its region shaded. `aion.tools.gw_plot`: `sensitivity_axes`, `detector_region`.
 - **The ULDM reach inset.** `aion.tools.uldm_plot`:
   - the whole inset: `uldm_inset`;
@@ -234,6 +244,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `format_reference` formats an entry under a `CiteFormat`;
   - `Reference` and `Name` are the entry and its authors.
 - **A citation line**, placed in the footer. `core.citations`: `citation`, `labelled_citation`, `place_citation`.
+- **A drawing set into part of another scene's frame**, scaled and shifted, so one builder can fill a scene or sit in a corner of another. `core.layout`: `Panel` (LIGO's builders all take one).
 - **A video playing inside a scene**, frame by frame, off any tracker. `core.video`: `load_video_frames`, `VideoFrame`.
 - **Shipped data files.** `resources`: `data_path`. Sources and licences are in `src/manim_atoms/data/README.md`.
 
@@ -281,8 +292,4 @@ they are fixed to one scene's layout, or live on a scene as methods. They
 are the candidates for the next round of generalisation.
 
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
-- `aion.tools.ligo`: `make_mirror`, `make_splitter`, `make_laser` and `make_detector` are generic optics fixed at LIGO's positions; `Panel`, `wave` and `beam` are generic already.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
-- `core.primitives`: `absorb` and `emit` drive from below only.
-- `aion.scenes.dai_data`: `plot_axes`, `legend_row`.
-- `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.

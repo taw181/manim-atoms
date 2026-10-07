@@ -24,7 +24,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *plots*: `PLOT_BACKGROUND`, `PLOT_FOREGROUND`, `FONT_AXIS`, `FONT_TICK`, `DATA_DOT_RADIUS`
 - *energy levels*: `LEVEL_STROKE_WIDTH`, `LEVEL_GAP_ARROW_STYLE`, `LEVEL_GLOW_ARROW_STYLE`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`
 - *fluorescence readout*: `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`
-- *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
+- *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`, `LASER_BOX_WIDTH`, `LASER_BOX_HEIGHT`, `BEAM_GLOW_WIDTH`, `BEAM_GLOW_OPACITY`, `WAVE_SAMPLES_PER_UNIT`
 - *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
 - *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `IMAGE_BORDER_STYLE`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
@@ -54,22 +54,32 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.layout`
 
-`src/manim_atoms/core/layout.py` — The furniture of a static slide: a heading, a list, a picture, a slot.
+`src/manim_atoms/core/layout.py` — Layout: the furniture of a static slide, and a panel to set a drawing in.
 
 - `slide_title(text)`: A slide's heading, top left, where every animation puts its own.
 - `load_image(path, height=None, width=None, lift=False)`: An image file as an ImageMobject, sized by height or width.
 - `image_point(image, px, py)`: Pixel (px, py) of an ImageMobject, counted from its upper left, on screen.
 - `numbered_list(items, font_size=FONT_CONTENTS, buff=0.45)`: 1. first, 2. second, ... with the numbers in a column of their own.
 - `placeholder_frame(width, height, label)`: A dashed slot, labelled, for a figure that has yet to be dropped in.
+- class `Panel()`: Where a drawing goes inside another scene's frame: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
+  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
+  - `.point(p)`: Where the drawing's point ``p`` lands.
+  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
 
 ### `core.optics`
 
-`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, and an optical cavity.
+`src/manim_atoms/core/optics.py` — Optics: beams drawn as Gaussian profiles, a cavity, the parts of an interferometer, and light drawn as a wave.
 
 - `gaussian_band(start, end, width, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen side on: nested bands, brightest along its axis, so it reads as a Gaussian profile rather than a flat bar.
 - `gaussian_spot(center, radius, color, opacity=BEAM_OPACITY, layers=BEAM_LAYERS)`: A beam seen end on, the same way: nested discs.
 - `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
 - `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
+- `make_mirror(length, thickness, vertical=True)`: A flat mirror seen edge on: a slab ``length`` long and ``thickness`` thick, upright if ``vertical``, else lying flat. A test mass, or a fold mirror. Centred on the origin: move it into place.
+- `make_beam_splitter(center, length, thickness, angle=45 * DEGREES)`: A half-silvered plate seen edge on, at ``center``, turned by ``angle``. At 45 degrees it splits light along x between x and y, and recombines what comes back.
+- `make_laser(exit, label='laser')`: A laser: a box whose right edge, where the beam leaves, is at ``exit``, with ``label`` under it (None: no label).
+- `make_photodetector(face, label='photodetector')`: A photodiode facing up, the top of its face at ``face``, with ``label`` to its right (None: no label).
+- `light_wave(start, end, amplitude, phase, k, frac=1.0, samples_per_unit=WAVE_SAMPLES_PER_UNIT)`: A sine of wavenumber ``k`` riding the segment start -> end, drawn out to ``frac`` of its length.
+- `beam_glow(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on, drawn out to ``frac`` of the way from start to end, at ``opacity`` of its usual strength.
 
 ### `core.primitives`
 
@@ -82,8 +92,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `grow(annotation)`: Animations that bring a momentum_arrow on screen.
 - `make_k_arrow(x, y)`: The little vertical k-vector marker that sits beside a beam.
 - `make_guide(start, end)`: A dashed construction line, e.g. the trajectory an atom arrives along.
-- `absorb(scene, x, atom, extras=(), fade=())`: A wavepacket rises from below and is absorbed: |g, p> -> |e, p + hbar k>.
-- `emit(scene, x, atom, extras=())`: Stimulated emission: one photon arrives and two leave.
+- `absorb(scene, x, atom, extras=(), fade=(), from_below=True)`: A wavepacket arrives and is absorbed: |g, p> -> |e, p + hbar k>, with k pointing the way the light travels -- up from below (the default), or down from above (``from_below=False``), giving p - hbar k.
+- `emit(scene, x, atom, extras=(), from_below=True)`: Stimulated emission: one photon arrives and two leave.
 - `draw_legs(scene, legs, fade=(), extra=())`: Move atoms along straight legs, drawing each trajectory in step.
 - `state_colors(atom, color)`: Recolour an atom's body to match a new internal state, keeping the highlight.
 - `state_label(tex, color, font_size=FONT_STATE)`: A ket or other state name as MathTex, in the lightened shade of its state's colour.
@@ -112,6 +122,19 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `draw_wavy_legs(scene, legs, fade=(), extra=())`: draw_legs for clouds whose worldlines carry the wave's displacement.
 - `along(start, end, f)`: A fraction f of the way from one corner to the next.
 
+### `core.surfaces`
+
+`src/manim_atoms/core/surfaces.py` — Surfaces in 3D: a wireframe sheet whose height is any field z(x, y), coloured by height, and the camera fixes a sheet needs.
+
+- `height_ramp(trough, flat, crest, scale, steps=33)`: A colour for each height: ``flat`` at zero, running to ``crest`` at ``+scale`` and to ``trough`` at ``-scale``, saturating beyond. Returns a function from an array of heights to a list of colours, looked up from ``steps`` precomputed stops.
+- `smooth_step(x)`: The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends.
+- class `SheetLine(VMobject)`: A grid line that sits at the back of the camera's depth sort.
+  - `.get_gradient_start_and_end_points()`: The line's own ends, not a Surface face's corners.
+- `make_sheet(half, lines, samples, stops, color, stroke_width)`: The wireframe sheet, flat, spanning [-half, half] in x and y: ``lines`` grid lines each way, each sampled at ``samples`` points and coloured through ``stops`` gradient stops (a gradient needs far fewer than the points). Each line's sampling is stashed on it for refresh_sheet.
+- `refresh_sheet(grid, height, colors)`: Re-evaluate every grid line at ``height(xs, ys)`` and recolour it by height through ``colors`` (a height_ramp).
+- class `SideCamera(ThreeDCamera)`: A ThreeDCamera whose frame-fixed mobjects ignore frame_center.
+  - `.transform_points_pre_display(mobject, points)`
+
 ### `core.video`
 
 `src/manim_atoms/core/video.py` — A recorded video shown inside a scene, one frame at a time.
@@ -122,7 +145,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `core.plots`
 
-`src/manim_atoms/core/plots.py` — Plots drawn in manim: log-log axes, and scatters of thousands of dots.
+`src/manim_atoms/core/plots.py` — Plots drawn in manim: log-log and linear axes, keys, and scatters of thousands of dots.
 
 - `log_axes(log_x_range, log_y_range, origin, width, height, x_label=None, y_label=None, tick_font=FONT_TICK, label_font=FONT_AXIS, label_every=(1, 1), buff=0.15)`: Log-log axes in decades, with 10^n tick labels, as (axes, frame).
 - `plot_point(axes, log_x, log_y)`: The scene point of (log10 x, log10 y) on ``axes`` from log_axes.
@@ -130,6 +153,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `dot_points(axes, xs, ys)`: Every dot's circle, end to end, in the order the dots arrive.
 - `dot_cloud(points, per_dot, color, count, opacity)`: A series' dots as one VMobject, showing the first ``count`` of them as it runs.
 - `static_cloud(points, color, opacity)`: Every dot of a series as one still VMobject.
+- `ticked_axes(x_range, y_range, x_length, y_length, x_ticks, y_numbers, x_label, y_label)`: Linear axes with tick labels and axis labels, as (axes, frame).
+- `legend_row(entries)`: A row of (label, colour) keys, each a dot and its label.
 
 ## species
 
@@ -487,7 +512,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *an oscillating background field*: `FIELD_COLOR`, `FIELD_STROKE_WIDTH`, `EARTH_COLOR`, `MOON_COLOR`, `SUN_COLOR`, `BODY_OPACITY`, `BODY_MIN_RADIUS`
 - *an injected light shift*: `LIGHT_SHIFT_COLOR`, `LIGHT_SHIFT_STYLE`
 - *energy levels*: `LEVEL_RESONANCE_STYLE`
-- *an optical Michelson interferometer*: `X_ARM_COLOR`, `Y_ARM_COLOR`, `OUTPUT_COLOR`, `BEAM_STROKE_WIDTH`, `BEAM_GLOW_WIDTH`, `BEAM_GLOW_OPACITY`
+- *an optical Michelson interferometer*: `X_ARM_COLOR`, `Y_ARM_COLOR`, `OUTPUT_COLOR`, `BEAM_STROKE_WIDTH`
 - *data plots (matplotlib)*: `LOWER_CLOUD_COLOR`, `UPPER_CLOUD_COLOR`, `LLN_COLOR`, `SQL_COLOR`, `LOWER_PULSE_MARK_COLOR`, `UPPER_PULSE_MARK_COLOR`, `HLN_COLOR`, `SQL_BAND_OPACITIES`, `IMPRINTED_SIGNAL_COLOR`, `RECOVERED_SIGNAL_COLOR`, `FRINGE_DOT_OPACITY`, `FRINGE_DIM_OPACITY`, `NEWEST_RING_RADIUS`, `NEWEST_RING_WIDTH`, `GW_DETECTOR_COLORS`, `GW_REGION_OPACITY`, `GW_MERGER_NEAR_COLOR`, `GW_MERGER_FAR_COLOR`, `GW_MERGER_Z_RANGE`, `GW_MERGER_TIME_COLORS`, `GW_BAND_EDGE_STYLE`, `GW_TRACK_WIDTH`, `GW_TRACK_AHEAD_OPACITY`, `GW_SOURCE_COLOR`, `GW_SOURCE_RADIUS`, `GW_SOURCE_GLOW_RADIUS`, `GW_SOURCE_GLOW_OPACITY`, `GW_DATA_WINDOW_COLOR`, `GW_TRACK_CROWD_WIDTH`, `ULDM_COLORS`, `ULDM_CURVE_WIDTH`, `ULDM_EXCLUDED_STYLE`, `ULDM_EXCLUDED_EDGE`, `ULDM_MARK_STYLE`, `ULDM_MARK_FAINT_OPACITY`, `ULDM_MARK_DOT_RADIUS`, `ULDM_LABEL_OUTLINE`, `FONT_INSET_TICK`, `FONT_INSET_LABEL`
 - *km-scale challenges table*: `FONT_TABLE_HEADING`, `FONT_TABLE_NAME`, `FONT_TABLE_NOTE`, `FONT_TABLE_CELL`, `TABLE_RULE_STYLE`
 - `merger_color(z)`: A merger track's shade: GW_MERGER_NEAR_COLOR at the low end of GW_MERGER_Z_RANGE fading to GW_MERGER_FAR_COLOR at the high end, in log z.
@@ -562,18 +587,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/aion/tools/ligo.py` — LIGO's Michelson interferometer, drawn to be lit by a passing wave.
 
 - `strain(t)`: h(t), normalised to a peak of 1: a few cycles under a smooth envelope.
-- class `Panel()`: Where the drawing goes: shrunk by `scale` about the origin (strokes too), then moved by `shift`. The default leaves it filling the frame.
-  - `.at(scale, source, target)`: The panel of `scale` that puts the drawing's point `source` on `target`.
-  - `.point(p)`
-  - `.redraw(draw)`: always_redraw, with each redrawn mobject placed.
 - `phase_difference(t, h=strain)`: phi_x - phi_y at the detector: 2k (L_x - L_y), which is linear in h.
 - `mirror_positions(t, h=strain)`: Plus polarisation: the x arm stretches exactly as the y arm squeezes.
-- `wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT)`: A sine riding the segment start -> end, drawn out to `frac` of its length.
-- `beam(start, end, frac=1.0, opacity=1.0)`: The faint band a beam's wave rides on.
-- `make_mirror(vertical)`: A test mass: a thin slab, upright if ``vertical``, else lying flat.
-- `make_splitter()`: A half-silvered plate at 45 degrees: it reflects light from the laser up the y arm, and light coming back down the x arm into the detector.
-- `make_laser()`: The laser: a box at LASER, labelled under it.
-- `make_detector()`: A photodiode facing up the output port.
 - `detector_glow(now, h=strain)`: Power at the detector, sin^2(dphi / 2), drawn as light pooling on it.
 - `make_strain_trace(now, h=strain, span=TRACE_T, panel=FULL_FRAME, amplitude=TRACE_AMPLITUDE)`: h(t) drawn out as it arrives, with a dot on the present; the panel spans the stretch `span` of lab time. `amplitude` is the peak's height before the panel scales it.
 - `returning_waves(now, h=strain, panel=FULL_FRAME)`: The light back from each arm, overlaid where the two recombine.
@@ -654,14 +669,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/aion/scenes/dai_data.py` — The AION DAI data built up shot by shot.
 
 - `load(run)`: One run's first N_SHOTS shots as {column: array}, sorted by laser phase step.
-- `plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label)`: Axes, tick labels and axis labels, as (axes, frame).
 - `fringe_plot(y_length, origin, x_label=True)`: The fringe panel's (axes, frame): excitation against phase step over 0 to 2 pi, its origin at ``origin``.
 - `lissajous_plot()`: The Lissajous panel's (axes, frame): upper against lower excitation, square.
 - `fringe_series(axes, data)`: (points, per_dot, colour) for each interferometer's fringe.
 - `arriving_shots(data, fringe_axes, liss_axes, ellipse_color, count, dim=False)`: Every layer one run's shots are drawn in, all driven by ``count``.
 - `build(scene, count, clouds, rings)`: Play one run's shots in, left to right, then freeze them.
 - `newest_ring(centres, color, count)`: A ring that follows the newest of the dots ``count`` has brought in.
-- `legend_row(entries)`: A row of (label, colour) keys, each a dot and its label.
 - `fringe_key()`: The key to the two fringe series: lower and upper interferometer.
 - `over_panel(title, key, axes)`: A panel's title over its left end and the fringe key over its right.
 - Scene `FringesToEllipse(Scene)`: The quiet run, shot by shot: each lands on the fringes twice and on the Lissajous ellipse once, ringed in all three places.
@@ -720,15 +733,9 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `omega(t)`: Orbital angular frequency at time t, frozen at both ends.
 - `orbital_phase(t)`: Accumulated orbital phase, zero at t = 0.
 - `hole_positions(t)`: Centres of the two holes, diametrically opposite on the orbit.
-- `smooth_step(x)`: The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends.
 - `strain(t_emit)`: Wave amplitude emitted at time t_emit: switches on, chirps, rings down.
 - `wells(x, y, t, gain=1.0)`: The static dent each hole makes, blended into one well at the merger.
 - `sheet_height(x, y, t, gain=1.0)`: Height of the spacetime sheet at (x, y) and scene time t.
-- `height_colors(z)`: Map an array of heights onto the trough-sheet-crest ramp.
-- class `SheetLine(VMobject)`: A grid line that sits at the back of the camera's depth sort.
-  - `.get_gradient_start_and_end_points()`
-- `make_sheet()`: The wireframe sheet, flat, with each line's sampling stashed on it.
-- `refresh_sheet(grid, t, gain=1.0)`: Re-evaluate every grid line at time t and recolour it by height.
 - `make_black_hole(radius=BH_RADIUS)`: A black sphere with a warm rim mesh.
 - `follow_orbit(hole, clock, which, gain, radius=BH_RADIUS)`: Keep a hole on its orbit and resting in the bottom of its own well.
 - `observed_strain(t)`: h(t) for an observer far out along +x, in the sheet's own height units.
@@ -744,8 +751,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `ligo_strain(t)`: The merger's h at clock time t, normalised to a peak of 1.
 - `side_frame_center(camera, zoom, screen_x)`: The frame_center that puts the sheet's centre at screen_x.
 - `source_frequency(t)`: (f / Hz, real seconds left) of the source at scene time t: the chirp up to the merger frequency over the inspiral, then on through the ringdown to the track's cutoff while the holes merge.
-- class `SideCamera(ThreeDCamera)`: A ThreeDCamera whose frame-fixed mobjects ignore frame_center.
-  - `.transform_points_pre_display(mobject, points)`
 - Scene `MergerOnSensitivityPlot(BlackHoleMerger)`: The merger on the left; on the right, its signal crossing LIGO's band.
   - settings: `WITH_LIGO`, `CAMERA`, `AMBIENT_ROTATION`
   - `.merge(sheet, clock, gain)`: Once beside LIGO, then, the sheet let go flat and the clock wound back, again beside the plot.

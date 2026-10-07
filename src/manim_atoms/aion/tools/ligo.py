@@ -6,7 +6,7 @@ whose phase is chained from beam to beam, the readout (h(t), the two
 returning waves overlaid, the light reaching the detector) and the
 equation for the phase difference -- all driven off one lab clock, `now`.
 
-The builders take the wave as `h` and a `panel` (Panel) to draw into, so a
+The builders take the wave as `h` and a `panel` (core.layout.Panel) to draw into, so a
 scene can set the interferometer, already lit, in part of its own frame
 and drive it with a wave of its own: LIGOMichelson draws it full frame,
 MergerOnSensitivityPlot beside a merger. The layout below is the drawing's
@@ -18,6 +18,15 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.core.primitives import make_guide
+from manim_atoms.core.layout import Panel
+from manim_atoms.core.optics import (
+    beam_glow,
+    light_wave,
+    make_beam_splitter,
+    make_laser,
+    make_mirror,
+    make_photodetector,
+)
 
 # --- the apparatus --------------------------------------------------------
 # The beam splitter sits left of centre so the right third of the frame is
@@ -44,7 +53,6 @@ LIGHT_AMPLITUDE = 0.11
 LIGHT_SPEED = 1.4  # units per second of lab time
 K_LIGHT = TAU / LIGHT_WAVELENGTH
 OMEGA_LIGHT = K_LIGHT * LIGHT_SPEED
-SAMPLES_PER_UNIT = 45
 
 # --- the gravitational wave -----------------------------------------------
 # Two exaggerations, as in the gradiometer scenes, because no one factor makes
@@ -94,35 +102,6 @@ def strain(t):
     return envelope * np.sin(TAU * s / GW_PERIOD)
 
 
-class Panel:
-    """Where the drawing goes: shrunk by `scale` about the origin (strokes
-    too), then moved by `shift`. The default leaves it filling the frame."""
-
-    def __init__(self, scale=1.0, shift=ORIGIN):
-        self.scale = scale
-        self.shift = np.asarray(shift, dtype=float)
-
-    @classmethod
-    def at(cls, scale, source, target):
-        """The panel of `scale` that puts the drawing's point `source` on
-        `target`."""
-        source, target = (np.append(np.asarray(v, dtype=float), 0.0)[:3]
-                          for v in (source, target))
-        return cls(scale, target - scale * source)
-
-    def point(self, p):
-        return self.scale * np.asarray(p, dtype=float) + self.shift
-
-    def __call__(self, mob):
-        if self.scale != 1.0:
-            mob.scale(self.scale, scale_stroke=True, about_point=ORIGIN)
-        return mob.shift(self.shift)
-
-    def redraw(self, draw):
-        """always_redraw, with each redrawn mobject placed."""
-        return always_redraw(lambda: self(draw()))
-
-
 FULL_FRAME = Panel()
 MICHELSON_TRACE = Panel.at(
     MICHELSON_TRACE_SCALE, [np.mean(PANEL_X), TRACE_Y],
@@ -141,81 +120,6 @@ def mirror_positions(t, h=strain):
     """Plus polarisation: the x arm stretches exactly as the y arm squeezes."""
     swing = MIRROR_SWING * h(t)
     return X_END + RIGHT * swing, Y_END + DOWN * swing
-
-
-def wave(start, end, amplitude, phase, frac=1.0, k=K_LIGHT):
-    """A sine riding the segment start -> end, drawn out to `frac` of its length.
-
-    The phase at the start is `phase`, so a caller chains beams by handing on
-    the phase the previous one ended with.
-    """
-    d = end - start
-    length = np.linalg.norm(d)
-    u = d / length
-    normal = np.array([-u[1], u[0], 0.0])
-    reach = max(length * frac, 1e-3)
-    s = np.linspace(0, reach, max(2, int(SAMPLES_PER_UNIT * reach)))
-    offset = amplitude * np.sin(k * s + phase)
-    return VMobject().set_points_as_corners(
-        start + np.outer(s, u) + np.outer(offset, normal)
-    )
-
-
-def beam(start, end, frac=1.0, opacity=1.0):
-    """The faint band a beam's wave rides on."""
-    reach = start + (end - start) * max(frac, 1e-3)
-    return Line(
-        start, reach, color=LASER_COLOR, stroke_width=BEAM_GLOW_WIDTH,
-        stroke_opacity=BEAM_GLOW_OPACITY * opacity,
-    )
-
-
-def make_mirror(vertical):
-    """A test mass: a thin slab, upright if ``vertical``, else lying flat."""
-    w, h = (MIRROR_THICKNESS, MIRROR_LENGTH) if vertical else (
-        MIRROR_LENGTH, MIRROR_THICKNESS
-    )
-    return Rectangle(
-        width=w, height=h, stroke_width=2, stroke_color=OPTIC_COLOR,
-        fill_color=OPTIC_COLOR, fill_opacity=0.85,
-    )
-
-
-def make_splitter():
-    """A half-silvered plate at 45 degrees: it reflects light from the laser up
-    the y arm, and light coming back down the x arm into the detector."""
-    return Rectangle(
-        width=SPLITTER_LENGTH, height=SPLITTER_THICKNESS, stroke_width=2,
-        stroke_color=OPTIC_COLOR, fill_color=OPTIC_COLOR, fill_opacity=0.35,
-    ).rotate(45 * DEGREES).move_to(BS)
-
-
-def make_laser():
-    """The laser: a box at LASER, labelled under it."""
-    box = RoundedRectangle(
-        width=1.2, height=0.55, corner_radius=0.08, stroke_color=LASER_COLOR,
-        stroke_width=3, fill_color=BLACK, fill_opacity=1,
-    ).move_to(LASER + LEFT * 0.6)
-    tag = Tex("laser", font_size=FONT_LEGEND, color=LASER_COLOR).next_to(
-        box, DOWN, buff=0.15
-    )
-    return VGroup(box, tag)
-
-
-def make_detector():
-    """A photodiode facing up the output port."""
-    face = Rectangle(
-        width=0.8, height=0.22, stroke_width=2, stroke_color=OPTIC_COLOR,
-        fill_color=OPTIC_COLOR, fill_opacity=0.85,
-    ).move_to(DETECTOR + DOWN * 0.11)
-    body = Rectangle(
-        width=0.5, height=0.3, stroke_width=2, stroke_color=OPTIC_COLOR,
-        fill_color=BLACK, fill_opacity=1,
-    ).next_to(face, DOWN, buff=0)
-    tag = Tex("photodetector", font_size=FONT_LEGEND, color=OPTIC_COLOR).next_to(
-        face, RIGHT, buff=0.25
-    )
-    return VGroup(face, body, tag)
 
 
 def detector_glow(now, h=strain):
@@ -324,11 +228,11 @@ def make_apparatus(now, h=strain, panel=FULL_FRAME):
     title = Tex(
         "LIGO: a Michelson interferometer", font_size=FONT_TITLE
     ).to_corner(UL)
-    laser = make_laser()
-    splitter = make_splitter()
-    detector = make_detector()
-    x_mirror = make_mirror(vertical=True).move_to(X_END)
-    y_mirror = make_mirror(vertical=False).move_to(Y_END)
+    laser = make_laser(LASER)
+    splitter = make_beam_splitter(BS, SPLITTER_LENGTH, SPLITTER_THICKNESS)
+    detector = make_photodetector(DETECTOR)
+    x_mirror = make_mirror(MIRROR_LENGTH, MIRROR_THICKNESS, vertical=True).move_to(X_END)
+    y_mirror = make_mirror(MIRROR_LENGTH, MIRROR_THICKNESS, vertical=False).move_to(Y_END)
     # where each test mass hangs at rest, so its motion reads against something
     x_rest = make_guide(X_END + UP * 0.7, X_END + DOWN * 0.7)
     y_rest = make_guide(Y_END + LEFT * 0.7, Y_END + RIGHT * 0.7)
@@ -373,19 +277,20 @@ def make_light(now, lit_in, lit_arm, h=strain, panel=FULL_FRAME):
         return -OMEGA_LIGHT * now.get_value()
 
     def input_wave():
-        return wave(LASER, BS, LIGHT_AMPLITUDE, carrier(), lit_in.get_value())
+        return light_wave(LASER, BS, LIGHT_AMPLITUDE, carrier(), K_LIGHT,
+                          lit_in.get_value())
 
     def arm_wave(end_index):
         def draw():
             end = mirror_positions(now.get_value(), h)[end_index]
-            return wave(
+            return light_wave(
                 BS, end, LIGHT_AMPLITUDE, carrier() + K_LIGHT * input_length,
-                lit_arm.get_value(),
+                K_LIGHT, lit_arm.get_value(),
             )
         return draw
 
     def arm_beam(end_index):
-        return lambda: beam(
+        return lambda: beam_glow(
             BS, mirror_positions(now.get_value(), h)[end_index], lit_arm.get_value()
         )
 
@@ -395,16 +300,16 @@ def make_light(now, lit_in, lit_arm, h=strain, panel=FULL_FRAME):
 
     def output_wave():
         share = output_share()
-        return wave(
+        return light_wave(
             BS, DETECTOR, LIGHT_AMPLITUDE * share,
-            carrier() + K_LIGHT * (input_length + 2 * ARM),
+            carrier() + K_LIGHT * (input_length + 2 * ARM), K_LIGHT,
         ).set_stroke(opacity=abs(share))
 
     lights = VGroup(
-        panel.redraw(lambda: beam(LASER, BS, lit_in.get_value())),
+        panel.redraw(lambda: beam_glow(LASER, BS, lit_in.get_value())),
         panel.redraw(arm_beam(0)),
         panel.redraw(arm_beam(1)),
-        panel.redraw(lambda: beam(BS, DETECTOR, opacity=output_share() ** 2)),
+        panel.redraw(lambda: beam_glow(BS, DETECTOR, opacity=output_share() ** 2)),
         panel.redraw(lambda: input_wave().set_stroke(
             LASER_COLOR, BEAM_STROKE_WIDTH)),
         panel.redraw(lambda: arm_wave(0)().set_stroke(

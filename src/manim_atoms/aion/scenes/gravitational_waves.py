@@ -42,10 +42,17 @@ from manim_atoms.aion.tools.ligo import (
     make_equation,
     make_light,
     make_strain_trace,
-    Panel,
     returning_waves,
 )
+from manim_atoms.core.layout import Panel
 from manim_atoms.aion.style import *
+from manim_atoms.core.surfaces import (
+    height_ramp,
+    make_sheet,
+    refresh_sheet,
+    SideCamera,
+    smooth_step,
+)
 
 # --- sheet geometry -------------------------------------------------------
 # The sheet is a wireframe rather than a Surface: a Surface rebuilds thousands
@@ -143,10 +150,6 @@ def hole_positions(t):
 
 
 # --- the field ------------------------------------------------------------
-def smooth_step(x):
-    """The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends."""
-    x = np.clip(x, 0.0, 1.0)
-    return x * x * (3.0 - 2.0 * x)
 
 
 def strain(t_emit):
@@ -185,86 +188,11 @@ def sheet_height(x, y, t, gain=1.0):
 
 
 # --- colour by height -----------------------------------------------------
-_LUT = [
-    interpolate_color(TROUGH_COLOR, SHEET_COLOR, 1.0 + u)
-    if u < 0
-    else interpolate_color(SHEET_COLOR, CREST_COLOR, u)
-    for u in np.linspace(-1.0, 1.0, 33)
-]
-
-
-def height_colors(z):
-    """Map an array of heights onto the trough-sheet-crest ramp."""
-    idx = (z / HEIGHT_COLOR_SCALE + 1.0) * 0.5 * (len(_LUT) - 1)
-    return [_LUT[i] for i in np.clip(idx, 0, len(_LUT) - 1).astype(int)]
+# Troughs and the floors of the wells purple, flat spacetime blue, crests pale.
+height_colors = height_ramp(TROUGH_COLOR, SHEET_COLOR, CREST_COLOR, HEIGHT_COLOR_SCALE)
 
 
 # --- mobjects -------------------------------------------------------------
-# A stand-in reference point far below the sheet. Anything whose z_index_group
-# is set to it sorts to the back: its depth is -1000 * cos(phi), which beats
-# anything in the scene for any camera above the horizon. Used by the grid
-# lines (see SheetLine).
-BEHIND_EVERYTHING = VectorizedPoint([0.0, 0.0, -1000.0])
-
-
-class SheetLine(VMobject):
-    """A grid line that sits at the back of the camera's depth sort.
-
-    shade_in_3d is what puts a mobject into ThreeDCamera's depth sort at all;
-    anything without it scores np.inf, and np.inf sorts last, so an unshaded
-    sheet is painted over the holes. But sorting the sheet honestly is no good
-    either: each line spans the whole sheet, and the sort has only one depth
-    per mobject to work with, so a line whose midpoint is near the camera gets
-    drawn over the holes along its entire length. The wireframe ends up
-    splattered across them.
-
-    So the flag goes on and z_index_group sends every line to a point far
-    behind the scene. All the lines then share one key, which leaves their
-    order among themselves exactly as built, and the whole sheet lands behind
-    both holes -- while the holes, which are compact enough for one depth each
-    to be meaningful, sort properly against each other.
-
-    Setting the flag has one side effect to undo: it reroutes the stroke
-    gradient through get_3d_vmob_gradient_start_and_end_points, whose
-    end-corner index ((n - 1) // 6) * 3 assumes a four-corner Surface face. On
-    a polyline of a hundred-odd anchors that lands near the middle, squashing
-    the height colours into the first half of every line.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(shade_in_3d=True, **kwargs)
-        self.z_index_group = BEHIND_EVERYTHING
-
-    def get_gradient_start_and_end_points(self):
-        return self.points[0], self.points[-1]
-
-
-def make_sheet():
-    """The wireframe sheet, flat, with each line's sampling stashed on it."""
-    grid = VGroup()
-    coords = np.linspace(-GRID_HALF, GRID_HALF, GRID_LINES)
-    samples = np.linspace(-GRID_HALF, GRID_HALF, GRID_SAMPLES)
-    stops = np.linspace(0, GRID_SAMPLES - 1, GRADIENT_STOPS).astype(int)
-    fixed = np.full_like(samples, 0.0)
-
-    for c in coords:
-        for xs, ys in ((samples, fixed + c), (fixed + c, samples)):
-            line = SheetLine(stroke_width=SHEET_STROKE_WIDTH)
-            line.set_points_as_corners(np.stack([xs, ys, np.zeros_like(xs)], axis=1))
-            line.set_stroke(SHEET_COLOR, SHEET_STROKE_WIDTH)
-            line.xs, line.ys, line.stops = xs, ys, stops
-            grid.add(line)
-    return grid
-
-
-def refresh_sheet(grid, t, gain=1.0):
-    """Re-evaluate every grid line at time t and recolour it by height."""
-    for line in grid:
-        z = sheet_height(line.xs, line.ys, t, gain)
-        line.set_points_as_corners(np.stack([line.xs, line.ys, z], axis=1))
-        line.set_stroke(color=height_colors(z[line.stops]))
-
-
 def make_black_hole(radius=BH_RADIUS):
     """A black sphere with a warm rim mesh.
 
@@ -379,7 +307,8 @@ class BlackHoleMerger(ThreeDScene):
         self.set_camera_orientation(**self.CAMERA)
 
         # --- 1. flat spacetime -------------------------------------------
-        sheet = make_sheet()
+        sheet = make_sheet(GRID_HALF, GRID_LINES, GRID_SAMPLES, GRADIENT_STOPS,
+                           SHEET_COLOR, SHEET_STROKE_WIDTH)
         title = Tex(self.TITLE, font_size=FONT_TITLE).to_corner(UL)
         self.add_fixed_in_frame_mobjects(title)
         self.play(
@@ -389,7 +318,10 @@ class BlackHoleMerger(ThreeDScene):
         # The sheet redraws from the clock from here on; everything below just
         # moves the clock and lets the field do the work.
         sheet.add_updater(
-            lambda m: refresh_sheet(m, clock.get_value(), gain.get_value())
+            lambda m: refresh_sheet(
+                m, lambda x, y: sheet_height(x, y, clock.get_value(), gain.get_value()),
+                height_colors,
+            )
         )
         if self.AMBIENT_ROTATION:
             self.begin_ambient_camera_rotation(rate=self.AMBIENT_ROTATION)
@@ -572,22 +504,6 @@ def source_frequency(t):
         return frequency_before_merger(tau, SOURCE_MASS, SOURCE_Z), tau
     s = smooth_step((t - T_INSPIRAL) / MERGE_BLEND)
     return f_merge * (f_cut / f_merge) ** s, 0.0
-
-
-class SideCamera(ThreeDCamera):
-    """A ThreeDCamera whose frame-fixed mobjects ignore frame_center.
-
-    The pixel mapping subtracts frame_center from everything, fixed or not, so
-    an off-centre frame_center drags the overlay along with the sheet. This
-    puts it back at the last step, which keeps working for mobjects whose
-    updaters rebuild their points from absolute positions every frame.
-    """
-
-    def transform_points_pre_display(self, mobject, points):
-        points = super().transform_points_pre_display(mobject, points)
-        if mobject in self.fixed_in_frame_mobjects:
-            return points + self.frame_center * [1, 1, 0]
-        return points
 
 
 class MergerOnSensitivityPlot(BlackHoleMerger):

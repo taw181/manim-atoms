@@ -102,8 +102,6 @@ X_ARM_COLOR = ATOM_COLOR
 Y_ARM_COLOR = KICKED_COLOR
 OUTPUT_COLOR = SIGNAL_COLOR
 BEAM_STROKE_WIDTH = 3
-BEAM_GLOW_WIDTH = 10  # the faint band a beam's wave rides on
-BEAM_GLOW_OPACITY = 0.18
 
 # --- data plots (matplotlib) ----------------------------------------------
 # Measured data shown alongside the animations. The two interferometers are

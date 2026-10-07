@@ -113,12 +113,13 @@ shortest complete example.
 ### 3. LIGO's Michelson, in a panel of another scene
 
 Every LIGO builder takes the wave as `h` (a function of lab time,
-normalised to a peak of 1) and a `Panel` to draw into, so another scene
+normalised to a peak of 1) and a `Panel` (`core.layout`) to draw into, so another scene
 can set the interferometer in a corner of its frame and drive it with its
 own wave. Worked example: `MergerOnSensitivityPlot`.
 
 ```python
-from manim_atoms.aion.tools.ligo import Panel, make_apparatus, make_light, run
+from manim_atoms.aion.tools.ligo import make_apparatus, make_light, run
+from manim_atoms.core.layout import Panel
 
 now = ValueTracker(0.0)
 panel = Panel.at(0.6, [-2.6, -1.1], [-3.0, 0.0])    # scale 0.6, the splitter put at (-3, 0)

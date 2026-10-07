@@ -38,7 +38,13 @@ import numpy as np
 from manim import *
 
 from manim_atoms.resources import data_path
-from manim_atoms.core.plots import dot_cloud, dot_points, static_cloud
+from manim_atoms.core.plots import (
+    dot_cloud,
+    dot_points,
+    legend_row,
+    static_cloud,
+    ticked_axes,
+)
 from manim_atoms.aion.style import *
 
 DATA_DIR = data_path("dai_fringes")
@@ -70,6 +76,12 @@ STACK_UPPER_ORIGIN = np.array([-6.0, 0.45, 0.0])
 STACK_LOWER_ORIGIN = FRINGE_ORIGIN
 
 
+# Excitation in percent, on both axes of the Lissajous panel and up the
+# fringe panels.
+EXCITATION_RANGE = [0, 100, 50]
+EXCITATION_NUMBERS = [0, 50, 100]
+
+
 def load(run):
     """One run's first N_SHOTS shots as {column: array}, sorted by laser phase step."""
     with open(DATA_DIR / f"{run}.csv") as f:
@@ -79,48 +91,12 @@ def load(run):
     return {k: v[order] for k, v in data.items()}
 
 
-def plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label):
-    """Axes, tick labels and axis labels, as (axes, frame).
-
-    The frame is (axes, x tick labels, y label, x label), x label last so a
-    panel that loses it can transform the rest. x_label=None leaves it empty.
-    """
-    axes = Axes(
-        x_range=x_range,
-        y_range=[0, 100, 50],
-        x_length=x_length,
-        y_length=y_length,
-        tips=False,
-        axis_config=dict(
-            color=PLOT_FOREGROUND, stroke_width=2, tick_size=0.06,
-            include_ticks=True,
-        ),
-        # the x ticks are MathTex set below, so the origin's 0 is the y axis's
-        y_axis_config=dict(numbers_to_include=[0, 50, 100],
-                           font_size=FONT_TICK, numbers_to_exclude=[]),
-        x_axis_config=dict(include_numbers=False),
-    )
-    ticks = VGroup(*(
-        MathTex(tex, font_size=FONT_TICK, color=PLOT_FOREGROUND)
-        .next_to(axes.c2p(x, 0), DOWN, buff=0.18)
-        for x, tex in x_ticks
-    ))
-    axes.y_axis.numbers.set_color(PLOT_FOREGROUND)
-    yl = Tex(y_label, font_size=FONT_AXIS, color=PLOT_FOREGROUND).rotate(PI / 2)
-    yl.next_to(axes.y_axis.numbers, LEFT, buff=0.2)
-    xl = VGroup()
-    if x_label is not None:
-        xl = Tex(x_label, font_size=FONT_AXIS, color=PLOT_FOREGROUND)
-        xl.next_to(ticks, DOWN, buff=0.18).set_x(axes.x_axis.get_center()[0])
-    return axes, VGroup(axes, ticks, yl, xl)
-
-
 def fringe_plot(y_length, origin, x_label=True):
     """The fringe panel's (axes, frame): excitation against phase step over 0 to 2 pi,
     its origin at ``origin``."""
-    axes, frame = plot_axes(
-        [0, TAU, PI], FRINGE_WIDTH, y_length,
-        [(0, "0"), (PI, r"\pi"), (TAU, r"2\pi")],
+    axes, frame = ticked_axes(
+        [0, TAU, PI], EXCITATION_RANGE, FRINGE_WIDTH, y_length,
+        [(0, "0"), (PI, r"\pi"), (TAU, r"2\pi")], EXCITATION_NUMBERS,
         "Clock laser phase step / rad" if x_label else None,
         r"Excitation / \%",
     )
@@ -130,9 +106,9 @@ def fringe_plot(y_length, origin, x_label=True):
 
 def lissajous_plot():
     """The Lissajous panel's (axes, frame): upper against lower excitation, square."""
-    axes, frame = plot_axes(
-        [0, 100, 50], LISSAJOUS_SIZE, LISSAJOUS_SIZE,
-        [(0, "0"), (50, "50"), (100, "100")],
+    axes, frame = ticked_axes(
+        EXCITATION_RANGE, EXCITATION_RANGE, LISSAJOUS_SIZE, LISSAJOUS_SIZE,
+        [(0, "0"), (50, "50"), (100, "100")], EXCITATION_NUMBERS,
         r"Lower interferometer excitation / \%",
         r"Upper interferometer excitation / \%",
     )
@@ -193,18 +169,6 @@ def newest_ring(centres, color, count):
         lambda m: m.move_to(centres[max(int(count.get_value()) - 1, 0)])
     )
     return ring
-
-
-def legend_row(entries):
-    """A row of (label, colour) keys, each a dot and its label."""
-    rows = VGroup(*(
-        VGroup(
-            Dot(radius=0.07, color=color),
-            Tex(label, font_size=FONT_AXIS, color=PLOT_FOREGROUND),
-        ).arrange(RIGHT, buff=0.12)
-        for label, color in entries
-    ))
-    return rows.arrange(RIGHT, buff=0.4)
 
 
 def fringe_key():
