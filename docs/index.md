@@ -189,6 +189,13 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **Light travel time under a wave**, and the early or late arrivals it causes. `aion.tools.gradiometer_gw`: `gw_lag`, `gw_arrival_lags`, `quiet_arrival`, `arrival_note`.
 - **An ultralight dark-matter field**, its trace, its marker, and the phase an arm winds up in it. `aion.tools.uldm`: `dm_field`, `make_field_trace`, `field_marker`, `dm_phase`.
 
+## Surfaces in 3D
+
+- **A wireframe sheet whose height is any field z(x, y)**, redrawn each frame and coloured by height (a merger's spacetime; a trap's potential). `core.surfaces`: `make_sheet`, `refresh_sheet`, `height_ramp`.
+- **Keeping the sheet behind what sits on it** in ThreeDCamera's depth sort. `core.surfaces`: `SheetLine`, `BEHIND_EVERYTHING`.
+- **An off-centre 3D camera whose frame-fixed overlay stays put.** `core.surfaces`: `SideCamera`.
+- **A smooth 0-to-1 taper or blend** across a field. `core.surfaces`: `smooth_step`.
+
 ## LIGO's Michelson interferometer
 
 - **The apparatus and its light**, on one lab clock: laser, splitter, arms, test masses, detector, and waves whose phase runs on from beam to beam. `aion.tools.ligo`: `make_apparatus`, `make_light`, `run`.
@@ -287,4 +294,3 @@ are the candidates for the next round of generalisation.
 - `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
 - `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
 - `core.primitives`: `absorb` and `emit` drive from below only.
-- `aion.scenes.gravitational_waves`: `smooth_step`, `make_sheet`, `refresh_sheet`, `SideCamera`.

@@ -122,6 +122,19 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `draw_wavy_legs(scene, legs, fade=(), extra=())`: draw_legs for clouds whose worldlines carry the wave's displacement.
 - `along(start, end, f)`: A fraction f of the way from one corner to the next.
 
+### `core.surfaces`
+
+`src/manim_atoms/core/surfaces.py` — Surfaces in 3D: a wireframe sheet whose height is any field z(x, y), coloured by height, and the camera fixes a sheet needs.
+
+- `height_ramp(trough, flat, crest, scale, steps=33)`: A colour for each height: ``flat`` at zero, running to ``crest`` at ``+scale`` and to ``trough`` at ``-scale``, saturating beyond. Returns a function from an array of heights to a list of colours, looked up from ``steps`` precomputed stops.
+- `smooth_step(x)`: The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends.
+- class `SheetLine(VMobject)`: A grid line that sits at the back of the camera's depth sort.
+  - `.get_gradient_start_and_end_points()`: The line's own ends, not a Surface face's corners.
+- `make_sheet(half, lines, samples, stops, color, stroke_width)`: The wireframe sheet, flat, spanning [-half, half] in x and y: ``lines`` grid lines each way, each sampled at ``samples`` points and coloured through ``stops`` gradient stops (a gradient needs far fewer than the points). Each line's sampling is stashed on it for refresh_sheet.
+- `refresh_sheet(grid, height, colors)`: Re-evaluate every grid line at ``height(xs, ys)`` and recolour it by height through ``colors`` (a height_ramp).
+- class `SideCamera(ThreeDCamera)`: A ThreeDCamera whose frame-fixed mobjects ignore frame_center.
+  - `.transform_points_pre_display(mobject, points)`
+
 ### `core.video`
 
 `src/manim_atoms/core/video.py` — A recorded video shown inside a scene, one frame at a time.
@@ -720,15 +733,9 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `omega(t)`: Orbital angular frequency at time t, frozen at both ends.
 - `orbital_phase(t)`: Accumulated orbital phase, zero at t = 0.
 - `hole_positions(t)`: Centres of the two holes, diametrically opposite on the orbit.
-- `smooth_step(x)`: The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends.
 - `strain(t_emit)`: Wave amplitude emitted at time t_emit: switches on, chirps, rings down.
 - `wells(x, y, t, gain=1.0)`: The static dent each hole makes, blended into one well at the merger.
 - `sheet_height(x, y, t, gain=1.0)`: Height of the spacetime sheet at (x, y) and scene time t.
-- `height_colors(z)`: Map an array of heights onto the trough-sheet-crest ramp.
-- class `SheetLine(VMobject)`: A grid line that sits at the back of the camera's depth sort.
-  - `.get_gradient_start_and_end_points()`
-- `make_sheet()`: The wireframe sheet, flat, with each line's sampling stashed on it.
-- `refresh_sheet(grid, t, gain=1.0)`: Re-evaluate every grid line at time t and recolour it by height.
 - `make_black_hole(radius=BH_RADIUS)`: A black sphere with a warm rim mesh.
 - `follow_orbit(hole, clock, which, gain, radius=BH_RADIUS)`: Keep a hole on its orbit and resting in the bottom of its own well.
 - `observed_strain(t)`: h(t) for an observer far out along +x, in the sheet's own height units.
@@ -744,8 +751,6 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `ligo_strain(t)`: The merger's h at clock time t, normalised to a peak of 1.
 - `side_frame_center(camera, zoom, screen_x)`: The frame_center that puts the sheet's centre at screen_x.
 - `source_frequency(t)`: (f / Hz, real seconds left) of the source at scene time t: the chirp up to the merger frequency over the inspiral, then on through the ringdown to the track's cutoff while the holes merge.
-- class `SideCamera(ThreeDCamera)`: A ThreeDCamera whose frame-fixed mobjects ignore frame_center.
-  - `.transform_points_pre_display(mobject, points)`
 - Scene `MergerOnSensitivityPlot(BlackHoleMerger)`: The merger on the left; on the right, its signal crossing LIGO's band.
   - settings: `WITH_LIGO`, `CAMERA`, `AMBIENT_ROTATION`
   - `.merge(sheet, clock, gain)`: Once beside LIGO, then, the sheet let go flat and the clock wound back, again beside the plot.
