@@ -166,7 +166,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **The focal plane a mask makes**, where a spot lands in it, and the field on each spot. `core.holography`: `far_field`, `spot_pixel`, `spot_fields`.
 - **Finding an array's mask** by Gerchberg–Saxton, plain or weighted, a step at a time, and how evenly it lights the spots. `core.holography`: `gs_step`, `wgs_step`, `uniformity`.
 - **Zernike modes**, by their place in the pyramid, and the Strehl ratio a wavefront error leaves. `core.holography`: `zernike`, `osa_to_nm`, `strehl`.
-- **A phase map as a picture**, coloured round a wheel that wraps so a 2π step shows no edge, and the key to it. `core.optics`: `PhaseMask`, `phase_rgb`, `phase_wheel`.
+- **A phase map as a picture**, coloured round a wheel that wraps so a 2π step shows no edge, and the key to it. `core.optics`: `PhaseMask`, `phase_rgb`, `phase_wheel`, and `round_aperture` to clip it to a pupil.
 - **A focal plane as a camera would see it**: one colour, as opaque as the light is bright. `core.optics`: `FocalImage`.
 
 ## Trapping apparatus
@@ -191,6 +191,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A plane seen from an angle** on a flat scene, tilting and turning on trackers: where a point lands, what is in front, a circle in the plane. `core.projection`: `TiltedView`, with `TiltedView.point`, `TiltedView.depth`, `TiltedView.squash`, `TiltedView.rise`, `TiltedView.disc` and `TiltedView.outline`.
 - **A tweezer array**: traps as bright as their power, the atoms in them, and the unwanted traps going out and the rest moving, all on trackers. Drawn through a `core.projection.TiltedView`. `tweezers.tools.tweezer_array`: `TweezerArray`, with `spot_trap` as the trap seen end on.
 - **A tweezer seen from the side**: a focused Gaussian beam through a tilted view, fading away from its focus; and the outline of the focal plane. `tweezers.tools.beams`: `hourglass_trap`, `beam_half_width`, `axial_intensity`, `focal_plane`.
+- **A hologram scene's pieces**: an array's spots in the hologram's units, its mask at each step of the iteration, the crop of the focal plane, a picture's frame and label, and a bar per trap or per mode. `tweezers.tools.holograms`: `grid_spots`, `spots_from_sites`, `starting_mask`, `iterate_hologram`, `focal_view`, `framed`, `panel_label`, `bar_chart`.
+- **Light traced through thin lenses**, as a ray or as the band between two. `tweezers.tools.holograms`: `trace_ray`, `beamlet`.
 - **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
@@ -286,6 +288,7 @@ Copy from these when building something similar.
 - **Video on the scene's clock.** `trapping.scenes.sequence`: `ExperimentSequence`, `ExperimentSequenceSimple`.
 - **A tweezer array loaded, imaged and rearranged**, from above; and the same as a clip that loops. `tweezers.scenes.rearrangement`: `TweezerRearrangement`, `TweezerRearrangementLoop`.
 - **A top-down picture tilting into a view from an angle**, and a clip that turns it. `tweezers.scenes.array_3d`: `TweezerArray3D`, `TweezerArray3DLoop`.
+- **A picture recomputed every frame from trackers** (a mask and the focal plane it makes). `tweezers.scenes.holography`: `PhaseMaskBuildingBlocks`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

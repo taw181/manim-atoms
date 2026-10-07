@@ -8,7 +8,7 @@ pictures and furniture of a hologram.
   beam through it and a detector after it; rabi_transmission is what that
   detector sees with atoms coupled to the mode (the vacuum Rabi splitting).
 - PhaseMask: a phase map as a picture, coloured round a wheel that wraps
-  (phase_rgb), with phase_wheel as its key; FocalImage: an intensity map as
+  (phase_rgb), clipped to a round_aperture, with phase_wheel as its key; FocalImage: an intensity map as
   a camera would show it. Both repaint from an array.
 - make_lens, make_slm: a lens and a spatial light modulator, edge on.
 """
@@ -106,6 +106,15 @@ def phase_rgb(phase):
     return _PHASE_LUT[np.minimum((share * len(_PHASE_LUT)).astype(int), len(_PHASE_LUT) - 1)]
 
 
+def round_aperture(pixels):
+    """How opaque each pixel of a square picture of the unit disc is: 1 inside
+    it, 0 outside, and graded across the one pixel the rim passes through, so
+    a round picture has a smooth edge. What a PhaseMask of a pupil takes."""
+    c = (np.arange(pixels) + 0.5) / pixels * 2 - 1
+    x, y = np.meshgrid(c, -c)
+    return np.clip((1 - np.hypot(x, y)) * pixels / 2 + 0.5, 0, 1)
+
+
 class PhaseMask(ImageMobject):
     """A phase map as a picture, coloured round the phase wheel.
 
@@ -141,9 +150,8 @@ def phase_wheel(radius, pixels=160):
     rising anticlockwise."""
     c = (np.arange(pixels) + 0.5) / pixels * 2 - 1
     x, y = np.meshgrid(c, -c)
-    rho = np.hypot(x, y)
-    ring = ((rho <= 1) & (rho >= 0.6)).astype(float)
-    return PhaseMask(np.arctan2(y, x), ring).set(height=2 * radius)
+    inner = np.clip((np.hypot(x, y) - 0.6) * pixels / 2 + 0.5, 0, 1)
+    return PhaseMask(np.arctan2(y, x), round_aperture(pixels) * inner).set(height=2 * radius)
 
 
 class FocalImage(ImageMobject):

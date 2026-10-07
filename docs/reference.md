@@ -91,6 +91,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `rabi_transmission(x, center, kappa, gamma, coupling)`: The cavity's transmission at probe frequency x, with the cavity and the atoms both resonant at ``center``: |kappa / (kappa - i D + G^2/(gamma - i D))|^2 at detuning D, for cavity and atomic half-widths kappa and gamma and collective coupling G = g sqrt(N_g). One peak of height 1 for an empty cavity (G = 0); two, near center +- G, once G outgrows the widths.
 - `make_cavity(center, length, mirror_height, mode_width, lead_in, lead_out)`: Two concave mirrors ``length`` apart about ``center``, the cavity mode between them, and the probe beam coming in ``lead_in`` from the left and going on ``lead_out`` to the right into a detector.
 - `phase_rgb(phase)`: The phase wheel's colour at each phase, as uint8 RGB: any phase, since only its value mod 2 pi counts.
+- `round_aperture(pixels)`: How opaque each pixel of a square picture of the unit disc is: 1 inside it, 0 outside, and graded across the one pixel the rim passes through, so a round picture has a smooth edge. What a PhaseMask of a pupil takes.
 - class `PhaseMask(ImageMobject)`: A phase map as a picture, coloured round the phase wheel.
   - `.paint(phase)`: Redraw from a new phase array of the same shape.
 - `phase_wheel(radius, pixels=160)`: The key to a PhaseMask: a ring coloured by angle, 0 at the right and rising anticlockwise.
@@ -545,6 +546,21 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `hourglass_trap(view, at, power, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: One trap seen through a tilted view: the half of the beam below the focal plane, the half above, and the spot in the plane, at world point ``at`` and as bright as ``power``.
 - `focal_plane(view, half_width, half_height, shown)`: The outline of the focal plane, a rectangle about the view's origin, redrawn as the view moves and as visible as the tracker ``shown`` (0 to 1).
 
+### `tweezers.tools.holograms`
+
+`src/manim_atoms/tweezers/tools/holograms.py` — What the hologram scenes share: the mask and focal-plane pictures' sizes, the spots of an array in the hologram's units, the array's mask at each step of its iteration, a bar chart of trap brightnesses or mode amplitudes, and light traced through thin lenses.
+
+- `grid_spots(rows, cols, spacing=HG_SPACING)`: The (rows * cols, 2) spots of a square array about the axis, in diffraction limits, row by row from the top left.
+- `spots_from_sites(xy, pitch, spacing=HG_SPACING)`: Trap positions in scene units as spots in diffraction limits: traps a ``pitch`` apart are ``spacing`` diffraction limits apart.
+- `starting_mask(x, y, spots)`: The mask an array's hologram starts from: the sum of its spots' gratings, each with a random phase.
+- `iterate_hologram(x, y, amplitude, spots, steps)`: Weighted Gerchberg-Saxton from the starting mask: (the mask before each step, the spots' intensities under each of those masks).
+- `focal_view(phase, amplitude, view=HG_VIEW, pad=HG_PAD)`: The middle of the focal plane a mask makes, out to ``view`` diffraction limits either side of the axis: what a FocalImage is painted from.
+- `framed(image)`: A thin frame round a picture, so it reads as set into the slide.
+- `panel_label(text, panel, direction=UP)`: A picture's label, in grey beside it.
+- `bar_chart(values, full, width, height, gap=0.25)`: A bar per value on a baseline, ``width`` across, a value of ``full`` drawn ``height`` tall, with its lower left corner at the origin. Negative values hang below the baseline. Returns VGroup(baseline, bars).
+- `trace_ray(height, slope, start, lenses, end)`: A paraxial ray through thin lenses: it leaves x = ``start`` at ``height`` above the axis with ``slope``, and each lens (x, focal length) it meets before x = ``end`` turns it by -height / f. Returns the (x, height) at the start, at each lens and at the end.
+- `beamlet(half_width, slope, start, lenses, end, axis, opacity, color=TWEEZER_COLOR)`: A beam ``half_width`` either side of its chief ray, leaving x = ``start`` on the optical axis with ``slope`` and traced through ``lenses`` to ``end``: the band between its two edge rays. ``axis`` is the scene y of the optical axis.
+
 ### `tweezers.tools.tweezer_array`
 
 `src/manim_atoms/tweezers/tools/tweezer_array.py` — The tweezer array as a drawing: traps, the atoms in them, and the moves.
@@ -575,6 +591,14 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/array_3d.py TweezerArray3D`
 - Scene `TweezerArray3DLoop(TweezerArray3D)`: The rearranged block in the tilted view, turning a quarter turn about the optical axis: a square block comes back onto itself, so the clip loops.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/array_3d.py TweezerArray3DLoop`
+
+### `tweezers.scenes.holography`
+
+`src/manim_atoms/tweezers/scenes/holography.py` — How a spatial light modulator makes a tweezer array: the optical train, what a phase mask does to the focus, how the mask is found, and how aberrations are taken out of it.
+
+- Scene `PhaseMaskBuildingBlocks(Scene)`: A phase mask beside the focal plane it makes: flat, a grating that steers the spot, a lens that defocuses it, and gratings summed into an array. One beat() per mask.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py PhaseMaskBuildingBlocks`
 
 ### `tweezers.scenes.rearrangement`
 

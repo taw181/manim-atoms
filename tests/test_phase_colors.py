@@ -49,3 +49,14 @@ def test_a_focal_image_is_as_opaque_as_the_light_is_bright():
     assert image.pixel_array[..., 3].tolist() == [[0, 127], [255, 255]]
     image.paint(np.zeros((2, 2)))
     assert image.pixel_array[..., 3].max() == 0
+
+
+def test_a_round_aperture_is_graded_only_across_its_rim():
+    from manim_atoms.core.optics import round_aperture
+    alpha = round_aperture(64)
+    assert alpha.shape == (64, 64) and alpha.min() == 0 and alpha.max() == 1
+    assert alpha[32, 32] == 1 and alpha[0, 0] == 0
+    assert np.allclose(alpha, alpha.T) and np.allclose(alpha, alpha[::-1, ::-1])
+    rim = (alpha > 0) & (alpha < 1)
+    assert 0 < rim.sum() < 4 * 64 * 2  # about a pixel wide, all the way round
+    assert abs(alpha.sum() - np.pi * 32**2) < 0.01 * np.pi * 32**2
