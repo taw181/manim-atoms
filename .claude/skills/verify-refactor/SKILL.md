@@ -67,6 +67,12 @@ followed by `compare_frames.py ... --subset` compares just those.
 A pure refactor must come out pixel-identical. If a frame differs, it is a
 real change: find out why before going on, don't re-baseline over it.
 
+One exception, when comparing every frame (ffmpeg-extracted) rather than
+the last: two renders of the same code can differ by a few pixels in a few
+mid-animation frames. Before chasing such a difference, render the scene
+again from the same code and compare the two renders: if they differ in
+the same frames, it is noise. A last frame has never been seen to vary.
+
 ## Habits that keep it cheap
 
 - **Move with code, not by hand.** Cut top-level definitions by `ast` span,

@@ -90,14 +90,14 @@ Imports for all of them:
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import (absorb, draw_legs, emit, grow, make_atom,
                                          momentum_arrow, state_colors, state_legend)
-from manim_atoms.core.spacetime import (carry, draw_wavy_legs, growing_trail, run_to,
-                                        worldline, wound)
+from manim_atoms.core.spacetime import (carry, draw_wavy_legs, growing_trail, leg_point,
+                                        run_to, worldline, wound)
 from manim_atoms.interferometry.tools.clock import (clock_rate, dial_hand, draw_ports,
                                                     ground_share, make_clock_hand,
                                                     make_dial, phase_sweep)
 from manim_atoms.interferometry.tools.pulses import (fire_vertical_pulse, kick_worldline,
                                                      pulse_caption, strobe_pulse)
-from manim_atoms.interferometry.tools.pulse_sequence import lmt_history
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse, play_sequence, run_sequence
 ```
 
 ### 1. A pulse sequence, stop-start
@@ -135,54 +135,88 @@ flight; recipe 3 uses it to turn a hand.
 
 ### 2. Any sequence, through the engine
 
-Don't hand-write arm bookkeeping. `lmt_history(pulses, t0, z0, u)` steps
-one atom through a list of `(time, kind, stage)` pulses. For each pulse it
-returns a dict with:
-- `x` and `from_below`;
-- `splits` — `(parent, stay, kicked)`;
-- `hits` — `(arm, point, new_state)`;
-- `legs` — `(arm, start, end, state)`, the legs flown to the next pulse.
+Don't hand-write arm bookkeeping. Write the pulses down and let
+`run_sequence` step the atom through them; `play_sequence` animates the
+result. Worked example: `LMTMachZehnder` (stage captions, pulse labels and
+stops through the hooks).
 
-The kinds are:
-- `"split"` (a π/2 that splits every arm);
-- `"up"` / `"down"` (a π pulse that drives every arm, pushing the kicked
-  ones up or down);
-- `"merge"` (the closing π/2; its `legs` are the output ports).
+A `Pulse` is:
+- `t`, the lab time it fires (pulses are vertical: no light travel time);
+- `area` in units of π: `0.5` splits every arm it drives into `name+"0"`
+  (left alone) and `name+"1"` (swapped and kicked), `1` swaps and kicks;
+- `from_below`: the kick is `core.primitives.recoil(state, from_below)`,
+  so a |g⟩ arm absorbs and an |e⟩ arm emits;
+- `arms`: the names it drives (default: all), and `drop`: the names that
+  leave the figure after it (outputs that close nothing);
+- `stage`: a grouping for captions.
 
-`lmz_pulses(n, step, T)` writes the LMT Mach–Zehnder of any odd order.
-Worked example: `LMTMachZehnder.play_history`.
+After a π/2, outputs that coincide in place, velocity and state merge into
+one arm (`step.merges`): that is how an interferometer closes, with no
+"merge" pulse to write. Velocities are in recoils; `u` is the height one
+recoil climbs per unit of lab time.
 
 ```python
-pulses = [(0.0, "split", 0), (T, "down", 1), (2 * T, "merge", 2)]   # a plain Mach-Zehnder
-history = lmt_history(pulses, E_T0, E_Z, E_U, port=1.5)
-colors = {"g": ATOM_COLOR, "e": KICKED_COLOR}
-atoms = {"": make_atom().move_to([E_T0, E_Z, 0])}
-for step in history:
-    reach = (max if step["from_below"] else min)(
-        [a.get_center() for a in atoms.values()], key=lambda p: p[1])
-    ray = kick_worldline(reach, step["from_below"], steepness=0.0)
-    self.play(Create(ray), rate_func=linear, run_time=0.3)
-    for parent, stay, kicked in step["splits"]:
-        at = atoms.pop(parent); self.remove(at)
-        for name in (stay, kicked):
-            atoms[name] = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(at)
-            self.add(atoms[name])
-    if step["kind"] == "merge":                       # the ports replace the arms
-        self.remove(*atoms.values())
-        atoms = {arm: make_atom(colors[s], opacity=SUPERPOSITION_OPACITY).move_to(p)
-                 for arm, p, _, s in step["legs"]}
-        self.add(*atoms.values()); recolour = []
-    else:
-        recolour = [state_colors(atoms[arm], colors[s]) for arm, _, s in step["hits"]]
-    self.play(*recolour, FadeOut(ray), run_time=0.35)
-    draw_legs(self, [(atoms[arm], a, b, colors[s]) for arm, a, b, s in step["legs"]])
-    self.beat()
+seq = run_sequence([Pulse(t0, 0.5), Pulse(t0 + T, 1), Pulse(t0 + 2 * T, 0.5)],
+                   (t0, z0), u, port=1.5)        # a plain Mach-Zehnder
+atom = make_atom().move_to([t0, z0, 0])
+self.add(atom)
+play_sequence(self, seq, {"": atom}, after_step=lambda step, k: self.beat())
+loop = Polygon(*seq.paths["1"], *reversed(seq.paths["0"]), **LOOP_AREA_STYLE)
 ```
 
-The engine knows only those four kinds, on one atom. Generalising it to any
-pulse area, direction and set of arms is listed under "Still to generalise"
-in `docs/index.md`. Extend `interferometry.tools.pulse_sequence` there
-rather than hand-writing a one-off.
+What comes back:
+- `seq.steps`, one `Step` per pulse: `x`, `pulse`, `driven`, `splits`
+  `(parent, stay, kicked)`, `hits` `(arm, point, new state)`, `merges`
+  `(output, members, state)`, `legs` `(arm, start, end, state, disp)`;
+- `seq.paths`: every arm's corners, from its birth to its end (for loops);
+- `seq.ports`: the arms left after the last pulse.
+
+`play_sequence` takes `span` (keep the rays clear of a title), `ray_time`,
+`flash_time`, `fast_after` / `fast_pace` (speed up once the idea has
+landed), and three hooks: `before_pulse(step, k)` (a caption),
+`with_pulse(step)` (mobjects faded in with the ray, e.g. a π/2 label) and
+`after_step(step, k)` (where `self.beat()` goes). Sequences already
+written: `lmt.lmz_pulses(n, step, T)` and `lmt.lmt_ladder_pulses()`.
+
+**Ramsey–Bordé**: two pulses from below, two from above. Four arms reach
+the third pulse; the outputs that close nothing are dropped after it, and
+the last pulse closes two interferometers at once.
+
+```python
+pulses = [
+    Pulse(t0, 0.5), Pulse(t0 + T, 0.5),                       # a pair from below
+    Pulse(t0 + T + gap, 0.5, from_below=False,                # a pair from above
+          drop=frozenset({"001", "010", "101", "110"})),
+    Pulse(t0 + 2 * T + gap, 0.5, from_below=False),
+]
+seq = run_sequence(pulses, (t0, z0), u, port=1.2)   # t0, z0, u = -5.6, -1.3, 0.35; T, gap = 2.6, 2.4
+```
+
+To find the names to drop, run the sequence without `drop` and print each
+step's `legs`; the last step's `merges` name the members that close.
+
+**A gravimeter or a fountain**: pass a displacement. `disp` takes lab
+time, so measure the fall from the launch. Every corner falls with it and
+the legs bow (`play_sequence` switches to `draw_wavy_legs`); a fountain is
+the same with `v0 > 0`, its apex where `v0 * u = g * t`. A loop drawn over
+bowed legs has to follow the same curve, through `core.spacetime.leg_point`:
+
+```python
+fall = lambda t: -0.5 * g * (t - t0) ** 2          # t0, z0, u, g, T = -5.4, 2.6, 0.35, 0.09, 4.2
+seq = run_sequence([Pulse(t0, 0.5), Pulse(t0 + T, 1), Pulse(t0 + 2 * T, 0.5)],
+                   (t0, z0), u, disp=fall, port=1.5)
+play_sequence(self, seq, {"": atom})
+
+def bowed(corners):
+    return [leg_point(a, b, fall, s)
+            for a, b in zip(corners, corners[1:]) for s in np.linspace(0, 1, 24)]
+
+loop = Polygon(*bowed(seq.paths["1"]), *reversed(bowed(seq.paths["0"])), **LOOP_AREA_STYLE)
+```
+
+The engine's pulses are vertical. Pulses that arrive late with light travel
+time (the gradiometer's `sweep_pulse`) are not yet a pulse option: extend
+`interferometry.tools.pulse_sequence` rather than hand-writing a one-off.
 
 ### 3. Phase as clock hands, stop-start
 

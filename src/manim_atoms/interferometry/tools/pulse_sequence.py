@@ -241,11 +241,15 @@ def play_sequence(scene, seq, atoms, *, span=None, ray_time=0.3, flash_time=0.35
                     atoms[name] = make_atom(colors[state], opacity=SUPERPOSITION_OPACITY)
                     scene.add(atoms[name].move_to(start))
         else:
+            kicked_to = {arm: state for arm, _, state in step.hits}
             for parent, stay, kicked in step.splits:
                 split = atoms.pop(parent)
                 at = split.get_center()
-                atoms[stay] = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(at)
-                atoms[kicked] = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(at)
+                # both halves start in the parent's state; the kicked one is
+                # recoloured with the flash
+                kept = colors["e" if kicked_to[kicked] == "g" else "g"]
+                atoms[stay] = make_atom(kept, opacity=SUPERPOSITION_OPACITY).move_to(at)
+                atoms[kicked] = make_atom(kept, opacity=SUPERPOSITION_OPACITY).move_to(at)
                 scene.remove(split)
                 scene.add(atoms[stay], atoms[kicked])
             flashes = [Flash(atoms[arm], **FLASH_STYLE) for arm, _, _ in step.hits]
