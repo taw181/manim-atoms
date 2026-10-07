@@ -623,6 +623,14 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.release()`: Let the atoms go and bring the whole array back on, empty.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/rearrangement.py TweezerRearrangementLoop`
 
+### `tweezers.scenes.rearrangement_hologram`
+
+`src/manim_atoms/tweezers/scenes/rearrangement_hologram.py` — The hologram behind a rearrangement: the SLM's mask beside the array it makes, repainted as the traps move.
+
+- Scene `RearrangementHologram(Scene)`: The SLM's mask beside the array, repainted every frame as the unwanted traps go out and the rest move. A beat() on the loaded array, after the switching off and after the move.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/rearrangement_hologram.py RearrangementHologram`
+
 ## aion
 
 ### `aion.style`

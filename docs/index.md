@@ -292,6 +292,7 @@ Copy from these when building something similar.
 - **An algorithm stepped through, then run** (pictures, bars and a number all read from one step counter). `tweezers.scenes.holography`: `HologramIteration`.
 - **A table of pictures, then a quantity taken away term by term.** `tweezers.scenes.holography`: `ZernikeCorrection`.
 - **An optical train side on, with light traced through its lenses** and face-on pictures above it. `tweezers.scenes.holography`: `OpticalTrain`.
+- **Two views of one thing kept in step** (the SLM's mask and the array it makes). `tweezers.scenes.rearrangement_hologram`: `RearrangementHologram`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.
