@@ -25,7 +25,7 @@ from manim_atoms.aion.physics.uldm_sensitivity import (
     load_uldm_sensitivity,
 )
 from manim_atoms.aion.style import *
-from manim_atoms.aion.tools.gw_plot import plot_point, sensitivity_axes
+from manim_atoms.core.plots import log_axes, plot_point
 
 # The paper's mass range, and its coupling range cut at 1, above which
 # everything is excluded. The bottom stays at the paper's 1e-16, two decades
@@ -121,7 +121,7 @@ def log_x_range(axes):
 
 def uldm_axes(origin, width, height):
     """The inset's frame: decades of m_phi / eV and |d_e|, as (axes, frame)."""
-    return sensitivity_axes(
+    return log_axes(
         ULDM_LOG_M, ULDM_LOG_D, origin, width, height,
         x_label=r"$m_\phi$ / eV", y_label=r"$|d_e|$",
         tick_font=FONT_INSET_TICK, label_font=FONT_INSET_LABEL,
@@ -158,6 +158,7 @@ def uldm_curves(axes, stems=tuple(ULDM_SCENARIOS)):
 
 
 def uldm_labels(axes):
+    """Each AION stage's name beside its curve, in its colour, outlined against the plot."""
     labels = VGroup()
     for name, ((x, y), side) in ULDM_LABELS.items():
         labels.add(Tex(

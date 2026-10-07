@@ -4,6 +4,22 @@ The pieces the clock-phase scenes and the gradiometer share: a hand on each
 arm that turns while that arm is excited, a dial that reads the angle between
 two hands, the two output ports the last pulse splits the atoms between, and
 the phase budget that names which terms the measurement keeps.
+
+- hands: make_clock_hand rides an atom and reads a ValueTracker; clock_rate
+  sets how fast it turns. On one lab clock, core.spacetime.wound and its
+  variants drive the tracker.
+- dials: make_dial, dial_hand, and phase_sweep for the angle between two hands.
+- ports: draw_ports (stop-start) and fly_ports (on the lab clock) send the
+  two output states off, at any slope (leg_slope gives a kicked leg's,
+  along_port a point on a port); ground_share is how the atoms divide
+  between them, port_parts the pieces, live_ports keeps drawn ports
+  following the phase.
+- the budget: budget_equation, show_phase_budget, ring_around,
+  readout_equation; CP_LASER_PHASES is the phase the laser writes at each
+  pulse.
+
+Defaults bind to the CP_* geometry block below, ClockPhase's. The pulses
+themselves are in interferometry.tools.pulses.
 """
 
 import numpy as np
@@ -11,7 +27,6 @@ from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import draw_legs, make_atom, make_guide
-from manim_atoms.core.spacetime import run_to
 
 
 # --- phase, drawn as a clock hand -----------------------------------------
@@ -161,63 +176,6 @@ def ground_share(phase_a, phase_b):
     """
     gap = (phase_b.get_value() - phase_a.get_value()) % TAU
     return 0.5 * (1 + np.cos(gap))
-
-
-def fire_vertical_pulse(scene, x, hits):
-    """One pulse climbing the diagram at time `x`, flashing what it crosses.
-
-    A bare worldline, as in the gradiometer, but vertical: nothing in this
-    scene turns on the light travel time, and both arms share a column, so one
-    pulse reaches them at the same instant -- which is what makes the two legs
-    equal and the null exact. It stops at the topmost atom it acts on rather
-    than running off the top, because there is nothing above to draw it for.
-    """
-    hits = sorted(hits, key=lambda m: m.get_center()[1])
-    y = -config.frame_y_radius - 0.3
-    drawn = []
-    for atom in hits:
-        y_next = atom.get_center()[1]
-        segment = Line(
-            [x, y, 0], [x, y_next, 0],
-            color=LASER_COLOR, stroke_width=PULSE_STROKE_WIDTH,
-        )
-        scene.play(
-            Create(segment), rate_func=linear, run_time=(y_next - y) / PULSE_SPEED
-        )
-        scene.play(Flash(atom, **FLASH_STYLE), run_time=0.3)
-        drawn.append(segment)
-        y = y_next
-    scene.play(*[FadeOut(m) for m in drawn], run_time=0.3)
-
-
-def strobe_pulse(scene, clock, x, top, flash_at, on_arrival=None, hold=PULSE_HOLD):
-    """fire_vertical_pulse with lab time running.
-
-    The clock geometry has no light travel time -- one pulse reaches both arms
-    at the same instant, which is what makes the two legs equal -- so the
-    column is not something that climbs. It is an instant: it appears whole at
-    the crossing and fades over `hold` of lab time while the atoms carry on
-    through it. `top` is where the column stops, the topmost vertex it acts
-    on, for the same reason fire_vertical_pulse stops at the topmost atom.
-
-    `on_arrival` is called once lab time is on the pulse and before anything
-    is played, which is where whatever the pulse does to the atoms belongs --
-    swapping which arm is excited, say. It happens on the instant because the
-    pulse does: there is no window here to animate it over.
-    """
-    column = Line(
-        [x, -config.frame_y_radius - 0.3, 0], [x, top, 0],
-        color=LASER_COLOR, stroke_width=PULSE_STROKE_WIDTH,
-    )
-    run_to(scene, clock, x)
-    if on_arrival is not None:
-        on_arrival()
-    scene.add(column)
-    run_to(
-        scene, clock, x + hold,
-        *[Flash(p, run_time=STROBE_FLASH, **FLASH_STYLE) for p in flash_at],
-        FadeOut(column),
-    )
 
 
 def ring_around(term, color):
@@ -467,3 +425,16 @@ def show_phase_budget(scene, center, laser_struck, laser_label,
         scene.play(Create(ring_around(eq[4], NOISE_COLOR)), run_time=0.6)
         color = NOISE_COLOR
     scene.play(FadeIn(label(laser_label, color, eq[4])), run_time=0.5)
+
+
+# The laser's phase at each pulse, in radians. Arbitrary, but not special: an
+# arm picks phi_n up when it absorbs from pulse n and gives it back when it
+# emits, so the hands jump at the pulses by exactly the phases the kets carry,
+# and what is left between them at the end is phi_1 - 2 phi_2 + phi_3 -- here
+# 1.3 rad, a split between the ports that reads at a glance.
+CP_LASER_PHASES = (1.2, 0.1, 0.3)
+
+
+def along_port(origin, rise, x):
+    """Where a port leaving `origin` at slope `rise` is at time x."""
+    return origin + (x - origin[0]) * (RIGHT + UP * rise)

@@ -38,6 +38,7 @@ def manim_slides(*args, **kwargs):
 
 
 def render(deck, main, jobs, fps, args):
+    """Render ``deck``'s slides (``args``: [l|m|h] [Slide ...]), ``jobs`` at a time."""
     quality = args.pop(0) if args and args[0] in QUALITIES else "h"
     # 30 fps unless asked otherwise: slide animations don't need 60, and
     # it halves the frames at h. l keeps its own 15.
@@ -78,6 +79,7 @@ def render(deck, main, jobs, fps, args):
 
 
 def main(argv=None):
+    """The manim-atoms-deck command: render, present, html or player."""
     parser = argparse.ArgumentParser(
         prog="manim-atoms-deck", description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,

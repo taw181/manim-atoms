@@ -23,33 +23,35 @@ from manim_atoms.interferometry.tools.clock import (
     dial_hand,
     draw_ports,
     fly_ports,
-    leg_slope,
     ground_share,
+    leg_slope,
     live_ports,
     make_clock_hand,
     make_dial,
     phase_sweep,
     show_phase_budget,
 )
-from manim_atoms.interferometry.scenes.clock import CP_LASER_PHASES
 from manim_atoms.interferometry.tools.gradiometer import (
     GR_ARM,
-    GR_DIALS,
     GR_DIAL_RADIUS,
+    GR_DIALS,
     GR_LAG,
-    GR_LASER_Z,
     GR_LOWER_Z,
     GR_OUT,
-    GR_SLOPE,
     GR_T,
     GR_T0,
     GR_TERMS,
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
-    fire_pulse,
     gradiometer_frame,
-    sweep_pulse,
+    laser_jumps,
     vertices,
+)
+from manim_atoms.interferometry.tools.pulses import (
+    fire_pulse,
+    laser_caption,
+    launch_time,
+    sweep_pulse,
 )
 from manim_atoms.core.primitives import (
     draw_legs,
@@ -79,34 +81,6 @@ GR_EFFECT_PAD = 0.2  # the boxes' reach above and below each interferometer
 GR_EFFECT_PHASE = {"low": 0.4, "up": 1.0}
 GR_EFFECT_TIME = 2.5
 
-
-
-def laser_jumps(v):
-    """The laser's phase on each of a cloud's two hands, as (lab time, delta).
-
-    The same bookkeeping as ClockPhase's, at the times each pulse reaches this
-    cloud: an arm picks phi_n up when it absorbs from pulse n and gives it
-    back when it emits, and the hands count -phase. Index 0 is the arm kicked
-    at the mirror, index 1 the arm kicked at the beamsplitter.
-    """
-    phi1, phi2, phi3 = CP_LASER_PHASES
-    return (
-        [(v[1][0], -phi2)],
-        [(v[0][0], -phi1), (v[1][0], +phi2), (v[3][0], -phi3)],
-    )
-
-
-def launch_time(x_at_lower, z_at=GR_LOWER_Z):
-    """When a pulse that crosses height `z_at` at `x_at_lower` leaves the laser."""
-    return x_at_lower - GR_SLOPE * (z_at - GR_LASER_Z)
-
-
-def laser_caption(n, x_at_lower, z_at=GR_LOWER_Z):
-    """phi_n on the laser line, just right of where pulse n leaves it."""
-    foot = launch_time(x_at_lower, z_at)
-    return MathTex(
-        rf"\phi_{n}", font_size=FONT_ANNOTATION, color=LASER_COLOR
-    ).next_to([foot, GR_LASER_Z, 0], UR, buff=0.12)
 
 
 class GradiometerBase(Scene):

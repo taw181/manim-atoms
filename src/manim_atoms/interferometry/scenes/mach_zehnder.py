@@ -2,13 +2,14 @@
 
 Each scene keeps its own geometry block; the atoms and pulses they are drawn
 with come from manim_atoms.core.primitives, and everything visual from
-manim_atoms.style.
+manim_atoms.style. SinglePhotonMachZehnder subclasses MachZehnder.
 """
 
 import numpy as np
 from manim import *
 
 from manim_atoms.interferometry.style import *
+from manim_atoms.interferometry.tools.pulses import pulse_caption
 from manim_atoms.core.primitives import (
     make_atom,
     momentum_arrow,
@@ -20,6 +21,7 @@ from manim_atoms.core.primitives import (
     draw_legs,
     state_colors,
     state_label,
+    state_legend,
 )
 
 # --- single-kick geometry -------------------------------------------------
@@ -133,7 +135,7 @@ class MachZehnder(Scene):
             r"Mach--Zehnder atom interferometer: $\pi/2 - \pi - \pi/2$",
             font_size=FONT_TITLE,
         ).to_corner(UR)
-        legend = self.make_legend().to_corner(UL)
+        legend = state_legend().to_corner(UL)
         guide = make_guide([-config.frame_x_radius, MZ_A[1], 0], MZ_A)
         self.play(FadeIn(title), FadeIn(legend), FadeIn(guide), run_time=1.0)
         self.beat()
@@ -153,7 +155,7 @@ class MachZehnder(Scene):
             self,
             MZ_A[0],
             atom,
-            extras=[self.pulse_caption(r"\pi/2", MZ_A[0]), k_arrow],
+            extras=[pulse_caption(r"\pi/2", MZ_A[0]), k_arrow],
             fade=[k_arrow],
         )
 
@@ -184,7 +186,7 @@ class MachZehnder(Scene):
         # pulse rising to the upper arm passes over the lower arm's +hbar k
         # arrow -- that overlap is worth accepting, because each arrow has to
         # stand on the atom it acts on, where the kick actually happens.
-        absorb(self, MZ_B[0], lower, extras=[self.pulse_caption(r"\pi", MZ_B[0])])
+        absorb(self, MZ_B[0], lower, extras=[pulse_caption(r"\pi", MZ_B[0])])
         self.play(state_colors(lower, KICKED_COLOR), *grow(gain), run_time=0.6)
         # The excited arm is driven the other way: one photon arrives, two
         # leave, and it recoils by -hbar k, which flattens it out.
@@ -199,7 +201,7 @@ class MachZehnder(Scene):
 
         # --- 5. second pi/2: recombine -----------------------------------
         # Both arms sit at MZ_C now, so one pulse covers them.
-        absorb(self, MZ_C[0], lower, extras=[self.pulse_caption(r"\pi/2", MZ_C[0])])
+        absorb(self, MZ_C[0], lower, extras=[pulse_caption(r"\pi/2", MZ_C[0])])
 
         port_g = make_atom(opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
         port_e = make_atom(KICKED_COLOR, opacity=SUPERPOSITION_OPACITY).move_to(MZ_C)
@@ -229,26 +231,3 @@ class MachZehnder(Scene):
         self.beat()
         self.play(Write(p1), Write(p2), Write(readout), run_time=1.3)
         self.wait(2.0)
-
-    # --- helpers ---------------------------------------------------------
-    @staticmethod
-    def make_legend():
-        rows = VGroup()
-        for color, tex in (
-            (ATOM_COLOR, r"|g,\,p\rangle"),
-            (KICKED_COLOR, r"|e,\,p + \hbar k\rangle"),
-        ):
-            rows.add(
-                VGroup(
-                    make_atom(color, radius=LEGEND_ATOM_RADIUS),
-                    state_label(tex, color, FONT_LEGEND),
-                ).arrange(RIGHT, buff=0.22)
-            )
-        return rows.arrange(DOWN, buff=0.28, aligned_edge=LEFT)
-
-    @staticmethod
-    def pulse_caption(tex, x):
-        """A pulse label on the caption row, offset clear of the beam it names."""
-        return MathTex(tex, font_size=FONT_ANNOTATION, color=LASER_COLOR).move_to(
-            [x + 0.5, -config.frame_y_radius + 0.35, 0]
-        )

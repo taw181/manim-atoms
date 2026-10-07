@@ -1,0 +1,17 @@
+name: index
+
+# docs/index.md and docs/reference.md against the source. The check reads
+# the package with ast, so it needs no manim, LaTeX or dependencies.
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python scripts/index.py

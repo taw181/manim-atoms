@@ -24,11 +24,11 @@ from manim_atoms.interferometry.tools.lmt import (
     LMZ_T0,
     LMZ_U,
     LMZ_Z,
-    kick_worldline,
-    lmt_history,
     lmt_points,
     lmz_pulses,
 )
+from manim_atoms.interferometry.tools.pulse_sequence import lmt_history
+from manim_atoms.interferometry.tools.pulses import kick_worldline
 from manim_atoms.core.primitives import (
     draw_legs,
     make_atom,

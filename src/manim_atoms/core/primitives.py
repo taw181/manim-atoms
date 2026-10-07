@@ -1,8 +1,16 @@
 """Atoms, laser pulses and the recoil they hand over: the atom-interferometry
 building blocks every other scene is drawn with.
 
-Mobject helpers (make_atom, make_cloud, make_laser_pulse, momentum_arrow, make_guide),
-pulse primitives (absorb, emit) and motion (draw_legs, state_colors).
+- mobjects: make_atom, make_cloud, make_laser_pulse, make_guide, and the
+  recoil arrow momentum_arrow (brought on by grow) and the k marker
+  make_k_arrow;
+- states: state_colors recolours an atom, state_label and arm_ket write its
+  ket in the state's colour;
+- pulses: absorb and emit, played on an atom; both drive it from below, with
+  the packet climbing along +y;
+- motion: draw_legs flies atoms along straight legs at V, drawing the
+  trajectory as it goes (core.spacetime.draw_wavy_legs for bowed ones);
+- readout: fluoresce, or fluorescence to play alongside something else.
 """
 
 import numpy as np
@@ -176,6 +184,7 @@ def state_colors(atom, color):
 
 
 def state_label(tex, color, font_size=FONT_STATE):
+    """A ket or other state name as MathTex, in the lightened shade of its state's colour."""
     return MathTex(tex, font_size=font_size, color=lighten(color))
 
 
@@ -223,3 +232,31 @@ def fluoresce(scene, atoms, fade=(), run_time=0.8):
     halos, light = fluorescence(atoms)
     scene.play(*light, run_time=run_time)
     scene.play(*[FadeOut(m) for m in (*halos, *fade)], run_time=0.5)
+
+
+def recoil(state, from_below):
+    """(velocity change in recoils, new state) for an arm in ``state`` ("g" or
+    "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm
+    absorbs, moving with the photon; an |e> arm is stimulated to emit into
+    the pulse, recoiling against it."""
+    direction = 1 if from_below else -1
+    if state == "g":
+        return direction, "e"
+    return -direction, "g"
+
+
+def state_legend():
+    """The key to the two states: an atom in each colour beside |g, p> and
+    |e, p + hbar k>, one above the other."""
+    rows = VGroup()
+    for color, tex in (
+        (ATOM_COLOR, r"|g,\,p\rangle"),
+        (KICKED_COLOR, r"|e,\,p + \hbar k\rangle"),
+    ):
+        rows.add(
+            VGroup(
+                make_atom(color, radius=LEGEND_ATOM_RADIUS),
+                state_label(tex, color, FONT_LEGEND),
+            ).arrange(RIGHT, buff=0.22)
+        )
+    return rows.arrange(DOWN, buff=0.28, aligned_edge=LEFT)

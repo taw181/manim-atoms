@@ -28,7 +28,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.aion.style import *
-from manim_atoms.aion.tools.gw_plot import plot_point, sensitivity_axes
+from manim_atoms.core.plots import log_axes, plot_point
 from manim_atoms.core.layout import slide_title
 from manim_atoms.aion.tools.uldm_plot import (
     ULDM_INSET_STEMS,
@@ -377,7 +377,7 @@ class DarkMatterScalePlot(Scene):
             r"\lambda_C = \frac{h}{m_\phi c}", font_size=FONT_ANNOTATION, color=FIELD_COLOR,
         ).to_corner(UR).align_to(title, UP)
 
-        axes, frame = sensitivity_axes(
+        axes, frame = log_axes(
             ULDM_LOG_M, ULDM_LOG_D, SP_ORIGIN, SP_WIDTH, SP_HEIGHT,
             x_label=r"$m_\phi$ / eV", y_label=r"photon coupling $|d_e|$",
             label_every=ULDM_LABEL_EVERY,

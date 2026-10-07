@@ -8,7 +8,7 @@ over to make room for the loading curves of Fig. 5's inset, with the 2D and
 nozzle to 2D MOT, and 2D MOT to 3D MOT. Last, the initial slope of the
 hottest run: the 4e10 atoms/s of the title.
 
-    uv run manim -qh src/manim_atoms/scenes/hifais.py HighFluxLoading
+    uv run manim -qh src/manim_atoms/trapping/scenes/hifais.py HighFluxLoading
 """
 
 import numpy as np
@@ -53,6 +53,7 @@ PLOT_SIZE = (5.4, 4.3)
 
 
 def frame_caption():
+    """The support frame's size, W x D x H in mm, as a caption under the two views."""
     w, d, h = FRAME_MM
     return Tex(
         rf"support frame ${w} \times {d} \times {h}$\,mm (W $\times$ D $\times$ H)",
@@ -61,6 +62,8 @@ def frame_caption():
 
 
 class HighFluxLoading(Scene):
+    """The HiFAIS chamber from above and from the side, labelled, then its MOT loading
+    curves at each oven temperature with their fits."""
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version."""
 

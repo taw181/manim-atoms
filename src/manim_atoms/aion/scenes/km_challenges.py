@@ -5,7 +5,7 @@ what AION-km asks for. The numbers come from
 manim_atoms.aion.physics.km_scale -- the prototype's own (Baynham et al. 2026),
 AION-km's Table 1 (Badurina et al. 2020), and what follows from them.
 
-    uv run manim -ql src/manim_atoms/scenes/km_challenges.py KmScaleChallenges
+    uv run manim -ql src/manim_atoms/aion/scenes/km_challenges.py KmScaleChallenges
 
 The headings come up with the title; each row is then one beat().
 """
@@ -115,10 +115,12 @@ def challenge_row(challenge, prototype, target):
 
 
 def rule():
+    """A horizontal rule across the table."""
     return Line([KC_COLUMNS[0], 0, 0], [-KC_COLUMNS[0], 0, 0], **TABLE_RULE_STYLE)
 
 
 class KmScaleChallenges(Scene):
+    """A table, row by row, of what the prototype achieves against what AION-km needs."""
     def beat(self):
         """Hook: a pause between rows. A no-op here."""
 

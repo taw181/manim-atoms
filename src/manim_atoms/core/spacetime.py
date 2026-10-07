@@ -138,7 +138,7 @@ def wound(clock, rate, t_from, t_to):
     return turn
 
 
-def growing_band(band, t_from, t_to, now, style=FIELD_WINDOW_STYLE):
+def growing_band(band, t_from, t_to, now, style=WINDOW_STYLE):
     """A band over a stretch of the diagram, filling in as that stretch is flown.
 
     Takes the finished band's height and redraws its width off the clock, so
@@ -270,3 +270,8 @@ def draw_wavy_legs(scene, legs, fade=(), extra=()):
     scene.remove(*trails)
     scene.add(*[wavy_path(l[1], l[2], l[3], l[4]) for l in legs])
     scene.bring_to_front(*[l[0] for l in legs])
+
+
+def along(start, end, f):
+    """A fraction f of the way from one corner to the next."""
+    return start + (end - start) * f

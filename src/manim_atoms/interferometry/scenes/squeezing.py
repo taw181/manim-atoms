@@ -11,7 +11,7 @@ them without flipping any, a quantum non-demolition measurement of J_z
 along it, onto a ring of fixed J_z; a rotation about the mean spin turns the
 squeezing, ring and all, onto the phase.
 
-    uv run manim -qh src/manim_atoms/scenes/squeezing.py SpinSqueezing
+    uv run manim -qh src/manim_atoms/interferometry/scenes/squeezing.py SpinSqueezing
 
 Four beat()s: the coherent state, the cavity measurement, the squeezed state,
 the rotation onto the phase.
@@ -23,13 +23,9 @@ from manim import *
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.layout import slide_title
 from manim_atoms.core.primitives import state_label
-from manim_atoms.interferometry.tools.squeezing import (
-    BlochView,
-    cavity_atoms,
-    make_cavity,
-    noise_patch,
-    rabi_transmission,
-)
+from manim_atoms.core.bloch import BlochView, noise_patch
+from manim_atoms.core.optics import make_cavity, rabi_transmission
+from manim_atoms.interferometry.tools.squeezing import cavity_atoms
 
 # --- spin-squeezing geometry ------------------------------------------------
 # Left column: the cavity, and its transmission under it.

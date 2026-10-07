@@ -11,12 +11,45 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.core.shapes import gaussian_spot
+from manim_atoms.core.optics import gaussian_spot
 from manim_atoms.trapping.tools.cooling import MOT_AXES, chevron
+from manim_atoms.species.strontium import TRANSITION_689_COLOR
 
 
 SPIN_HIST_WIDTH = 2.2
 SPIN_HIST_HEIGHT = 1.3  # of a bar holding every atom
+
+
+# --- dipole-trap layout ---------------------------------------------------
+DT_X = -3.0  # the vertical beam
+DT_UPPER_Y = 0.7
+DT_LOWER_Y = -1.6
+DT_UPPER = np.array([DT_X, DT_UPPER_Y, 0])
+DT_LOWER = np.array([DT_X, DT_LOWER_Y, 0])
+DT_HORIZONTAL_HALF = 2.4  # half the drawn length of a horizontal beam
+DT_HORIZONTAL_WIDTH = 0.16
+DT_VERTICAL_WIDTH = 0.42
+DT_VERTICAL_SPAN = (-4.1, 1.9)  # it runs off the bottom and stops short of the heading
+DT_TRANSPARENCY_RADIUS = 0.42
+DT_ZERO_X = DT_X - DT_HORIZONTAL_HALF - 0.15  # the B = 0 pointer's tip
+DT_MOT_RADIUS = 2.6
+DT_HISTOGRAM_CENTER = [0.8, -2.5, 0]
+DT_LEVELS_CENTER = [3.95, 1.3, 0]
+DT_LEVELS_SCALE = 0.72
+DT_TIMELINE_CENTER = [4.6, -2.95, 0]
+DT_HEADING_CORNER = [-6.6, 3.7, 0]
+DT_N_ATOMS = 150
+
+# --- pacing ---------------------------------------------------------------
+DT_SWITCH_TIME = 1.2
+DT_LOAD_TIME = 3.0  # each trap's loading
+DT_FALL_TIME = 2.2
+# The field zero sets off only this far into the fall, so the atoms are seen
+# to drop under gravity first, not to be carried down by the field.
+DT_ZERO_DELAY = 0.4
+DT_RECAPTURE_TIME = 1.5
+DT_PUMP_TIME = 3.0
+DT_HOLD = 1.5  # the pause after each stage, where a slide stops instead
 
 
 # --- the MOT, next to the traps ------------------------------------------
@@ -24,6 +57,7 @@ SPIN_HIST_HEIGHT = 1.3  # of a bar holding every atom
 # beams but a wash of red light over the whole figure, with the usual
 # arrowheads round its edge pointing in along the MOT's three axes.
 def make_mot_glow(center, radius, color=TRANSITION_689_COLOR):
+    """A MOT as a soft glow at ``center``, with a chevron at the end of each beam pointing in."""
     center = np.array(center, dtype=float)
     heads = VGroup(*[
         chevron(-d, center + d * radius * 0.85, color)

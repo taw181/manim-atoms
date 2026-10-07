@@ -9,9 +9,9 @@ LightShiftSignal.
 from manim import *
 
 from manim_atoms.aion.style import *
-from manim_atoms.core.shapes import gaussian_band
-from manim_atoms.species.strontium import SrLevels
-from manim_atoms.trapping.scenes.dipole import (
+from manim_atoms.core.optics import gaussian_band
+from manim_atoms.species.strontium import SrLevels, TRANSITION_698_COLOR
+from manim_atoms.trapping.tools.dipole import (
     DT_HEADING_CORNER,
     DT_HOLD,
     DT_HORIZONTAL_HALF,
@@ -27,10 +27,14 @@ from manim_atoms.trapping.scenes.dipole import (
     DT_VERTICAL_SPAN,
     DT_VERTICAL_WIDTH,
     DT_X,
-    caption,
+    LoadingAtoms,
 )
-from manim_atoms.trapping.tools.dipole import LoadingAtoms
-from manim_atoms.trapping.tools.sequence import STAGES, Timeline, stage_heading
+from manim_atoms.trapping.tools.sequence import (
+    caption,
+    stage_heading,
+    STAGES,
+    Timeline,
+)
 
 # --- the two clouds, ready to interfere -----------------------------------
 # DipoleTrapLoading's traps, as the interferometer finds them: both loaded,

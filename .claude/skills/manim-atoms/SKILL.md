@@ -7,6 +7,13 @@ description: Create or edit manim animations in the manim-atoms package — atom
 
 ## Where things are
 
+**Start at `docs/index.md`.** It lists what the package can draw, organised
+by need (curved arms, a pulse from above, a Bloch sphere, ports at any
+slope, a pulse-sequence engine, ...), with the module and function for each
+and a scene to copy for each pattern. `docs/reference.md` has every
+signature and docstring. Read those two before opening source files; open a
+module only for the pieces you are going to use.
+
 The project is the `manim-atoms` repo (uv, manim 0.21, Python 3.13), the
 package `src/manim_atoms/`. Run manim **from the repo root** so the root
 `manim.cfg` applies — it sets `media_dir=./media`, medium quality, and a
@@ -25,8 +32,8 @@ and slide wrappers; CLAUDE.md has the layout.
 - Each topic (`interferometry`, `trapping`, `aion`) has `tools/` (helpers and
   their geometry) and `scenes/` (Scene classes), paired by module name.
 
-Read style, primitives and mach_zehnder before writing anything — they are
-commented and explain what each piece is for. Everything below is what they
+After the index, read primitives and mach_zehnder before writing anything —
+they are commented and explain what each piece is for. Everything below is what they
 *don't* say.
 
 Scene files start `from manim import *` then their topic's style
@@ -99,9 +106,15 @@ every position from them so the shape can be retuned in one place, and reuse the
 than building atoms or pulses by hand — that is what keeps the
 animations looking like one set of figures. Pull anything visual from the
 style modules; if you need a new colour or width, add it to the topic's
-`style.py` (or the core one, if more than one topic uses it) rather than
-inline. Helpers go in `<topic>/tools/<module>.py`, the scene and layout only
-it uses in `<topic>/scenes/<module>.py`. A scene that will be a slide calls
+`style.py` (the core one only if it is generic and generically named; a
+species' line colours go with the species) rather than inline. Reusing a
+value another topic happens to use? Define your own constant with that
+value: alias one constant to another only where they mean the same thing. A helper goes at the level of the most general thing it draws: in
+`core/` if it is generic physics or drawing (a Bloch sphere, a cavity, a
+plot axis), even if only your scene uses it so far; in
+`<topic>/tools/<module>.py` if it is the topic's own; and only the scene and
+layout nothing else uses in `<topic>/scenes/<module>.py`. Never import from
+another scene module except to subclass its scene. A scene that will be a slide calls
 `self.beat()` (a no-op method on the scene) where a presenter would stop;
 `manim_atoms.slides` turns it into a slide break.
 

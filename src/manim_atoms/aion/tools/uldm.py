@@ -164,7 +164,7 @@ def make_field_trace(windows, z=DM_TRACE_Z, amplitude=DM_TRACE_AMPLITUDE,
     bands = VGroup()
     for t_from, t_to in windows:
         bands.add(Rectangle(
-            width=t_to - t_from, height=top - bottom, **FIELD_WINDOW_STYLE
+            width=t_to - t_from, height=top - bottom, **WINDOW_STYLE
         ).move_to([0.5 * (t_from + t_to), 0.5 * (top + bottom), 0]))
 
     dots = VGroup(*[Dot(at(t), radius=0.07, color=LASER_COLOR) for t in pulses])

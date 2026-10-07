@@ -22,7 +22,7 @@ quiet run is up in full, fringes and ellipse, then shrinks to the top
 panel to make room for the noisy one, whose shots land on the same Lissajous
 plot -- on top of the quiet ellipse, and on the same curve.
 
-    uv run manim -qh src/manim_atoms/scenes/dai_data.py FringesToEllipse
+    uv run manim -qh src/manim_atoms/aion/scenes/dai_data.py FringesToEllipse
 
 Drawing: a few thousand Dots would be a few thousand mobjects for cairo to
 walk every frame. Instead each series is one VMobject whose points are every
@@ -38,6 +38,7 @@ import numpy as np
 from manim import *
 
 from manim_atoms.resources import data_path
+from manim_atoms.core.plots import dot_cloud, dot_points, static_cloud
 from manim_atoms.aion.style import *
 
 DATA_DIR = data_path("dai_fringes")
@@ -70,6 +71,7 @@ STACK_LOWER_ORIGIN = FRINGE_ORIGIN
 
 
 def load(run):
+    """One run's first N_SHOTS shots as {column: array}, sorted by laser phase step."""
     with open(DATA_DIR / f"{run}.csv") as f:
         rows = list(csv.DictReader(line for line in f if not line.startswith("#")))
     data = {k: np.array([float(r[k]) for r in rows[:N_SHOTS]]) for k in rows[0]}
@@ -78,6 +80,11 @@ def load(run):
 
 
 def plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label):
+    """Axes, tick labels and axis labels, as (axes, frame).
+
+    The frame is (axes, x tick labels, y label, x label), x label last so a
+    panel that loses it can transform the rest. x_label=None leaves it empty.
+    """
     axes = Axes(
         x_range=x_range,
         y_range=[0, 100, 50],
@@ -93,11 +100,6 @@ def plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label):
                            font_size=FONT_TICK, numbers_to_exclude=[]),
         x_axis_config=dict(include_numbers=False),
     )
-    """Axes, tick labels and axis labels, as (axes, frame).
-
-    The frame is (axes, x tick labels, y label, x label), x label last so a
-    panel that loses it can transform the rest. x_label=None leaves it empty.
-    """
     ticks = VGroup(*(
         MathTex(tex, font_size=FONT_TICK, color=PLOT_FOREGROUND)
         .next_to(axes.c2p(x, 0), DOWN, buff=0.18)
@@ -114,6 +116,8 @@ def plot_axes(x_range, x_length, y_length, x_ticks, x_label, y_label):
 
 
 def fringe_plot(y_length, origin, x_label=True):
+    """The fringe panel's (axes, frame): excitation against phase step over 0 to 2 pi,
+    its origin at ``origin``."""
     axes, frame = plot_axes(
         [0, TAU, PI], FRINGE_WIDTH, y_length,
         [(0, "0"), (PI, r"\pi"), (TAU, r"2\pi")],
@@ -125,6 +129,7 @@ def fringe_plot(y_length, origin, x_label=True):
 
 
 def lissajous_plot():
+    """The Lissajous panel's (axes, frame): upper against lower excitation, square."""
     axes, frame = plot_axes(
         [0, 100, 50], LISSAJOUS_SIZE, LISSAJOUS_SIZE,
         [(0, "0"), (50, "50"), (100, "100")],
@@ -133,31 +138,6 @@ def lissajous_plot():
     )
     frame.shift(LISSAJOUS_ORIGIN - axes.c2p(0, 0))
     return axes, frame
-
-
-def dot_points(axes, xs, ys):
-    """Every dot's circle, end to end, in the order the dots arrive."""
-    template = Circle(radius=DATA_DOT_RADIUS, num_components=5).points
-    centres = np.array([axes.c2p(x, y) for x, y in zip(xs, ys)])
-    return (centres[:, None, :] + template[None, :, :]).reshape(-1, 3), len(template)
-
-
-def dot_cloud(points, per_dot, color, count, opacity):
-    cloud = VMobject(fill_color=color, fill_opacity=opacity, stroke_width=0)
-
-    def grow(mob):
-        n = int(count.get_value())
-        # set_points on an empty array leaves cairo nothing to draw, which is
-        # what zero dots should look like.
-        mob.set_points(points[: n * per_dot])
-
-    cloud.add_updater(grow)
-    return cloud
-
-
-def static_cloud(points, color, opacity):
-    return VMobject(fill_color=color, fill_opacity=opacity,
-                    stroke_width=0).set_points(points)
 
 
 def fringe_series(axes, data):
@@ -206,6 +186,7 @@ def build(scene, count, clouds, rings):
 
 
 def newest_ring(centres, color, count):
+    """A ring that follows the newest of the dots ``count`` has brought in."""
     ring = Circle(radius=NEWEST_RING_RADIUS, stroke_color=color,
                   stroke_width=NEWEST_RING_WIDTH)
     ring.add_updater(
@@ -215,6 +196,7 @@ def newest_ring(centres, color, count):
 
 
 def legend_row(entries):
+    """A row of (label, colour) keys, each a dot and its label."""
     rows = VGroup(*(
         VGroup(
             Dot(radius=0.07, color=color),
@@ -226,6 +208,7 @@ def legend_row(entries):
 
 
 def fringe_key():
+    """The key to the two fringe series: lower and upper interferometer."""
     return legend_row([("Lower", LOWER_CLOUD_COLOR),
                        ("Upper", UPPER_CLOUD_COLOR)])
 
@@ -238,6 +221,8 @@ def over_panel(title, key, axes):
 
 
 class FringesToEllipse(Scene):
+    """The quiet run, shot by shot: each lands on the fringes twice and on the
+    Lissajous ellipse once, ringed in all three places."""
     RUN = "lln"
     TITLE = "Low laser noise"
     ELLIPSE_COLOR = LLN_COLOR
@@ -268,24 +253,31 @@ class FringesToEllipse(Scene):
 
 
 class Noisy:
+    """Mixin: the same scene on the run with laser phase noise put on."""
     RUN = "hln"
     TITLE = "High laser noise"
     ELLIPSE_COLOR = HLN_COLOR
 
 
 class FringesToEllipseNoisy(Noisy, FringesToEllipse):
+    """FringesToEllipse on the noisy run: the fringes wash out, the ellipse stays."""
     pass
 
 
 class FringesFirst(FringesToEllipse):
+    """FringesToEllipse starting from the finished fringes, dimmed, lighting each shot as
+    it lands on the ellipse."""
     FRINGES_FIRST = True
 
 
 class FringesFirstNoisy(Noisy, FringesFirst):
+    """FringesFirst on the noisy run."""
     pass
 
 
 class LaserNoiseLissajous(Scene):
+    """The quiet run in full, then shrunk to a top panel while the noisy run's shots land
+    on the same Lissajous ellipse."""
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version."""
 

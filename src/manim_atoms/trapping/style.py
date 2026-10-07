@@ -1,11 +1,54 @@
-"""The trapping scenes' style: the core house style plus laser cooling,
-velocity slicing and the HiFAIS source.
+"""The trapping scenes' style: the core house style plus the experimental
+sequence's timeline, dipole traps, laser cooling, velocity slicing and the
+HiFAIS source.
 
     from manim import *
     from manim_atoms.trapping.style import *
 """
 
+from manim import BLUE_D, WHITE, ManimColor
+
 from manim_atoms.style import *
+
+# --- the experimental sequence --------------------------------------------
+# One shot of the experiment laid out as a timeline, with the Sr level scheme
+# beside it showing which transition each stage drives. The timeline keeps
+# the colours of the group's own sequence figure (fill, edge), so it reads as
+# the same diagram the audience may already have seen.
+SEQUENCE_STAGE_COLORS = {
+    "blue_mot": ("#80b3ff", "#0066ff"),
+    "modulated_red_mot": ("#ff5555", "#d40000"),
+    "narrowband_red_mot": ("#e9afaf", "#c83737"),
+    "upper_dipole_trap": ("#afe9dd", "#37c8ab"),
+    "lower_dipole_trap": ("#ddafe9", "#ac39c8"),
+    "spin_polarization": ("#d7f4d7", "#37c837"),
+    "velocity_slicing": ("#ffe680", "#d4aa00"),
+    "differential_interferometry": ("#ffaacc", "#aa0044"),
+    "state_readout": ("#aaaaff", "#0000ff"),
+}
+# A stage still to come is faint, one already run half lit, the one running
+# fully lit and ringed.
+TIMELINE_AHEAD_OPACITY = 0.22
+TIMELINE_DONE_OPACITY = 0.5
+TIMELINE_ACTIVE_RING = dict(color=WHITE, width=4)
+FONT_TIMELINE = 20
+FONT_REFERENCE = 18
+REFERENCE_IDLE_OPACITY = 0.7  # still legible from the back of a room when idle
+# The imaging stops once the lower trap is loaded; the stages after it carry
+# on over its last frame, dimmed, so the frame stays as a reminder of where
+# the atoms are.
+VIDEO_DIM_OPACITY = 0.5  # of the background-coloured veil drawn over it
+FONT_VIDEO_CLOCK = 24
+
+# --- dipole traps ---------------------------------------------------------
+# The trap beams are far off every resonance, so they drive nothing on the
+# level scheme and take no transition colour: a pale warm white, the colour
+# of light that holds atoms rather than addressing them.
+TRAP_BEAM_COLOR = ManimColor("#f3e3c8")
+TRANSPARENCY_OPACITY = 0.35
+MOT_GLOW_OPACITY = 0.22  # the red MOT's light, at its centre, beside the traps
+MOT_GLOW_LAYERS = 8
+FONT_CAPTION = FONT_LEGEND  # the step within a stage, under its heading
 
 # --- laser cooling --------------------------------------------------------
 # The MOT stages drawn as a cartoon beside the level scheme. The beams take
@@ -30,26 +73,16 @@ FONT_TEMPERATURE = FONT_ANNOTATION
 # Upstream of the MOT: the oven, the 2D MOT it feeds, and the push beam that
 # sends a stream of atoms from there through the vacuum baffle. The oven and
 # the baffle are hardware, so they take the optics grey; the oven gets a warm
-# wash inside, in the holes' rim-light orange, because what it does is get hot.
+# orange wash inside, because what it does is get hot.
 # An atom straight out of the oven has met no light yet and is drawn grey,
 # turning the 461 blue as it is caught.
 OVEN_COLOR = OPTIC_COLOR
-OVEN_HEAT_COLOR = HORIZON_GLOW
+OVEN_HEAT_COLOR = ManimColor("#ffb26b")
 OVEN_HEAT_OPACITY = 0.3
 BAFFLE_COLOR = OPTIC_COLOR
 BAFFLE_WIDTH = 8
 HOT_ATOM_COLOR = GUIDE_COLOR
 
-# A long-baseline detector in cartoon (tools/baseline.py): the vacuum shaft
-# and the atom sources on its side are hardware, in the optics grey; the clock
-# laser runs the shaft's length in the laser red, and the clouds it drives
-# are the ground-state blue.
-SHAFT_COLOR = OPTIC_COLOR
-SHAFT_WALL_WIDTH = 6
-SOURCE_STROKE_WIDTH = 3
-BASELINE_BEAM_OPACITY = 0.55
-LAUNCH_STROKE_WIDTH = 2.5
-FONT_SOURCE = FONT_LEGEND
 
 # --- velocity slicing -----------------------------------------------------
 # The velocity distribution is stacked by internal state, but what the scene
@@ -73,17 +106,20 @@ CHAMBER_LEADER_DOT_RADIUS = 0.045
 FONT_CHAMBER_LABEL = FONT_AXIS
 FONT_CHAMBER_CAPTION = FONT_TICK
 # The MOT loading curves (Fig. 5 inset), one per oven temperature, coolest to
-# hottest on the cool-to-hot ramp the merger tracks' time dots already use --
-# its last four stops, which all sample clear of the dark background.
-OVEN_TEMPERATURE_COLORS = [ManimColor(c) for c in GW_MERGER_TIME_COLORS[1:]]
+# hottest on a cool-to-hot ramp whose stops all sample clear of the dark
+# background.
+OVEN_TEMPERATURE_COLORS = [ManimColor(c) for c in ["#4fc1c1", "#8fd46a", "#f0c24a", "#f06a4a"]]
 LOADING_DOT_RADIUS = 0.04
 LOADING_ERROR_WIDTH = 2
 LOADING_FIT_WIDTH = 2.5
 # A fit carried on past the points it was fitted to is dashed: it is the
 # model's prediction there, which the data are held against, not a fit.
 LOADING_EXTRAPOLATION_DASH = 0.09
-# The atom number the fits stop at: a reference, not data, like a band edge.
-LOADING_CUTOFF_STYLE = GW_BAND_EDGE_STYLE
+# The atom number the fits stop at: a reference, not data, so dashed and in
+# the axes' own colour.
+LOADING_CUTOFF_STYLE = dict(
+    dash_length=0.1, stroke_width=2, stroke_opacity=0.6, color=PLOT_FOREGROUND
+)
 # A dimension drawn across a render: in the photo labels' yellow, which holds
 # up against the CAD's greys and blues, outlined dark behind its line and text.
 DIMENSION_COLOR = PHOTO_LABEL_COLOR

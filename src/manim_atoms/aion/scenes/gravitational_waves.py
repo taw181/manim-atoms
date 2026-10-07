@@ -25,7 +25,8 @@ import numpy as np
 from manim import *
 from PIL import Image
 
-from manim_atoms.aion.tools.gw_plot import curve_points, detector_region, plot_point, sensitivity_axes
+from manim_atoms.aion.tools.gw_plot import detector_region, sensitivity_axes
+from manim_atoms.core.plots import curve_points, plot_point
 from manim_atoms.aion.physics.gw_signals import (
     TRACK_START,
     YEAR,
@@ -36,12 +37,12 @@ from manim_atoms.aion.physics.gw_signals import (
     time_before_merger,
 )
 from manim_atoms.resources import data_path
-from manim_atoms.aion.scenes.ligo import (
-    Panel,
+from manim_atoms.aion.tools.ligo import (
     make_apparatus,
     make_equation,
     make_light,
     make_strain_trace,
+    Panel,
     returning_waves,
 )
 from manim_atoms.aion.style import *
@@ -143,6 +144,7 @@ def hole_positions(t):
 
 # --- the field ------------------------------------------------------------
 def smooth_step(x):
+    """The cubic smoothstep, 0 below 0 and 1 above 1, with zero slope at both ends."""
     x = np.clip(x, 0.0, 1.0)
     return x * x * (3.0 - 2.0 * x)
 

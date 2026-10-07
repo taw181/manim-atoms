@@ -16,9 +16,18 @@ light that is on and the timeline says where in the shot this is.
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.core.shapes import gaussian_band
-from manim_atoms.species.strontium import SrLevels
-from manim_atoms.trapping.tools.sequence import STAGES, Timeline, stage_heading
+from manim_atoms.core.optics import gaussian_band
+from manim_atoms.species.strontium import (
+    SrLevels,
+    TRANSITION_461_COLOR,
+    TRANSITION_698_COLOR,
+)
+from manim_atoms.trapping.tools.sequence import (
+    caption,
+    stage_heading,
+    STAGES,
+    Timeline,
+)
 from manim_atoms.trapping.tools.slicing import CLOUD_WIDTH, SlicingCloud, VelocityPlot
 
 # --- velocity-slicing layout ----------------------------------------------
@@ -59,11 +68,6 @@ VS_AFTER = (r"10\,\mathrm{nK}", r"90\,\%")
 VS_READOUT_Y = 1.2  # just above the plot
 
 
-def caption(text, heading):
-    return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
-        heading, DOWN, buff=0.3, aligned_edge=LEFT)
-
-
 def readout(when, values, color, plot):
     """'Before slicing  T ~ ...  pi-pulse fidelity ~ ...', over the plot's left end."""
     temperature, fidelity = values
@@ -83,6 +87,8 @@ def recaption(step, text, heading):
 
 
 class VelocitySlicing(Scene):
+    """A long clock pulse excites the slowest atoms, a push beam clears the rest: the
+    velocity distribution and the cloud side by side. One stage_break() per step."""
     def stage_break(self):
         """The pause after each step. A slide wrapper stops here instead."""
         self.wait(VS_HOLD)

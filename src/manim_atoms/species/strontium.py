@@ -11,6 +11,23 @@ from manim import *
 
 from manim_atoms.style import *
 
+# --- the lines' colours ---------------------------------------------------
+# The transitions take the hues of the usual Sr level diagram -- blue for the
+# 461 nm line, red for 689 nm, which is what makes the red MOT red. The clock
+# line is the interferometer's laser and so keeps the laser red it has
+# everywhere else; that is a salmon red, so 689 nm takes a pure, deeper one,
+# which keeps the two lines apart when they sit side by side.
+TRANSITION_461_COLOR = ManimColor("#5b7cff")
+TRANSITION_689_COLOR = ManimColor("#f01c24")
+TRANSITION_698_COLOR = LASER_COLOR
+# The transparency beam light-shifts a level out of the 689 light's reach;
+# 488 nm is blue-green, and green is the one hue the other lines leave free.
+TRANSITION_488_COLOR = GREEN_C
+# The blue MOT's two repumps (679 and 707 nm), which are always on together
+# and so share one hue: amber, which samples clear of the 461 blue, the 689
+# magenta and the clock line's laser red.
+REPUMP_COLOR = ManimColor("#f5b400")
+
 
 # --- the Sr level scheme --------------------------------------------------
 # Schematic, not to scale: the fine-structure splitting of 3P_J is spread out

@@ -29,17 +29,14 @@ from manim_atoms.interferometry.tools.clock import (
     clock_rate,
     dial_hand,
     draw_ports,
-    fire_vertical_pulse,
     make_clock_hand,
     make_dial,
     phase_sweep,
     readout_equation,
-    strobe_pulse,
 )
 from manim_atoms.interferometry.scenes.gradiometer import (
     GradiometerBase,
     RunsContinuously,
-    launch_time,
 )
 from manim_atoms.interferometry.tools.gradiometer import (
     GR_DIAL_RADIUS,
@@ -52,8 +49,13 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
     gradiometer_frame,
-    sweep_pulse,
     vertices,
+)
+from manim_atoms.interferometry.tools.pulses import (
+    fire_vertical_pulse,
+    launch_time,
+    strobe_pulse,
+    sweep_pulse,
 )
 from manim_atoms.core.primitives import (
     draw_legs,

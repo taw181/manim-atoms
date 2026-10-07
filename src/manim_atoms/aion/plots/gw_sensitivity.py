@@ -83,6 +83,7 @@ def draw_merger(ax, M, z, q=1, label_mass=False):
 
 
 def merger_legends(ax, redshifts):
+    """Two legends, lower left: one track per redshift, and one dot per time-to-merger marker."""
     tracks = [
         Line2D([], [], color=merger_color(z).to_hex(), lw=1.4, label=f"$z = {z:g}$")
         for z in sorted(redshifts)
@@ -98,6 +99,8 @@ def merger_legends(ax, redshifts):
 
 
 def dark_axes(ax):
+    """Style matplotlib axes for the dark slide background: no top or right spine,
+    foreground-coloured ticks and labels."""
     ax.set_facecolor(PLOT_BACKGROUND)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -111,6 +114,7 @@ def dark_axes(ax):
 
 
 def sensitivity_figure():
+    """The whole figure: every detector's curve and region, and the merger tracks."""
     fig, ax = plt.subplots(figsize=(8, 5.4))
     fig.set_facecolor(PLOT_BACKGROUND)
     for name, (stem, label_at) in DETECTORS.items():

@@ -55,6 +55,9 @@ def snapshot_ms(t_ms):
 # --- the stages -----------------------------------------------------------
 @dataclass(frozen=True)
 class Stage:
+    """One stage of the sequence: its colour key, its label, and, where it has them, the
+    transition it drives, the stretch of imaging video that shows it and the paper
+    that covers it."""
     key: str  # into SEQUENCE_STAGE_COLORS
     label: str  # Tex; "\\" breaks the line
     transition: str | None = None  # into TRANSITIONS
@@ -193,3 +196,10 @@ def stage_heading(stage):
         font_size=FONT_ANNOTATION, color=spec["color"],
     )
     return VGroup(name, line).arrange(DOWN, buff=0.3)
+
+
+def caption(text, heading):
+    """A grey caption under ``heading``, left-aligned with it."""
+    return Tex(text, font_size=FONT_CAPTION, color=lighten(GUIDE_COLOR)).next_to(
+        heading, DOWN, buff=0.3, aligned_edge=LEFT
+    )
