@@ -4,8 +4,9 @@ The cooling stages differ in which light is on, how strong the field
 gradient is and how hot and big the cloud is, so each of those is a knob
 here: a beam set's intensity, the coils' gradient, the cloud's radius and
 temperature. The level-scheme side of the story -- which transition the
-light drives -- is SrLevels in manim_atoms.species.strontium; SweepFan adds the
-red MOT's frequency sweep to it. Upstream of the trap, Oven, AtomBeam,
+light drives -- is the species' level scheme (species.scheme.LevelScheme,
+SrLevels for strontium); SweepFan adds a narrow-line MOT's frequency sweep
+to it. Upstream of the trap, Oven, AtomBeam,
 make_push_beam and make_baffle draw where its atoms come from.
 """
 
@@ -13,12 +14,6 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import (
-    LV_3P,
-    LV_3P_X,
-    TRANSITION_689_COLOR,
-    TRANSITIONS,
-)
 
 
 # --- the trap -------------------------------------------------------------
@@ -169,37 +164,42 @@ def make_sawtooth(color, width=0.9, height=0.3, teeth=3):
     return VMobject(stroke_color=color, stroke_width=3).set_points_as_corners(pts)
 
 
-# --- the red MOT's frequency sweep, drawn on the level scheme -------------
-# The modulated MOT's light is swept in a sawtooth from far red of the 689 nm
+# --- a narrow-line MOT's frequency sweep, drawn on the level scheme -------
+# The modulated MOT's light is swept in a sawtooth from far red of its narrow
 # line up to it, so atoms at every Doppler shift find it resonant somewhere in
 # the sweep. On the diagram that is a fan of arrows ending on the line and
-# just below it, with the lit one climbing the fan and dropping back. In
-# SrLevels' own coordinates: add the fan to the diagram before scaling it.
+# just below it, with the lit one climbing the fan and dropping back. In the
+# level scheme's own coordinates: add the fan to it before scaling it.
 FAN_COUNT = 4
 FAN_STEP = 0.08  # between neighbouring arrows' ends
-# Ends just short of the stack, so no end reads as 3P0, and no further left,
-# or the fan swings across the 689 nm label.
-FAN_END_X = LV_3P_X[0] - 0.22
+# Ends just short of the upper level, so no end reads as the level below it,
+# and no further left, or the fan swings across the line's label.
+FAN_END_GAP = 0.22
 FAN_TICK = 0.22  # the dashed marks the arrows end on
 FAN_PERIOD = 1.2  # s, one sawtooth
 FAN_IDLE_OPACITY = 0.2
-FAN_SAWTOOTH_AT = (0.55, 1.95)
 
 
 class SweepFan(VGroup):
-    """The 689 nm light swept in a sawtooth, drawn as a fan of arrows.
+    """A species' ``role`` line (its narrow line, by default) swept in a
+    sawtooth, drawn as a fan of arrows, with the sawtooth at the
+    transition's ``fan_at``.
 
     Runs by itself once added to the scene; ``shown`` (0 to 1) fades the whole
     fan, which is how a stage switches the sweep on and off.
     """
 
-    def __init__(self, color=TRANSITION_689_COLOR, **kwargs):
+    def __init__(self, species, role="narrow", **kwargs):
         super().__init__(**kwargs)
-        start = np.array([*TRANSITIONS["689"]["start"], 0.0])
+        line = species.transition(role)
+        color = line.color
+        start = np.array([*line.start, 0.0])
+        end_x = species.levels[line.upper].xs[0] - FAN_END_GAP
+        top = species.level_y(line.upper, line.upper_j)
         self.arrows = VGroup()
         self.ticks = VGroup()
         for k in range(FAN_COUNT):  # k = 0 is on resonance
-            end = np.array([FAN_END_X, LV_3P[1] - k * FAN_STEP, 0.0])
+            end = np.array([end_x, top - k * FAN_STEP, 0.0])
             self.arrows.add(Arrow(
                 start, end, buff=0, color=color, stroke_width=TRANSITION_ACTIVE_WIDTH - 2,
                 tip_length=0.16, max_tip_length_to_length_ratio=0.1,
@@ -207,7 +207,7 @@ class SweepFan(VGroup):
             ))
             self.ticks.add(DashedLine(end + LEFT * FAN_TICK / 2, end + RIGHT * FAN_TICK / 2,
                                       dash_length=0.04, stroke_width=2, color=color))
-        self.sawtooth = make_sawtooth(color, width=0.7, height=0.25).move_to([*FAN_SAWTOOTH_AT, 0])
+        self.sawtooth = make_sawtooth(color, width=0.7, height=0.25).move_to([*line.fan_at, 0])
         self.add(self.arrows, self.ticks, self.sawtooth)
         self.shown = ValueTracker(0.0)
         self.t = 0.0

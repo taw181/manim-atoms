@@ -146,7 +146,9 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Level diagrams
 
 - **A two-level clock transition** beside a figure (it doubles as the key), lit up while a pulse drives it. `species.two_level`: `make_level_diagram`, `transition_glow`.
-- **Strontium's levels and lines**: 461, 689 and 698 nm, the repumps, 488 nm. `species.strontium`: `SrLevels`, and `SrLevels.drive` to light the running lines.
+- **A species as data**: its levels (a fine-structure stack as one `Manifold`), the transitions an experiment drives, the repump and decay paths, extras drawn on request, and which transition does which job ("cooling", "narrow", "clock", ...). Tools ask a species for a transition by role. `species.scheme`: `Species`, `Level`, `Manifold`, `Transition`, `Path`, `Extra`.
+- **A species' level diagram**, each line lit while a stage drives it. `species.scheme`: `LevelScheme`, `LevelScheme.drive`; its pieces `transition_arrow`, `path_arrows`.
+- **Strontium**: 461, 689 and 698 nm, the repumps, 488 nm, 87Sr's F = 9/2. `species.strontium`: `STRONTIUM`, and `SrLevels`, its level scheme.
 - **A clock transition dragged by an oscillating field.** `aion.tools.uldm`: `make_modulated_levels`, `dm_upper`.
 - **The 689 nm line swept in a sawtooth.** `trapping.tools.cooling`: `SweepFan`, `make_sawtooth`.
 

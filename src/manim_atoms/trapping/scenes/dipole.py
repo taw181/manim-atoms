@@ -22,7 +22,11 @@ from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band, gaussian_spot
-from manim_atoms.species.strontium import SrLevels, TRANSITION_488_COLOR
+from manim_atoms.species.strontium import (
+    SrLevels,
+    STRONTIUM,
+    TRANSITION_488_COLOR,
+)
 from manim_atoms.trapping.tools.cooling import SweepFan
 from manim_atoms.trapping.tools.dipole import (
     DT_FALL_TIME,
@@ -74,7 +78,7 @@ class DipoleTrapLoading(Scene):
 
     def construct(self):
         levels = SrLevels(repump=True, transparency=True)
-        fan = SweepFan()
+        fan = SweepFan(STRONTIUM)
         levels.add(fan)  # in the diagram's own coordinates, so before scaling
         levels.scale(DT_LEVELS_SCALE).move_to(DT_LEVELS_CENTER)
         stages = STAGES[3:6]
@@ -131,7 +135,7 @@ class DipoleTrapLoading(Scene):
         self.play(FadeIn(timeline), FadeIn(zero), *levels.drive("689"))
 
         # --- the upper trap ---
-        heading = stage_heading(stages[0]).move_to(DT_HEADING_CORNER, aligned_edge=UL)
+        heading = stage_heading(stages[0], STRONTIUM).move_to(DT_HEADING_CORNER, aligned_edge=UL)
         step = caption(r"traps, transparency beam and repumps on", heading)
         self.play(
             *timeline.activate(0),
@@ -224,7 +228,7 @@ class DipoleTrapLoading(Scene):
     def next_stage(self, timeline, i, heading, step, text):
         """Move the timeline, heading and caption on to stage ``i`` of this
         scene's three; returns the new heading and caption."""
-        new_heading = stage_heading(STAGES[3 + i]).move_to(
+        new_heading = stage_heading(STAGES[3 + i], STRONTIUM).move_to(
             DT_HEADING_CORNER, aligned_edge=UL
         )
         new_step = caption(text, new_heading)

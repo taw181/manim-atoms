@@ -15,7 +15,6 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import TRANSITIONS
 
 
 # --- the papers each part of the sequence is written up in ----------------
@@ -60,7 +59,7 @@ class Stage:
     that covers it."""
     key: str  # into SEQUENCE_STAGE_COLORS
     label: str  # Tex; "\\" breaks the line
-    transition: str | None = None  # into TRANSITIONS
+    transition: str | None = None  # a key into the species' transitions
     video_ms: tuple[float, float] | None = None  # the stretch of the imaging it spans
     reference: int | None = None  # into REFERENCES
 
@@ -185,15 +184,18 @@ class References(VGroup):
                 for k in range(len(self.entries))]
 
 
-def stage_heading(stage):
-    """The running stage's name, and the transition it drives, in big type."""
+def stage_heading(stage, species):
+    """The running stage's name, and the transition of ``species`` it drives,
+    in big type."""
     name = Tex(stage.label, font_size=FONT_TITLE + 8)
     if stage.transition is None:
         return VGroup(name)
-    spec = TRANSITIONS[stage.transition]
+    spec = species.transitions[stage.transition]
+    lower = species.levels[spec.lower].term
+    upper = species.upper_term(spec.key)
     line = MathTex(
-        rf"{stage.transition}\,\mathrm{{nm}}:\ {{}}^1S_0 \rightarrow {spec['upper']}",
-        font_size=FONT_ANNOTATION, color=spec["color"],
+        rf"{stage.transition}\,\mathrm{{nm}}:\ {lower} \rightarrow {upper}",
+        font_size=FONT_ANNOTATION, color=spec.color,
     )
     return VGroup(name, line).arrange(DOWN, buff=0.3)
 

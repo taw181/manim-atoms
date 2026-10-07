@@ -10,7 +10,11 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.core.optics import gaussian_band
-from manim_atoms.species.strontium import SrLevels, TRANSITION_698_COLOR
+from manim_atoms.species.strontium import (
+    SrLevels,
+    STRONTIUM,
+    TRANSITION_698_COLOR,
+)
 from manim_atoms.trapping.tools.dipole import (
     DT_HEADING_CORNER,
     DT_HOLD,
@@ -65,7 +69,7 @@ class SignalInjection(Scene):
     def construct(self):
         levels = SrLevels().scale(DT_LEVELS_SCALE).move_to(DT_LEVELS_CENTER)
         timeline = Timeline(STAGES[6:9]).move_to(DT_TIMELINE_CENTER)
-        heading = stage_heading(STAGES[7]).move_to(DT_HEADING_CORNER, aligned_edge=UL)
+        heading = stage_heading(STAGES[7], STRONTIUM).move_to(DT_HEADING_CORNER, aligned_edge=UL)
 
         horizontal = VGroup(
             *[

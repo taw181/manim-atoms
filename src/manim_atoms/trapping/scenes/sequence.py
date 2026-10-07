@@ -15,7 +15,7 @@ from manim import *
 
 from manim_atoms.resources import data_path
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import SrLevels
+from manim_atoms.species.strontium import SrLevels, STRONTIUM
 from manim_atoms.trapping.tools.sequence import (
     IMAGING_CROP,
     IMAGING_FRAMES_PER_SNAPSHOT,
@@ -91,7 +91,7 @@ class ExperimentSequence(Scene):
 
         heading = VGroup()
         for i, stage in enumerate(stages):
-            new_heading = stage_heading(stage).move_to(self.HEADING_CENTER)
+            new_heading = stage_heading(stage, STRONTIUM).move_to(self.HEADING_CENTER)
             anims = [
                 *timeline.activate(i),
                 *(levels.drive(stage.transition) if self.LEVELS else []),

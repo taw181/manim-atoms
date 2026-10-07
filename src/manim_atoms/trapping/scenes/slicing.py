@@ -19,6 +19,7 @@ from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band
 from manim_atoms.species.strontium import (
     SrLevels,
+    STRONTIUM,
     TRANSITION_461_COLOR,
     TRANSITION_698_COLOR,
 )
@@ -96,7 +97,7 @@ class VelocitySlicing(Scene):
     def construct(self):
         levels = SrLevels().scale(VS_LEVELS_SCALE).move_to(VS_LEVELS_CENTER)
         timeline = Timeline(STAGES[VS_STAGE - 1:VS_STAGE + 2]).move_to(VS_TIMELINE_CENTER)
-        heading = stage_heading(STAGES[VS_STAGE]).move_to(VS_HEADING_CORNER, aligned_edge=UL)
+        heading = stage_heading(STAGES[VS_STAGE], STRONTIUM).move_to(VS_HEADING_CORNER, aligned_edge=UL)
         plot = VelocityPlot(center=VS_PLOT_CENTER, width=VS_PLOT_WIDTH,
                             height=VS_PLOT_HEIGHT)
         cloud = SlicingCloud(VS_CLOUD_CENTER)

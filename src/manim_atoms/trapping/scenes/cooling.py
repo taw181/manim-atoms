@@ -36,6 +36,7 @@ from manim_atoms.trapping.tools.cooling import (
 )
 from manim_atoms.species.strontium import (
     SrLevels,
+    STRONTIUM,
     TRANSITION_461_COLOR,
     TRANSITION_689_COLOR,
 )
@@ -145,7 +146,7 @@ class CoolingSequence(MovingCameraScene):
 
     def construct(self):
         levels = SrLevels(repump=True)
-        fan = SweepFan()
+        fan = SweepFan(STRONTIUM)
         levels.add(fan)  # in the diagram's own coordinates, so before scaling
         levels.scale(COOL_LEVELS_SCALE).move_to(COOL_LEVELS_CENTER)
         stages = STAGES[:3]
@@ -224,7 +225,7 @@ class CoolingSequence(MovingCameraScene):
         levels.move_to(TWOD_CAMERA + COOL_LEVELS_CENTER)
         for key, group in levels.active.items():
             group.set_opacity(1 if key == "461" else 0)
-        heading = stage_heading(TWOD_STAGE).move_to(TWOD_HEADING_CORNER, aligned_edge=UL)
+        heading = stage_heading(TWOD_STAGE, STRONTIUM).move_to(TWOD_HEADING_CORNER, aligned_edge=UL)
         oven = Oven(TWOD_NOZZLE)
         oven_label = Tex(r"Sr oven", font_size=FONT_LEGEND, color=lighten(GUIDE_COLOR))
         oven_label.next_to(oven, RIGHT, buff=0.3)
@@ -268,7 +269,7 @@ class CoolingSequence(MovingCameraScene):
     def heading(self, i):
         """Stage ``i``'s heading, in the upper left; the modulated red MOT's
         carries the depth of its sweep under the transition it drives."""
-        heading = stage_heading(STAGES[i])
+        heading = stage_heading(STAGES[i], STRONTIUM)
         if STAGES[i].key == "modulated_red_mot":
             heading.add(MathTex(
                 COOL_MODULATION_TEX, font_size=FONT_LEGEND, color=TRANSITION_689_COLOR,

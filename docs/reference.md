@@ -158,12 +158,30 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ## species
 
+### `species.scheme`
+
+`src/manim_atoms/species/scheme.py` — A species as data, and the level diagram drawn from it.
+
+- class `Level()`: One level: its term (TeX), height and horizontal extent on the diagram, colour, and where its term goes (side and gap).
+- class `Manifold()`: A fine-structure stack (3P_J): one level per J at ``ys[J]``, sharing ``xs``, each labelled with its J. ``colors`` overrides a J's colour (default OPTIC_COLOR); the term goes at ``name_side``, or at ``name_side_with[extra]`` = (side, buff) while that Extra is drawn.
+- class `Transition()`: A driven line: an arrow from ``start`` to ``end`` (diagram coordinates), double-headed if ``double``, labelled at ``side`` with its wavelength (``key``, in nm) and natural linewidth (TeX). ``lower`` and ``upper`` are its levels' keys, ``upper_j`` the J in a Manifold. ``fan_at`` is where the sawtooth goes when the line is swept (SweepFan).
+- class `Path()`: A repump or a decay, as a list of straight legs (pairs of points). A decay is dashed: the atom's doing, not a beam's. A label, if any, goes at ``label_at``, aligned by ``align``.
+- class `Extra()`: Levels and paths drawn only when a figure asks for them by name.
+- class `Species()`: An atom as a figure needs it.
+  - `.ground()`: The ground level.
+  - `.transition(role)`: The transition that does ``role``.
+  - `.level_y(key, j=None)`: A level's height, or a J's in a Manifold.
+  - `.upper_term(key)`: A transition's upper term, with its J if it ends in a Manifold: {}^3P_J and J = 1 give {}^3P_1.
+- `transition_arrow(spec, color, width)`: A transition's arrow and its label, the wavelength over the linewidth, in ``color`` at stroke ``width``.
+- `path_arrows(spec, color, width)`: A repump's arrows, or a spontaneous decay drawn dashed along its path, with its label if it has one.
+- class `LevelScheme(VGroup)`: A species' level diagram, with ``extras`` (names of its Extras) drawn too.
+  - `.drive(*keys)`: Animations lighting the transitions and paths ``keys`` and putting out the rest.
+
 ### `species.strontium`
 
-`src/manim_atoms/species/strontium.py` — Strontium's levels and the lines a Sr experiment drives.
+`src/manim_atoms/species/strontium.py` — Strontium as a species (species.scheme): its levels and the lines a Sr experiment drives.
 
-- class `SrLevels(VGroup)`: The Sr levels the sequence uses, with its three transitions.
-  - `.drive(*keys)`: Animations lighting the transitions ``keys`` and putting out the rest.
+- class `SrLevels(LevelScheme)`: The Sr levels the sequence uses, with its three transitions: the level scheme of STRONTIUM.
 
 ### `species.two_level`
 
@@ -404,7 +422,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - class `Coils(VGroup)`: An anti-Helmholtz pair above and below the trap, with the current running opposite ways round them. How heavily they are drawn stands for the field gradient: ``set_gradient(COIL_STRONG_WIDTH)`` or ``COIL_WEAK_WIDTH``.
   - `.set_gradient(width)`
 - `make_sawtooth(color, width=0.9, height=0.3, teeth=3)`: The shape of the red MOT's frequency modulation.
-- class `SweepFan(VGroup)`: The 689 nm light swept in a sawtooth, drawn as a fan of arrows.
+- class `SweepFan(VGroup)`: A species' ``role`` line (its narrow line, by default) swept in a sawtooth, drawn as a fan of arrows, with the sawtooth at the transition's ``fan_at``.
 - class `AtomCloud(VGroup)`: A cloud of ``n`` atoms in a trap at ``center``.
 - class `Oven(VGroup)`: A crucible with a nozzle on top, open at ``nozzle`` (the point the atoms come out of). Drawn warm inside, because it is hot.
 - `make_push_beam(color, start, end)`: The push beam: narrow and bright like the up beam, running from ``start`` to ``end`` with its arrowheads pointing the way it pushes.
@@ -446,7 +464,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.activate(i)`
 - class `References(VGroup)`: A brace under each run of stages a paper covers, numbered, and the numbered list of papers below. The one covering the running stage is lit.
   - `.cite(n)`: Animations lighting reference ``n`` (None for none) and dimming the rest.
-- `stage_heading(stage)`: The running stage's name, and the transition it drives, in big type.
+- `stage_heading(stage, species)`: The running stage's name, and the transition of ``species`` it drives, in big type.
 - `caption(text, heading)`: A grey caption under ``heading``, left-aligned with it.
 
 ### `trapping.tools.slicing`
