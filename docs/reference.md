@@ -112,6 +112,18 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `recoil(state, from_below)`: (velocity change in recoils, new state) for an arm in ``state`` ("g" or "e") hit by a pulse travelling up (``from_below``) or down: a |g> arm absorbs, moving with the photon; an |e> arm is stimulated to emit into the pulse, recoiling against it.
 - `state_legend()`: The key to the two states: an atom in each colour beside |g, p> and |e, p + hbar k>, one above the other.
 
+### `core.projection`
+
+`src/manim_atoms/core/projection.py` — A plane seen from an angle, drawn on a flat scene.
+
+- class `TiltedView()`: An orthographic view of the x-y plane from ``elevation`` above it, turned by ``azimuth`` about z, with the world's origin at ``center`` on screen and one world unit drawn ``scale`` long.
+  - `.point(v)`: Where the world point ``v`` (x, y and optionally z) lands on screen.
+  - `.depth(v)`: How near the viewer ``v`` is: paint in order of increasing depth.
+  - `.squash()`: How much a length in the plane, running away from the viewer, is foreshortened: 1 looking straight down, 0 edge on.
+  - `.rise()`: How long a unit step along z is drawn, before ``scale``: 0 looking straight down, 1 edge on.
+  - `.disc(at, radius, **style)`: A circle of ``radius`` lying in the plane about ``at``: an ellipse.
+  - `.outline(corners, **style)`: The polygon through world points ``corners``.
+
 ### `core.spacetime`
 
 `src/manim_atoms/core/spacetime.py` — Space-time diagrams: worldlines, and running one on a single lab clock.
