@@ -476,6 +476,19 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.stage_break()`: The pause after each step. A slide wrapper stops here instead.
   - `uv run manim -ql src/manim_atoms/trapping/scenes/slicing.py VelocitySlicing`
 
+## tweezers
+
+### `tweezers.physics.rearrangement`
+
+`src/manim_atoms/tweezers/physics/rearrangement.py` — A tweezer array's numbers: its sites, which of them load, and the moves that rearrange the loaded ones into a defect-free block.
+
+- class `Plan()`: A rearrangement: the traps kept, where each starts and ends, and the loaded traps dropped as surplus. ``kept`` and ``dropped`` index the sites; ``start`` and ``end`` are (len(kept), 2), in ``kept``'s order.
+- `square_sites(rows, cols, pitch)`: The (rows * cols, 2) positions of a square lattice of traps ``pitch`` apart, centred on the origin, row by row from the top left.
+- `load_sites(n, fill, rng)`: Which of n traps caught an atom, each with probability ``fill``. ``rng`` is a numpy Generator, seeded so a scene loads the same way every render.
+- `plan_rearrangement(sites, loaded, targets)`: Pair loaded traps with target sites so the summed squared distance is least, and drop the loaded traps left over.
+- `positions(plan, share)`: Every kept trap ``share`` of the way from its start to its end.
+- `longest_move(plan)`: The farthest any kept trap travels: what sets how long the move takes.
+
 ## aion
 
 ### `aion.style`

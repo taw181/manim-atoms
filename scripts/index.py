@@ -45,7 +45,7 @@ INDEX = ROOT / "docs" / "index.md"
 
 # Layer order, as CLAUDE.md lays the package out, and within a topic the
 # order a reader meets its parts in.
-LAYERS = ["style", "core", "species", "interferometry", "trapping", "aion",
+LAYERS = ["style", "core", "species", "interferometry", "trapping", "tweezers", "aion",
           "slides", "bibliography", "resources"]
 PARTS = ["style", "physics", "tools", "plots", "scenes"]
 

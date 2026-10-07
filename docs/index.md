@@ -18,7 +18,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 ## How the pieces fit
 
-- **Layers.** Imports run one way only: `core` → `species` → {`interferometry`, `trapping`} → `aion`. `slides` depends on `core` alone. Each topic has these parts:
+- **Layers.** Imports run one way only: `core` → `species` → {`interferometry`, `trapping`, `tweezers`} → `aion`. `slides` depends on `core` alone. Each topic has these parts:
   - `tools/`: helpers, plus the geometry constants they use;
   - `scenes/`: Scene classes;
   - where it has them, `physics/` (numbers, no manim) and `plots/` (matplotlib).
@@ -173,6 +173,10 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `chamber_label` adds a label with a leader line;
   - `dimension` adds a dimension arrow;
   - `at` is a pixel of the render on screen.
+
+## Tweezer arrays
+
+- **The array's numbers**: its sites, which of them load, and the plan that rearranges the loaded ones into a block, every trap moving at once. `tweezers.physics.rearrangement`: `square_sites`, `load_sites`, `plan_rearrangement`, `Plan`, `positions`, `longest_move`.
 
 ## Timelines and staged sequences
 
