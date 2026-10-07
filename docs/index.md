@@ -59,12 +59,13 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A vertical pulse column** where light travel time is ignored. `interferometry.tools.pulses`:
   - `fire_vertical_pulse` climbs to each atom with lab time stopped;
   - `strobe_pulse` flashes whole with lab time running.
-- **A pulse with light travel time**, reaching the far end of the baseline later. `interferometry.tools.pulses`:
+- **A pulse with light travel time**, reaching the far end of the baseline later, its geometry (crossings, laser height, flashes) passed in. `interferometry.tools.pulses`:
   - `photon_worldline` is the line;
   - `fire_pulse` plays it with lab time stopped;
   - `sweep_pulse` plays it with lab time running, calling back at each crossing;
   - `climbing_pulse` draws it as far as the clock has got;
   - `launch_time` is when it left the laser, and `laser_caption` names the phase it carries there.
+  - On the gradiometer's baseline, with its geometry bound: `interferometry.tools.gradiometer`: `gr_fire_pulse`, `gr_sweep_pulse`, `gr_launch_time`, `gr_laser_caption`.
 - **The k-vector marker** beside a beam. `core.primitives`: `make_k_arrow`.
 - **A beam with its wavefronts**, which can be tilted. `interferometry.tools.phase_shear`: `make_beam`.
 - **A pulse's caption on the caption row.** `interferometry.tools.pulses`: `pulse_caption`.
@@ -93,6 +94,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Pulse sequences and arm bookkeeping
 
 - **The engine.** It steps one atom through any list of pulses. Each `Pulse` has an area (½ splits, 1 swaps), a direction, optionally the arms it drives and the arms it drops, and a stage. Merging is automatic: outputs that coincide after a π/2 become one, which is how an interferometer closes. It returns a `Sequence` of `Step`s, each with where the pulse lands, its splits, hits, merges and legs, plus every arm's corners and the output ports. It covers Mach–Zehnder, LMT, Ramsey–Bordé, and with a displacement (disp) a gravimeter or a fountain. `interferometry.tools.pulse_sequence`: `run_sequence`, `Pulse`, `Sequence`, `Step`, `Arm`.
+- **Pulses with light travel time**: a `Pulse` with a slope reaches each height later (`Pulse.arrival`), and `run_sequence` times it at the atom's height, so a gradiometer is one sequence per cloud. `run_sequence(climb="leg")` pins corners to unequal pulse arrivals and keeps the loop closed, the convention for an exaggerated, modulated light travel time. `interferometry.tools.pulse_sequence`: `Pulse`, `run_sequence`.
 - **Animating a sequence**: one ray per pulse, a flash on every arm it kicks, the recolouring and splits, then the legs (bowed, if displaced). Hooks add captions and stops. `interferometry.tools.pulse_sequence`: `play_sequence`.
 - **Sequences already written**: the LMT Mach–Zehnder of any odd order, and the LMT ladder. `interferometry.tools.lmt`: `lmz_pulses`, `lmt_ladder_pulses`.
 
@@ -100,7 +102,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **A displacement function** disp(t) bows a leg through `leg_point` and `draw_wavy_legs`. `no_displacement` is the quiet baseline. Module: `core.spacetime`.
 - **A gravitational wave's displacement** of a cloud. `aion.tools.gradiometer_gw`: `gw_displacement`.
-- **One interferometer's corners when the pulses arrive late.** `aion.tools.gradiometer_gw`: `gw_vertices`.
+- **The pulses with a wave passing**, each crossing the baseline at the light travel time the wave sets, for the engine. `aion.tools.gradiometer_gw`: `gw_pulses`.
 - **Per-cloud displacement in a gradiometer scene**, as a hook. `interferometry.scenes.gradiometer`: `GradiometerBase.displacement`, `GradiometerBase.nominal`.
 
 ## Phase as a clock hand
@@ -134,8 +136,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
   - `GradiometerBase` has two clouds, their arms, hands, dials and ports, with hooks `GradiometerBase.open_arms`, `GradiometerBase.port_slope`, `GradiometerBase.port_extra` and `GradiometerBase.close`;
   - `RunsContinuously` is the mixin that runs it on one lab clock;
   - `Gradiometer` is the quiet case, and `GradiometerContinuous` is the same on one clock.
-- **Its geometry.** `interferometry.tools.gradiometer`:
-  - `vertices` is one cloud's four corners;
+- **Its geometry and bookkeeping.** `interferometry.tools.gradiometer`:
+  - `GR_PULSES` are the three sloped pulses; `cloud_sequence` steps one cloud through them on the engine; `corners` gives its four (a, b, b_up, c); `cloud_legs` the legs a pulse launches, as draw_legs takes them;
   - `gradiometer_frame` is the title, laser line, time axis and baseline.
 - **The AION versions.** See [AION scenes](#aion-scenes). Each subclasses `GradiometerBase` and overrides `fly`, `shoot` and `pulse_note`.
 - **A long-baseline detector in cartoon** (a static slide): the shaft, the sources and the fountain loops. `aion.tools.baseline`: `make_baseline`, `source`, `launch_loop`.
@@ -287,9 +289,6 @@ Copy from these when building something similar.
 
 ## Still to generalise
 
-These are general in what they draw but not yet in how they are called:
-they are fixed to one scene's layout, or live on a scene as methods. They
-are the candidates for the next round of generalisation.
-
-- `interferometry.tools.pulse_sequence`: `run_sequence` draws pulses as vertical (no light travel time); the gradiometer's sloped pulses (`interferometry.tools.pulses`: `sweep_pulse`) are not yet a pulse option.
-- `interferometry.tools.pulses`: the sloped pulses take their defaults from the gradiometer's `GR_*` geometry.
+Nothing is listed at the moment. A tool that is general in what it draws
+but fixed to one scene's layout, or living on a scene as a method, goes
+here as the next candidate for generalising.

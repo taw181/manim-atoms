@@ -24,7 +24,7 @@ different times or places.
 
 | Signal | What it changes | How to draw it | Example |
 |---|---|---|---|
-| gravitational wave, as the readout sees it | the light travel time | pulses arrive early or late: `gw_vertices(z, gw_arrival_lags(z))`, sloped pulses with `lag=gw_lag(t)` | `GradiometerGW` |
+| gravitational wave, as the readout sees it | the light travel time | pulses arrive early or late: `cloud_sequence(gw_pulses(), z)` for the corners, sloped pulses with `lag=gw_lag(t)` | `GradiometerGW` |
 | gravitational wave, as proper distance | where the clouds are | arms bowed by `gw_displacement(t, z0)` (interferometry recipe 5) | `GradiometerGWStretch` |
 | ultralight dark matter | ω_A, the clock frequency | hands winding by `dm_phase(rate, t1, t2)` over each arm's excited window; the geometry is untouched | `DarkMatterPhase`, `DarkMatterGradiometer` |
 | an injected light shift | one cloud's ω_A, while a beam is on | `wound_with_shift` on that cloud's hands, `growing_band` for the beam's window | `LightShiftSignal` |
@@ -97,7 +97,9 @@ Subclass `GradiometerBase` with `RunsContinuously` mixed in first
    its exaggeration constants in the geometry block there.
 2. **What it does to each cloud.** Choose from the table above, and write
    only that:
-   - early or late pulses go in `shoot` (passing `lag` to `sweep_pulse`);
+   - early or late pulses are the scene's own `Pulse` list (slopes set by
+     the signal, as `gw_pulses`) through `cloud_sequence`, and `shoot`
+     passes the `lag` to `gr_sweep_pulse`;
    - a bow goes in `displacement(cloud)`;
    - a phase goes in each hand's tracker updater, as the integral of the
      signal over the arm's excited window.

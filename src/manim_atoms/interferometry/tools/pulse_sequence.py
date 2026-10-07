@@ -32,10 +32,24 @@ What happens at a pulse:
   an interferometer closes, so there is no special "merge" pulse.
 
 Velocities are in photon recoils, and ``u`` is the height a one-recoil arm
-climbs per unit of lab time. Pulses are vertical: they reach every arm at
-the instant they fire. Light travel time, as in the gradiometer, would need
-an arrival(t, z) per pulse; that is interferometry.tools.pulses' sweep_pulse
-for now.
+climbs per unit of lab time.
+
+Light travel time: a Pulse with a ``slope`` (lab time per unit height) is
+sloped, passing height ``z_ref`` at its ``t``; ``Pulse.arrival(z)`` is when
+it reaches height z. run_sequence times each pulse at its arrival at the
+atom's starting height: one pulse reaches every arm of one cloud at once,
+the arm separation being negligible against the baseline the light
+crosses. A gradiometer is then one run_sequence per cloud over the same
+pulses, each cloud's corners late by its own light travel time.
+
+``climb="leg"`` (instead of the default ``"time"``) makes ``u`` the height a
+one-recoil arm climbs per leg, however long the leg lasts. With equal pulse
+intervals the two agree. With unequal ones -- a light travel time a wave is
+modulating, exaggerated far past the real 1e-21 so it can be seen -- "time"
+would draw the loop failing to close, which reads as a bug; "leg" pins every
+corner to its pulse's arrival and keeps the loop closed, at the price of
+kicked legs whose slopes differ. That is a drawing convention, not physics:
+the recoil velocity never changes, and the wave's signal is a phase.
 """
 
 import os
@@ -57,7 +71,11 @@ MERGE_TOL = 1e-9  # how close two outputs must be to be one
 class Pulse:
     """One laser pulse: when it fires, its area in units of pi (0.5 splits, 1
     swaps), which side it comes from, which arms it drives (None: all),
-    which arms leave the figure after it, and the stage it belongs to."""
+    which arms leave the figure after it, and the stage it belongs to.
+
+    With light travel time, ``slope`` is the lab time the light takes per
+    unit height and ``t`` is when it passes height ``z_ref``; a slope of 0
+    (the default) is a vertical pulse, reaching every height at ``t``."""
 
     t: float
     area: float = 1.0
@@ -65,6 +83,12 @@ class Pulse:
     arms: frozenset | None = None
     drop: frozenset = frozenset()
     stage: int = 0
+    slope: float = 0.0
+    z_ref: float = 0.0
+
+    def arrival(self, z):
+        """When the pulse reaches height ``z``."""
+        return self.t + self.slope * (z - self.z_ref)
 
 
 @dataclass
@@ -112,14 +136,24 @@ class Sequence:
 
 
 def run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None,
-                 port=SEQUENCE_PORT):
+                 port=SEQUENCE_PORT, climb="time"):
     """Step one atom, in |g> at ``start`` (lab time, height) with velocity
-    ``v0`` recoils, through ``pulses`` (in time order). After the last pulse
-    the arms fly on to ``until`` (default: ``port`` past it): those legs are
-    the output ports. ``disp(t)`` displaces everything (gravity: -g t^2 / 2
-    from the launch). Returns a Sequence.
+    ``v0`` recoils, through ``pulses`` (in time order). Each pulse acts at its
+    arrival at the starting height. After the last pulse the arms fly on to
+    ``until`` (default: ``port`` past it): those legs are the output ports.
+    ``disp(t)`` displaces everything (gravity: -g t^2 / 2 from the launch).
+    ``climb`` is "time" (``u`` per unit time) or "leg" (``u`` per leg, the
+    ports going on at the last leg's rate; see the module docstring).
+    Returns a Sequence.
     """
+    if climb not in ("time", "leg"):
+        raise ValueError(f"climb {climb!r}: 'time' or 'leg'")
     t0, z0 = float(start[0]), float(start[1])
+    times = [pulse.arrival(z0) for pulse in pulses]
+    if climb == "leg":
+        if len(pulses) < 2:
+            raise ValueError("climb='leg' needs two pulses, to set the ports' rate")
+        out_rate = u / (times[-1] - times[-2])  # the ports go on at the last leg's
     arms = {"": Arm("", "g", v0, t0, z0)}
 
     def point(arm):
@@ -130,7 +164,7 @@ def run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None,
     for k, pulse in enumerate(pulses):
         if pulse.area not in (0.5, 1.0):
             raise ValueError(f"pulse area {pulse.area}: only pi/2 (0.5) and pi (1) are drawn")
-        x = pulse.t
+        x = times[k]
         step = Step(x, pulse)
         step.driven = [n for n in arms if pulse.arms is None or n in pulse.arms]
         if pulse.area == 0.5:
@@ -172,13 +206,19 @@ def run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None,
         for arm in arms.values():
             arm_start = point(arm)
             if last and until is None:
+                rate = u if climb == "time" else out_rate
                 drop = disp(x + port) - disp(x)
-                end = arm_start + [port, port * arm.v * u + drop, 0]
-                arm.z += arm.v * u * port
+                end = arm_start + [port, port * arm.v * rate + drop, 0]
+                arm.z += arm.v * rate * port
                 arm.t = x + port
             else:
-                dt = (until if last else pulses[k + 1].t) - x
-                arm.z += arm.v * u * dt
+                dt = (until if last else times[k + 1]) - x
+                if climb == "time":
+                    arm.z += arm.v * u * dt
+                elif last:
+                    arm.z += arm.v * out_rate * dt
+                else:
+                    arm.z += arm.v * u
                 arm.t = x + dt
                 end = point(arm)
             step.legs.append((arm.name, arm_start, end, arm.state, disp))

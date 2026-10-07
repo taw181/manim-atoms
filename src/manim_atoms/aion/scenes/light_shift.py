@@ -19,23 +19,25 @@ from manim_atoms.interferometry.tools.clock import (
     phase_sweep,
 )
 from manim_atoms.interferometry.tools.gradiometer import (
+    cloud_sequence,
+    corners,
     GR_ARM,
-    GR_DIALS,
     GR_DIAL_RADIUS,
+    GR_DIALS,
+    gr_fire_pulse,
     GR_LAG,
     GR_LASER_GAP,
     GR_LASER_Z,
-    GR_LOWER_Z,
+    GR_PULSES,
     GR_SIGNAL,
     GR_SLOPE,
+    gr_sweep_pulse,
     GR_T,
     GR_T0,
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
     gradiometer_frame,
-    vertices,
 )
-from manim_atoms.interferometry.tools.pulses import fire_pulse, sweep_pulse
 from manim_atoms.core.primitives import (
     draw_legs,
     fluoresce,
@@ -133,8 +135,8 @@ class LightShiftSignal(GradiometerBase):
     def construct(self):
         gradiometer_frame(self, r"A light shift on one interferometer mimics a signal")
 
-        low = vertices(GR_LOWER_Z, 0.0)
-        up = vertices(GR_UPPER_Z, GR_LAG)
+        seqs = {c: cloud_sequence(GR_PULSES, self.nominal(c)) for c in ("low", "up")}
+        low, up = corners(seqs["low"]), corners(seqs["up"])
 
         rate = clock_rate(GR_T)
         phase = {
@@ -203,7 +205,7 @@ class LightShiftSignal(GradiometerBase):
             .next_to(self.beam, UP, buff=0.25)
         )
 
-        self.low, self.up = low, up
+        self.low, self.up, self.seqs = low, up, seqs
         self.rate, self.phase = rate, phase
         self.atoms, self.seeds = atoms, seeds
         self.hands, self.big = [], VGroup()
@@ -358,7 +360,7 @@ class LightShiftSignal(GradiometerBase):
         rate = self.rate
 
         # --- pulse 1: the beamsplitter -----------------------------------
-        fire_pulse(self, GR_T0, flash=list(self.seeds.values()))
+        gr_fire_pulse(self, GR_T0, flash=list(self.seeds.values()))
         self.open_arms("low")
         self.open_arms("up")
 
@@ -403,7 +405,7 @@ class LightShiftSignal(GradiometerBase):
         self.beat()
 
         # --- pulse 2: the mirror ------------------------------------------
-        fire_pulse(self, GR_T0 + GR_T, flash=[a for p in atoms.values() for a in p])
+        gr_fire_pulse(self, GR_T0 + GR_T, flash=[a for p in atoms.values() for a in p])
         big = self.big
         self.play(
             *[state_colors(p[0], KICKED_COLOR) for p in atoms.values()],
@@ -430,7 +432,7 @@ class LightShiftSignal(GradiometerBase):
         # Anchored on the two recombination points, which sit an arm above
         # the clouds' starting heights: a pulse anchored on those heights
         # crosses one arm's light travel time late and misses the atoms.
-        fire_pulse(
+        gr_fire_pulse(
             self,
             low[3][0],
             flash=[atoms["low"][0], atoms["up"][0]],
@@ -575,7 +577,7 @@ class LightShiftSignalContinuous(RunsContinuously, LightShiftSignal):
 
     def shoot(self, k, near, far, fade=(), on_near=None, on_far=None):
         """One pulse. No wave here, so every one of them is the quiet one."""
-        return sweep_pulse(
+        return gr_sweep_pulse(
             self,
             self.clock,
             GR_T0 + k * GR_T,

@@ -131,3 +131,60 @@ def test_only_the_arms_a_pulse_names_are_driven():
 def test_dropped_arms_leave_the_figure():
     seq = run_sequence([Pulse(0, 0.5, drop=frozenset({"0"})), Pulse(1, 1)], (0, 0), U)
     assert set(seq.ports) == {"1"}
+
+
+# --- light travel time, and the per-leg climb --------------------------------
+def test_a_sloped_pulse_reaches_each_height_later():
+    pulse = Pulse(1.0, slope=0.2, z_ref=-1.0)
+    assert pulse.arrival(-1.0) == 1.0
+    assert pulse.arrival(2.0) == pytest.approx(1.6)
+    assert Pulse(3.0).arrival(5.0) == 3.0  # vertical: everywhere at once
+
+
+def test_two_clouds_on_one_baseline_are_offset_by_the_light_travel_time():
+    slope, height = 0.1, 3.0
+    pulses = [Pulse(k * T, area, slope=slope, z_ref=0.0)
+              for k, area in enumerate((0.5, 1.0, 0.5))]
+    near = run_sequence(pulses, (pulses[0].arrival(0.0), 0.0), U)
+    far = run_sequence(pulses, (pulses[0].arrival(height), height), U)
+    assert [s.x for s in far.steps] == pytest.approx([s.x + slope * height for s in near.steps])
+    for name, corners in near.paths.items():
+        for (t, z, _), (t_far, z_far, _) in zip(corners, far.paths[name]):
+            assert (t_far, z_far) == pytest.approx((t + slope * height, z + height))
+    assert set(closing(far)) == {"g", "e"}
+
+
+def test_climbing_per_leg_is_climbing_in_time_when_the_intervals_are_equal():
+    pulses = [Pulse(0, 0.5), Pulse(T, 1), Pulse(2 * T, 0.5)]
+    in_time = run_sequence(pulses, (0, 0), U)
+    per_leg = run_sequence(pulses, (0, 0), U * T, climb="leg")
+    for name, corners in in_time.paths.items():
+        assert np.allclose(corners, per_leg.paths[name])
+
+
+def test_climbing_per_leg_pins_the_corners_and_closes_unequal_intervals():
+    times = [0.0, 2.0, 5.0]
+    pulses = [Pulse(t, area) for t, area in zip(times, (0.5, 1.0, 0.5))]
+    assert not closing(run_sequence(pulses, (0, 0), U))  # in time it stays open
+    seq = run_sequence(pulses, (0, 0), 1.0, climb="leg")
+    assert set(closing(seq)) == {"g", "e"}
+    assert [t for t, _, _ in seq.paths["0"]][:3] == times
+    assert [z for _, z, _ in seq.paths["1"]][:3] == [0.0, 1.0, 1.0]  # one recoil, one leg
+
+
+def test_climb_is_time_or_leg():
+    with pytest.raises(ValueError):
+        run_sequence([Pulse(0, 0.5), Pulse(1, 0.5)], (0, 0), U, climb="space")
+
+
+def test_the_gradiometer_corners_are_what_vertices_and_gw_vertices_drew():
+    from manim_atoms.aion.tools.gradiometer_gw import gw_pulses
+    from manim_atoms.interferometry.tools.gradiometer import (
+        GR_LOWER_Z, GR_PULSES, GR_UPPER_Z, cloud_sequence, corners,
+    )
+    before = json.loads((Path(__file__).parent / "fixtures" / "gradiometer_before.json").read_text())
+    for kind, pulses in (("quiet", GR_PULSES), ("gw", gw_pulses())):
+        for cloud, z in (("low", GR_LOWER_Z), ("up", GR_UPPER_Z)):
+            seq = cloud_sequence(pulses, z)
+            assert np.allclose(corners(seq), before[kind][cloud], rtol=0, atol=1e-12)
+            assert set(closing(seq)) == {"g", "e"}

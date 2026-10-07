@@ -14,14 +14,21 @@ noise is common to both and cancels in the difference.
 The slope is exaggerated by many orders of magnitude. For a 100 m baseline
 L/c is ~0.3 us against an interrogation time T of order a second.
 
-- vertices: one interferometer's four corners; gradiometer_frame: the title,
-  laser line, time axis and baseline every gradiometer scene opens with.
+- GR_PULSES, cloud_sequence, corners, cloud_legs: the bookkeeping, done by
+  the pulse-sequence engine. Each cloud is one run_sequence over the same
+  sloped pulses, timed at the cloud's own arrival, with climb="leg" so the
+  corners stay pinned to the arrivals however the timing is modulated;
+  corners gives the four (a, b, b_up, c) the scenes index, cloud_legs the
+  legs a pulse launches.
+- gradiometer_frame: the title, laser line, time axis and baseline every
+  gradiometer scene opens with.
 - laser_jumps: the laser's phase on a cloud's two hands, at the times each
   pulse reaches it.
+- gr_fire_pulse, gr_sweep_pulse, gr_launch_time, gr_laser_caption: the
+  sloped pulses of interferometry.tools.pulses with the GR_* geometry below.
 
-The pulses that climb the baseline are in interferometry.tools.pulses,
-whose defaults bind to the GR_* geometry block below. The scenes built on these
-are GradiometerBase and its subclasses, in interferometry.scenes.gradiometer.
+The scenes built on these are GradiometerBase and its subclasses, in
+interferometry.scenes.gradiometer.
 """
 
 import numpy as np
@@ -29,7 +36,15 @@ from manim import *
 
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.primitives import make_guide
+from manim_atoms.core.spacetime import no_displacement
 from manim_atoms.interferometry.tools.clock import CP_LASER_PHASES
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse, run_sequence
+from manim_atoms.interferometry.tools.pulses import (
+    fire_pulse,
+    laser_caption,
+    launch_time,
+    sweep_pulse,
+)
 
 
 # --- gradiometer geometry -------------------------------------------------
@@ -52,13 +67,40 @@ GR_LASER_GAP = GR_LOWER_Z - GR_LASER_Z  # laser to the near cloud
 GR_OUT = 2.4
 
 
-def vertices(z0, lag):
-    """The four corners of one interferometer in the (time, baseline) plane."""
-    a = np.array([GR_T0 + lag, z0, 0.0])
-    b = a + RIGHT * GR_T
-    b_up = b + UP * GR_ARM
-    c = b_up + RIGHT * GR_T
-    return a, b, b_up, c
+# pi/2, pi, pi/2 from the laser below, each passing the lower cloud at
+# GR_T0 + k GR_T and the upper one GR_LAG later
+GR_PULSES = [
+    Pulse(GR_T0 + k * GR_T, area, slope=GR_SLOPE, z_ref=GR_LOWER_Z)
+    for k, area in enumerate((0.5, 1.0, 0.5))
+]
+
+
+def cloud_sequence(pulses, z0, disp=no_displacement):
+    """One cloud's interferometer: the atom at height ``z0`` stepped through
+    ``pulses``, each acting when it reaches ``z0``. One recoil climbs GR_ARM
+    per leg (climb="leg"), so the corners stay pinned to the arrivals even
+    when a wave makes the intervals unequal; ``disp`` bows the legs."""
+    return run_sequence(pulses, (pulses[0].arrival(z0), z0), GR_ARM, disp=disp,
+                        port=GR_OUT, climb="leg")
+
+
+def corners(seq):
+    """A cloud's four corners (a, b, b_up, c): the split, the two arms at the
+    mirror (b the one left alone at the split, b_up the one kicked there),
+    and the recombination."""
+    return seq.paths["0"][0], seq.paths["0"][1], seq.paths["1"][1], seq.paths["0"][2]
+
+
+def cloud_legs(seq, k, pair, wavy=False):
+    """The legs pulse k launches, as draw_legs takes them: (atom, start, end,
+    colour) for each arm, ``pair[0]`` flying arm "0" (left alone at the
+    split) and ``pair[1]`` arm "1"; with ``wavy``, the displacement too, as
+    draw_wavy_legs takes them."""
+    colors = {"g": ATOM_COLOR, "e": KICKED_COLOR}
+    return [
+        (pair[int(name)], start, end, colors[state], *((disp,) if wavy else ()))
+        for name, start, end, state, disp in seq.steps[k].legs
+    ]
 
 
 def gradiometer_frame(scene, title_tex):
@@ -139,3 +181,47 @@ def laser_jumps(v):
         [(v[1][0], -phi2)],
         [(v[0][0], -phi1), (v[1][0], +phi2), (v[3][0], -phi3)],
     )
+
+
+# --- the sloped pulses, on this baseline ------------------------------------
+def gr_fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None,
+                  z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None):
+    """fire_pulse on the gradiometer's baseline: from the laser at GR_LASER_Z,
+    crossing the lower cloud at ``x_at_lower`` and the upper ``lag`` later.
+    ``flash`` is split into the two clouds' atoms at GR_MID_Z. With
+    ``reference``, the quiet pulse (crossing at ``quiet_x``, default
+    ``x_at_lower``, at GR_SLOPE) is drawn as a dashed ghost across GR_BASELINE."""
+    near = [m for m in flash if m.get_center()[1] < GR_MID_Z]
+    far = [m for m in flash if m.get_center()[1] >= GR_MID_Z]
+    fire_pulse(scene, x_at_lower, near, far, lag, z_near, z_far, GR_LASER_Z,
+               reference=_quiet(x_at_lower, quiet_x) if reference else None, note=note)
+
+
+def gr_sweep_pulse(scene, clock, x_at_lower, near, far, lag=GR_LAG, reference=False,
+                   note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None,
+                   fade=(), on_near=None, on_far=None):
+    """sweep_pulse on the gradiometer's baseline, as gr_fire_pulse is
+    fire_pulse: ``near`` and ``far`` are the points to flash at the two
+    crossings."""
+    return sweep_pulse(
+        scene, clock, x_at_lower, near, far, lag, z_near, z_far, GR_LASER_Z,
+        reference=_quiet(x_at_lower, quiet_x) if reference else None, note=note,
+        fade=fade, on_near=on_near, on_far=on_far,
+    )
+
+
+def _quiet(x_at_lower, quiet_x):
+    """The quiet pulse's ghost, as fire_pulse's reference takes it."""
+    base = x_at_lower if quiet_x is None else quiet_x
+    return (base, GR_SLOPE, GR_LOWER_Z, GR_BASELINE)
+
+
+def gr_launch_time(x_at_lower, z_at=GR_LOWER_Z):
+    """When a quiet pulse that crosses height ``z_at`` at ``x_at_lower`` left
+    the laser."""
+    return launch_time(x_at_lower, GR_SLOPE, z_at, GR_LASER_Z)
+
+
+def gr_laser_caption(n, x_at_lower, z_at=GR_LOWER_Z):
+    """phi_n on the laser line, just right of where quiet pulse n left it."""
+    return laser_caption(n, gr_launch_time(x_at_lower, z_at), GR_LASER_Z)

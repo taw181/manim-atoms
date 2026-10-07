@@ -43,15 +43,16 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_TERMS,
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
+    GR_PULSES,
+    cloud_legs,
+    cloud_sequence,
+    corners,
+    gr_fire_pulse,
+    gr_laser_caption,
+    gr_launch_time,
+    gr_sweep_pulse,
     gradiometer_frame,
     laser_jumps,
-    vertices,
-)
-from manim_atoms.interferometry.tools.pulses import (
-    fire_pulse,
-    laser_caption,
-    launch_time,
-    sweep_pulse,
 )
 from manim_atoms.core.primitives import (
     draw_legs,
@@ -88,8 +89,10 @@ class GradiometerBase(Scene):
     baseline, each split into two arms carrying a clock hand, each read out
     on its own dial and closed into a pair of ports.
 
-    A subclass's construct sets ``self.low`` / ``self.up`` (each cloud's four
-    vertices), ``self.atoms`` (two arms per cloud), ``self.seeds``,
+    A subclass's construct sets ``self.seqs`` (each cloud's run through the
+    pulse-sequence engine, from interferometry.tools.gradiometer's
+    cloud_sequence), ``self.low`` / ``self.up`` (each cloud's four corners,
+    from corners), ``self.atoms`` (two arms per cloud), ``self.seeds``,
     ``self.phase`` (two trackers per cloud), ``self.hands`` and ``self.big``,
     then flies its own pulse sequence. Gradiometer is the quiet one; the AION
     scenes put a wave, a field or a light shift through it.
@@ -272,8 +275,8 @@ class Gradiometer(GradiometerBase):
     def construct(self):
         gradiometer_frame(self, r"Differential interferometry: one laser, two interferometers")
 
-        low = vertices(GR_LOWER_Z, 0.0)
-        up = vertices(GR_UPPER_Z, GR_LAG)
+        seqs = {c: cloud_sequence(GR_PULSES, self.nominal(c)) for c in ("low", "up")}
+        low, up = corners(seqs["low"]), corners(seqs["up"])
         phase = {
             cloud: (ValueTracker(0.0), ValueTracker(0.0))
             for cloud in ("low", "up")
@@ -307,7 +310,7 @@ class Gradiometer(GradiometerBase):
         # The offset between the two interferometers goes unnamed here: with
         # nothing passing through it changes nothing, and DarkMatterGradiometer
         # is where it is named, as the reason the two clocks read differently.
-        self.low, self.up = low, up
+        self.low, self.up, self.seqs = low, up, seqs
         self.rate, self.phase = clock_rate(GR_T), phase
         self.atoms, self.seeds = atoms, seeds
         self.hands, self.big = [], VGroup()
@@ -416,25 +419,23 @@ class Gradiometer(GradiometerBase):
         rate = self.rate
 
         # --- pulse 1: the beamsplitter -----------------------------------
-        self.play(FadeIn(laser_caption(1, GR_T0)), run_time=0.3)
-        fire_pulse(self, GR_T0, flash=list(self.seeds.values()))
+        self.play(FadeIn(gr_laser_caption(1, GR_T0)), run_time=0.3)
+        gr_fire_pulse(self, GR_T0, flash=list(self.seeds.values()))
         self.open_arms("low")
         self.open_arms("up")
         self.laser_jump(0)
 
         draw_legs(self, [
-            (atoms["low"][0], low[0], low[1], ATOM_COLOR),
-            (atoms["low"][1], low[0], low[2], KICKED_COLOR),
-            (atoms["up"][0], up[0], up[1], ATOM_COLOR),
-            (atoms["up"][1], up[0], up[2], KICKED_COLOR),
+            *cloud_legs(self.seqs["low"], 0, atoms["low"]),
+            *cloud_legs(self.seqs["up"], 0, atoms["up"]),
         ], extra=[
             phase[c][1].animate.increment_value(rate * GR_T) for c in ("low", "up")
         ])
         self.beat()
 
         # --- pulse 2: the mirror ------------------------------------------
-        self.play(FadeIn(laser_caption(2, GR_T0 + GR_T)), run_time=0.3)
-        fire_pulse(self, GR_T0 + GR_T, flash=[a for p in atoms.values() for a in p])
+        self.play(FadeIn(gr_laser_caption(2, GR_T0 + GR_T)), run_time=0.3)
+        gr_fire_pulse(self, GR_T0 + GR_T, flash=[a for p in atoms.values() for a in p])
         big = self.big
         self.play(
             *[state_colors(p[0], KICKED_COLOR) for p in atoms.values()],
@@ -445,10 +446,8 @@ class Gradiometer(GradiometerBase):
         )
         self.laser_jump(1)
         draw_legs(self, [
-            (atoms["low"][0], low[1], low[3], KICKED_COLOR),
-            (atoms["low"][1], low[2], low[3], ATOM_COLOR),
-            (atoms["up"][0], up[1], up[3], KICKED_COLOR),
-            (atoms["up"][1], up[2], up[3], ATOM_COLOR),
+            *cloud_legs(self.seqs["low"], 1, atoms["low"]),
+            *cloud_legs(self.seqs["up"], 1, atoms["up"]),
         ], extra=[
             phase[c][0].animate.increment_value(rate * GR_T) for c in ("low", "up")
         ])
@@ -458,8 +457,8 @@ class Gradiometer(GradiometerBase):
         # Anchored on the two recombination points, which sit an arm above
         # the clouds' starting heights: a pulse anchored on those heights
         # crosses one arm's light travel time late and misses the atoms.
-        self.play(FadeIn(laser_caption(3, *low[3][:2])), run_time=0.3)
-        fire_pulse(self, low[3][0], flash=[atoms["low"][0], atoms["up"][0]],
+        self.play(FadeIn(gr_laser_caption(3, *low[3][:2])), run_time=0.3)
+        gr_fire_pulse(self, low[3][0], flash=[atoms["low"][0], atoms["up"][0]],
                    z_near=low[3][1], z_far=up[3][1])
         self.laser_jump(2)
 
@@ -477,7 +476,7 @@ class GradiometerContinuous(RunsContinuously, Gradiometer):
         low, up, phase = self.low, self.up, self.phase
 
         # Lab time starts as the first pulse leaves the laser.
-        clock = self.clock = ValueTracker(launch_time(GR_T0))
+        clock = self.clock = ValueTracker(gr_launch_time(GR_T0))
         self.add(clock)
 
         for cloud in ("low", "up"):
@@ -500,8 +499,8 @@ class GradiometerContinuous(RunsContinuously, Gradiometer):
             ((GR_T0, GR_LOWER_Z), (GR_T0 + GR_T, GR_LOWER_Z), tuple(low[3][:2])),
             start=1,
         ):
-            caption = laser_caption(n, x, z)
-            launch = launch_time(x, z)
+            caption = gr_laser_caption(n, x, z)
+            launch = gr_launch_time(x, z)
             caption.add_updater(lambda m, t=launch: m.set_opacity(
                 1.0 if clock.get_value() >= t - 1e-6 else 0.0
             ))
@@ -522,7 +521,7 @@ class GradiometerContinuous(RunsContinuously, Gradiometer):
     def shoot(self, k, near, far, fade=(), on_near=None, on_far=None,
               z_near=GR_LOWER_Z, z_far=GR_UPPER_Z):
         """One pulse. No wave here, so every one of them is the quiet one."""
-        return sweep_pulse(
+        return gr_sweep_pulse(
             self, self.clock, GR_T0 + k * GR_T, near=near, far=far,
             lag=GR_LAG, note=self.pulse_note(k), fade=fade,
             z_near=z_near, z_far=z_far, on_near=on_near, on_far=on_far,

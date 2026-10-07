@@ -142,7 +142,9 @@ result. Worked example: `LMTMachZehnder` (stage captions, pulse labels and
 stops through the hooks).
 
 A `Pulse` is:
-- `t`, the lab time it fires (pulses are vertical: no light travel time);
+- `t`, the lab time it fires. A pulse is vertical unless it has a `slope`
+  (lab time per unit height, the light travel time); then `t` is when it
+  passes `z_ref`, and `pulse.arrival(z)` is when it reaches height z;
 - `area` in units of π: `0.5` splits every arm it drives into `name+"0"`
   (left alone) and `name+"1"` (swapped and kicked), `1` swaps and kicks;
 - `from_below`: the kick is `core.primitives.recoil(state, from_below)`,
@@ -215,9 +217,16 @@ def bowed(corners):
 loop = Polygon(*bowed(seq.paths["1"]), *reversed(bowed(seq.paths["0"])), **LOOP_AREA_STYLE)
 ```
 
-The engine's pulses are vertical. Pulses that arrive late with light travel
-time (the gradiometer's `sweep_pulse`) are not yet a pulse option: extend
-`interferometry.tools.pulse_sequence` rather than hand-writing a one-off.
+**Light travel time.** A sloped `Pulse` reaches each height at its own
+time, and `run_sequence` acts it at its arrival at the atom's starting
+height: one pulse reaches all of a cloud's arms at once (their separation is
+negligible against the baseline). Two clouds on one baseline are two runs
+over the same pulses, the far one late by L/c; that is how the gradiometer
+is built (recipe 6). When the light travel time is modulated and
+exaggerated, as a passing wave does, the pulse intervals come out unequal
+and a loop drawn in time fails to close; pass `climb="leg"`, which makes `u`
+a height per leg and pins every corner to its pulse's arrival. That is a
+drawing convention, and the scene should not claim the slopes as physics.
 
 ### 3. Phase as clock hands, stop-start
 
@@ -282,7 +291,7 @@ The rules that make it work:
   `always_redraw` that switches itself on when `now` passes it. Examples
   are a trace marker lighting up and a band filling in (`growing_band`).
 - **Pulses become strobes:** `strobe_pulse` without light travel time,
-  `sweep_pulse` with it. What a pulse does to the atoms goes in its
+  `sweep_pulse` with it (`gr_sweep_pulse` on the gradiometer's baseline). What a pulse does to the atoms goes in its
   `on_arrival` / `on_near` / `on_far` callback, which runs on the instant.
 - **Flash the vertex, not the atom**: the atom is moving.
 - **A continuous variant is a subclass** that rewrites `fly` (and `close`),
@@ -322,8 +331,11 @@ draw_wavy_legs(self, [(lo, a, b, ATOM_COLOR, fall), (hi, a, b_up, KICKED_COLOR, 
 Don't rebuild it. Subclass `interferometry.scenes.gradiometer.GradiometerBase`.
 
 **Its `construct` sets:**
-- `self.low`, `self.up` — each cloud's four corners, from
-  `vertices(z, lag)`;
+- `self.seqs` — each cloud's run through the engine,
+  `cloud_sequence(GR_PULSES, z)` (or a scene's own pulses, as
+  `gw_pulses()`), from `interferometry.tools.gradiometer`;
+- `self.low`, `self.up` — each cloud's four corners, `corners(seq)`;
+  `cloud_legs(seq, k, pair)` gives the legs pulse k launches;
 - `self.atoms` — `{"low": [ground, kicked], "up": [...]}`;
 - `self.seeds`;
 - `self.phase` — two trackers per cloud;
@@ -340,7 +352,8 @@ furniture.
 
 **On one lab clock**, mix `RunsContinuously` in *first*
 (`class X(RunsContinuously, GradiometerBase)`). Its `fly` must set
-`self.clock`, and it writes `shoot(k, ...)` around `sweep_pulse`.
+`self.clock`, and it writes `shoot(k, ...)` around `gr_sweep_pulse`
+(stop-start scenes use `gr_fire_pulse`).
 
 Read `Gradiometer` (quiet, stop-start), `GradiometerContinuous` and
 `DarkMatterGradiometer` before writing one.
