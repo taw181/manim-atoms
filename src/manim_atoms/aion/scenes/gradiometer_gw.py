@@ -34,34 +34,38 @@ from manim_atoms.core.spacetime import (
     draw_wavy_legs,
 )
 from manim_atoms.interferometry.tools.gradiometer import (
-    GR_T,
-    GR_LOWER_Z,
-    GR_UPPER_Z,
-    GR_MID_Z,
-    gradiometer_frame,
-    GR_TERMS_WIDTH,
-    GR_SIGNAL,
+    cloud_legs,
+    cloud_sequence,
+    corners,
     GR_DIAL_RADIUS,
     GR_DIALS,
+    gr_fire_pulse,
+    GR_LOWER_Z,
+    GR_MID_Z,
+    GR_SIGNAL,
+    gr_sweep_pulse,
+    GR_T,
+    GR_TERMS_WIDTH,
+    GR_UPPER_Z,
+    gradiometer_frame,
 )
-from manim_atoms.interferometry.tools.pulses import fire_pulse, sweep_pulse
 from manim_atoms.interferometry.tools.clock import (
     clock_rate,
     make_dial,
     phase_sweep,
 )
 from manim_atoms.aion.tools.gradiometer_gw import (
-    GW_PULSES,
-    GW_TRACE_X,
-    gw_lag,
-    gw_arrival_lags,
-    quiet_arrival,
-    gw_displacement,
-    make_strain_trace,
     arrival_dots,
-    strain_marker,
-    gw_vertices,
     arrival_note,
+    gw_arrival_lags,
+    gw_displacement,
+    gw_lag,
+    GW_PULSES,
+    gw_pulses,
+    GW_TRACE_X,
+    make_strain_trace,
+    quiet_arrival,
+    strain_marker,
 )
 
 
@@ -86,8 +90,8 @@ class GradiometerGW(GradiometerBase):
         lags = [gw_lag(t) for t in GW_PULSES]  # cloud to cloud, i.e. L/c
         low_lags = gw_arrival_lags(GR_LOWER_Z)
         up_lags = gw_arrival_lags(GR_UPPER_Z)
-        low = gw_vertices(GR_LOWER_Z, low_lags)
-        up = gw_vertices(GR_UPPER_Z, up_lags)
+        seqs = {c: cloud_sequence(gw_pulses(), self.nominal(c)) for c in ("low", "up")}
+        low, up = corners(seqs["low"]), corners(seqs["up"])
 
         # What the wave has done, in one number per interferometer: the upper
         # one's two pulse intervals are no longer equal, so its arms no longer
@@ -138,7 +142,7 @@ class GradiometerGW(GradiometerBase):
         # sequence neither needs nor minds it.
         self.add(*[t for pair in phase.values() for t in pair])
 
-        self.low, self.up = low, up
+        self.low, self.up, self.seqs = low, up, seqs
         self.lags, self.low_lags, self.up_lags = lags, low_lags, up_lags
         self.rate, self.excited, self.phase = rate, excited, phase
         self.atoms, self.seeds, self.dots = atoms, seeds, dots
@@ -247,7 +251,7 @@ class GradiometerGW(GradiometerBase):
 
         # --- pulse 1: the beamsplitter, arriving late ----------------------
         self.play(FadeIn(self.dots[0], scale=0.4), run_time=0.3)
-        fire_pulse(
+        gr_fire_pulse(
             self, GW_PULSES[0] + self.low_lags[0],
             flash=[self.seeds["low"], self.seeds["up"]],
             lag=lags[0], reference=True, quiet_x=quiet_arrival(0),
@@ -257,10 +261,8 @@ class GradiometerGW(GradiometerBase):
         self.open_arms("up")
 
         draw_legs(self, [
-            (atoms["low"][0], low[0], low[1], ATOM_COLOR),
-            (atoms["low"][1], low[0], low[2], KICKED_COLOR),
-            (atoms["up"][0], up[0], up[1], ATOM_COLOR),
-            (atoms["up"][1], up[0], up[2], KICKED_COLOR),
+            *cloud_legs(self.seqs["low"], 0, atoms["low"]),
+            *cloud_legs(self.seqs["up"], 0, atoms["up"]),
         ], extra=[
             phase[c][1].animate.set_value(rate * excited[c][0])
             for c in ("low", "up")
@@ -269,7 +271,7 @@ class GradiometerGW(GradiometerBase):
 
         # --- pulse 2: the mirror, arriving early --------------------------
         self.play(FadeIn(self.dots[1], scale=0.4), run_time=0.3)
-        fire_pulse(
+        gr_fire_pulse(
             self, GW_PULSES[1] + self.low_lags[1],
             flash=[a for p in atoms.values() for a in p],
             lag=lags[1], reference=True, quiet_x=quiet_arrival(1),
@@ -284,10 +286,8 @@ class GradiometerGW(GradiometerBase):
             run_time=0.5,
         )
         draw_legs(self, [
-            (atoms["low"][0], low[1], low[3], KICKED_COLOR),
-            (atoms["low"][1], low[2], low[3], ATOM_COLOR),
-            (atoms["up"][0], up[1], up[3], KICKED_COLOR),
-            (atoms["up"][1], up[2], up[3], ATOM_COLOR),
+            *cloud_legs(self.seqs["low"], 1, atoms["low"]),
+            *cloud_legs(self.seqs["up"], 1, atoms["up"]),
         ], extra=[
             phase[c][0].animate.set_value(rate * excited[c][1])
             for c in ("low", "up")
@@ -296,7 +296,7 @@ class GradiometerGW(GradiometerBase):
 
         # --- pulse 3: recombine -------------------------------------------
         self.play(FadeIn(self.dots[2], scale=0.4), run_time=0.3)
-        fire_pulse(
+        gr_fire_pulse(
             self, GW_PULSES[2] + self.low_lags[2],
             flash=[atoms["low"][0], atoms["up"][0]],
             lag=lags[2], reference=True, quiet_x=quiet_arrival(2),
@@ -345,7 +345,7 @@ class WaveRunsContinuously(RunsContinuously):
         )
 
         # --- pulse 2: the mirror, arriving early --------------------------
-        # gw_vertices puts a cloud's two arms at the same time, so one flash
+        # cloud_sequence puts a cloud's two arms at the same time, so one flash
         # does for both even though the upper arm is an arm's height further
         # up the column. The slope that separates them is a fortieth of the
         # one the figure is about.
@@ -364,7 +364,7 @@ class WaveRunsContinuously(RunsContinuously):
 
     def shoot(self, k, near, far, fade=(), on_near=None, on_far=None):
         """One pulse, fired the way this scene's geometry has it arriving."""
-        return sweep_pulse(
+        return gr_sweep_pulse(
             self, self.clock, GW_PULSES[k] + self.low_lags[k],
             near=near, far=far, lag=self.lags[k],
             reference=self.REFERENCE, quiet_x=quiet_arrival(k),
@@ -466,8 +466,12 @@ class GradiometerGWStretch(GradiometerGW):
         lags = [gw_lag(t) for t in GW_PULSES]  # cloud to cloud, i.e. L/c
         low_lags = gw_arrival_lags(GR_LOWER_Z)
         up_lags = gw_arrival_lags(GR_UPPER_Z)
-        low = gw_vertices(GR_LOWER_Z, low_lags)
-        up = gw_vertices(GR_UPPER_Z, up_lags)
+        # Corners ride the wave; the legs between them bow to match.
+        seqs = {
+            "low": cloud_sequence(gw_pulses(), GR_LOWER_Z, low_disp),
+            "up": cloud_sequence(gw_pulses(), GR_UPPER_Z, up_disp),
+        }
+        low, up = corners(seqs["low"]), corners(seqs["up"])
         # The trace marks each pulse twice, as it reaches each cloud, so the
         # two interferometers' samples of the wave sit L/c apart on it.
         self.arrivals = [
@@ -475,9 +479,6 @@ class GradiometerGWStretch(GradiometerGW):
             for t in (GW_PULSES[k] + low_lags[k], GW_PULSES[k] + up_lags[k])
         ]
         dots = arrival_dots(self.arrivals[0::2], self.arrivals[1::2])
-        # Corners ride the wave; the legs between them bow to match.
-        low = tuple(v + UP * low_disp(v[0]) for v in low)
-        up = tuple(v + UP * up_disp(v[0]) for v in up)
 
         # The pulses land where they landed in GradiometerGW, so the arms come
         # apart by the same amount and the dial reads the same phase.
@@ -545,7 +546,7 @@ class GradiometerGWStretch(GradiometerGW):
         self.beat()
         self.add(*[t for pair in phase.values() for t in pair])
 
-        self.low, self.up = low, up
+        self.low, self.up, self.seqs = low, up, seqs
         self.lags, self.low_lags, self.up_lags = lags, low_lags, up_lags
         self.rate, self.excited, self.phase = rate, excited, phase
         self.atoms, self.seeds, self.dots = atoms, seeds, dots
@@ -605,7 +606,7 @@ class GradiometerGWStretch(GradiometerGW):
 
         def shoot(k, flash, note=None):
             self.play(*[FadeIn(d, scale=0.4) for d in self.pulse_dots(k)], run_time=0.3)
-            fire_pulse(
+            gr_fire_pulse(
                 self, GW_PULSES[k] + self.low_lags[k], flash=flash, lag=lags[k],
                 note=note,
                 z_near=self.crossing("low", k), z_far=self.crossing("up", k),
@@ -617,10 +618,8 @@ class GradiometerGWStretch(GradiometerGW):
         self.open_arms("up")
 
         draw_wavy_legs(self, [
-            (atoms["low"][0], low[0], low[1], ATOM_COLOR, low_disp),
-            (atoms["low"][1], low[0], low[2], KICKED_COLOR, low_disp),
-            (atoms["up"][0], up[0], up[1], ATOM_COLOR, up_disp),
-            (atoms["up"][1], up[0], up[2], KICKED_COLOR, up_disp),
+            *cloud_legs(self.seqs["low"], 0, atoms["low"], wavy=True),
+            *cloud_legs(self.seqs["up"], 0, atoms["up"], wavy=True),
         ], extra=[
             phase[c][1].animate.set_value(rate * excited[c][0])
             for c in ("low", "up")
@@ -638,10 +637,8 @@ class GradiometerGWStretch(GradiometerGW):
             run_time=0.5,
         )
         draw_wavy_legs(self, [
-            (atoms["low"][0], low[1], low[3], KICKED_COLOR, low_disp),
-            (atoms["low"][1], low[2], low[3], ATOM_COLOR, low_disp),
-            (atoms["up"][0], up[1], up[3], KICKED_COLOR, up_disp),
-            (atoms["up"][1], up[2], up[3], ATOM_COLOR, up_disp),
+            *cloud_legs(self.seqs["low"], 1, atoms["low"], wavy=True),
+            *cloud_legs(self.seqs["up"], 1, atoms["up"], wavy=True),
         ], extra=[
             phase[c][0].animate.set_value(rate * excited[c][1])
             for c in ("low", "up")

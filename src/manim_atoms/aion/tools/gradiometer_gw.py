@@ -10,7 +10,6 @@ from manim import *
 
 from manim_atoms.aion.style import *
 from manim_atoms.interferometry.tools.gradiometer import (
-    GR_ARM,
     GR_BASELINE,
     GR_LAG,
     GR_LASER_GAP,
@@ -19,6 +18,7 @@ from manim_atoms.interferometry.tools.gradiometer import (
     GR_T,
     GR_T0,
 )
+from manim_atoms.interferometry.tools.pulse_sequence import Pulse
 
 
 # --- a gravitational wave passing through ---------------------------------
@@ -165,23 +165,24 @@ def strain_marker(clock):
     )
 
 
-def gw_vertices(z0, lags):
-    """The four corners when the three pulses arrive `lags` after they are fired.
+def gw_pulses():
+    """The three pulses (pi/2, pi, pi/2) with the wave passing, for the
+    pulse-sequence engine: each leaves the laser at GW_PULSES[k] and crosses
+    the baseline at the light travel time the wave sets as it fires, so it
+    reaches height z at GW_PULSES[k] + gw_arrival_lags(z)[k].
 
-    Every corner is anchored on its own pulse's arrival, which keeps the loop
-    closed and keeps each flash centred on its atom. The price is that the two
-    kicked legs pick up slightly different slopes, i.e. a recoil velocity that
-    ought to be identical differs by a few per cent. That is the right trade:
-    the real effect is a phase, not a change in the shape of the loop, and an
-    interferometer drawn failing to close would read as a bug rather than as
-    physics. The skew that is left is an artefact of the exaggeration.
+    The intervals at each cloud are no longer equal, so its two kicked legs
+    would climb by different amounts and the loop would be drawn failing to
+    close. interferometry.tools.gradiometer.cloud_sequence climbs per leg
+    instead, pinning every corner to its pulse's arrival: the kicked legs'
+    slopes then differ (by some 60% at the far cloud, at this gain), which is
+    the exaggeration's artefact. The real effect is a phase, not a loop that
+    fails to close.
     """
-    t = [GW_PULSES[k] + lags[k] for k in range(3)]
-    a = np.array([t[0], z0, 0.0])
-    b = np.array([t[1], z0, 0.0])
-    b_up = b + UP * GR_ARM
-    c = np.array([t[2], z0 + GR_ARM, 0.0])
-    return a, b, b_up, c
+    return [
+        Pulse(t, area, slope=gw_lag(t) / GR_BASELINE, z_ref=GR_LASER_Z)
+        for t, area in zip(GW_PULSES, (0.5, 1.0, 0.5))
+    ]
 
 
 def arrival_note(point, lag):

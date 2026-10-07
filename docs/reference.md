@@ -214,9 +214,15 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/interferometry/tools/gradiometer.py` — The atom gradiometer: two clock interferometers on one baseline, one laser.
 
-- `vertices(z0, lag)`: The four corners of one interferometer in the (time, baseline) plane.
+- `cloud_sequence(pulses, z0, disp=no_displacement)`: One cloud's interferometer: the atom at height ``z0`` stepped through ``pulses``, each acting when it reaches ``z0``. One recoil climbs GR_ARM per leg (climb="leg"), so the corners stay pinned to the arrivals even when a wave makes the intervals unequal; ``disp`` bows the legs.
+- `corners(seq)`: A cloud's four corners (a, b, b_up, c): the split, the two arms at the mirror (b the one left alone at the split, b_up the one kicked there), and the recombination.
+- `cloud_legs(seq, k, pair, wavy=False)`: The legs pulse k launches, as draw_legs takes them: (atom, start, end, colour) for each arm, ``pair[0]`` flying arm "0" (left alone at the split) and ``pair[1]`` arm "1"; with ``wavy``, the displacement too, as draw_wavy_legs takes them.
 - `gradiometer_frame(scene, title_tex)`: The furniture every gradiometer scene shares, played onto the screen.
 - `laser_jumps(v)`: The laser's phase on each of a cloud's two hands, as (lab time, delta).
+- `gr_fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None)`: fire_pulse on the gradiometer's baseline: from the laser at GR_LASER_Z, crossing the lower cloud at ``x_at_lower`` and the upper ``lag`` later. ``flash`` is split into the two clouds' atoms at GR_MID_Z. With ``reference``, the quiet pulse (crossing at ``quiet_x``, default ``x_at_lower``, at GR_SLOPE) is drawn as a dashed ghost across GR_BASELINE.
+- `gr_sweep_pulse(scene, clock, x_at_lower, near, far, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None, fade=(), on_near=None, on_far=None)`: sweep_pulse on the gradiometer's baseline, as gr_fire_pulse is fire_pulse: ``near`` and ``far`` are the points to flash at the two crossings.
+- `gr_launch_time(x_at_lower, z_at=GR_LOWER_Z)`: When a quiet pulse that crosses height ``z_at`` at ``x_at_lower`` left the laser.
+- `gr_laser_caption(n, x_at_lower, z_at=GR_LOWER_Z)`: phi_n on the laser line, just right of where quiet pulse n left it.
 
 ### `interferometry.tools.lmt`
 
@@ -241,22 +247,23 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/interferometry/tools/pulse_sequence.py` — Stepping an atom through any sequence of laser pulses, and playing it.
 
 - class `Pulse()`: One laser pulse: when it fires, its area in units of pi (0.5 splits, 1 swaps), which side it comes from, which arms it drives (None: all), which arms leave the figure after it, and the stage it belongs to.
+  - `.arrival(z)`: When the pulse reaches height ``z``.
 - class `Arm()`: One arm of the atom: its internal state ("g" or "e"), its velocity in recoils, and where it is in the free-falling frame (time, height).
 - class `Step()`: What one pulse did. ``x`` is its lab time.
 - class `Sequence()`: A run of the engine: one Step per pulse, every arm's corners (``paths``: name -> points, from where it was born to where it ended), the arms left after the last pulse (``ports``), and ``disp``.
-- `run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None, port=SEQUENCE_PORT)`: Step one atom, in |g> at ``start`` (lab time, height) with velocity ``v0`` recoils, through ``pulses`` (in time order). After the last pulse the arms fly on to ``until`` (default: ``port`` past it): those legs are the output ports. ``disp(t)`` displaces everything (gravity: -g t^2 / 2 from the launch). Returns a Sequence.
+- `run_sequence(pulses, start, u, v0=0.0, disp=no_displacement, until=None, port=SEQUENCE_PORT, climb='time')`: Step one atom, in |g> at ``start`` (lab time, height) with velocity ``v0`` recoils, through ``pulses`` (in time order). Each pulse acts at its arrival at the starting height. After the last pulse the arms fly on to ``until`` (default: ``port`` past it): those legs are the output ports. ``disp(t)`` displaces everything (gravity: -g t^2 / 2 from the launch). ``climb`` is "time" (``u`` per unit time) or "leg" (``u`` per leg, the ports going on at the last leg's rate; see the module docstring). Returns a Sequence.
 - `play_sequence(scene, seq, atoms, *, span=None, ray_time=0.3, flash_time=0.35, fast_after=None, fast_pace=0.6, colors=None, before_pulse=None, with_pulse=None, after_step=None)`: Animate ``seq``: one ray per pulse, reaching from its side through to the furthest arm; a flash on every arm it kicks, recoloured to its new state; then the legs to the next pulse. ``atoms`` maps arm names to the atoms already on screen (``{"": atom}`` to start); the dict returned maps the arms left at the end.
 
 ### `interferometry.tools.pulses`
 
 `src/manim_atoms/interferometry/tools/pulses.py` — Laser pulses on a space-time diagram: lab time across, height up.
 
-- `photon_worldline(x_at_lower, z_from, z_to, slope=GR_SLOPE, z_at=GR_LOWER_Z)`: The segment of a pulse's worldline between two points on the baseline.
-- `fire_pulse(scene, x_at_lower, flash, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None)`: Send one pulse up the baseline, reaching the far cloud `lag` later.
-- `climbing_pulse(clock, x_at_lower, slope, z_from, z_to, z_at)`: A photon's worldline, drawn as far up the baseline as it has got.
-- `sweep_pulse(scene, clock, x_at_lower, near, far, lag=GR_LAG, reference=False, note=None, z_near=GR_LOWER_Z, z_far=GR_UPPER_Z, quiet_x=None, fade=(), on_near=None, on_far=None)`: fire_pulse with lab time running: the pulse climbs, the atoms carry on.
-- `launch_time(x_at_lower, z_at=GR_LOWER_Z)`: When a pulse that crosses height `z_at` at `x_at_lower` leaves the laser.
-- `laser_caption(n, x_at_lower, z_at=GR_LOWER_Z)`: phi_n on the laser line, just right of where pulse n leaves it.
+- `photon_worldline(x_at, z_from, z_to, slope, z_at)`: The segment of a pulse's worldline between two heights.
+- `fire_pulse(scene, x_near, near_hits, far_hits, lag, z_near, z_far, laser_z, reference=None, note=None)`: Send one pulse up from the laser at `laser_z`, crossing the near cloud at (`x_near`, `z_near`) and the far one `lag` later at `z_far`, with lab time stopped; `near_hits` and `far_hits` flash as it crosses each.
+- `climbing_pulse(clock, x_at, slope, z_from, z_to, z_at)`: A photon's worldline, drawn as far up the baseline as it has got.
+- `sweep_pulse(scene, clock, x_near, near, far, lag, z_near, z_far, laser_z, reference=None, note=None, fade=(), on_near=None, on_far=None)`: fire_pulse with lab time running: the pulse climbs, the atoms carry on.
+- `launch_time(x_at, slope, z_at, laser_z)`: When a pulse that crosses height `z_at` at `x_at` left the laser at `laser_z`, its light travel time per unit height being `slope`.
+- `laser_caption(n, launch, laser_z)`: phi_n on the laser line at `laser_z`, just right of where pulse n left it at lab time `launch`.
 - `fire_vertical_pulse(scene, x, hits)`: One pulse climbing the diagram at time `x`, flashing what it crosses.
 - `strobe_pulse(scene, clock, x, top, flash_at, on_arrival=None, hold=PULSE_HOLD)`: fire_vertical_pulse with lab time running.
 - `kick_worldline(point, from_below, steepness=0.12, span=None)`: A photon's worldline arriving at `point` from below or from above: from the frame's edge, or from the (bottom, top) of `span`, to keep it out of a title or a caption row.
@@ -572,7 +579,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `make_strain_trace(label='h(t)')`: The wave above the diagram, on the diagram's own time axis.
 - `arrival_dots(near_times, far_times)`: A pair of markers per pulse on the trace, where it reaches the near cloud and where it reaches the far, as the dark-matter gradiometer marks its field: each in its cloud's mark colour, near then far for each pulse. The gap in each pair is the light travel time the wave is changing.
 - `strain_marker(clock)`: field_marker's twin: where on the wave the diagram has got to.
-- `gw_vertices(z0, lags)`: The four corners when the three pulses arrive `lags` after they are fired.
+- `gw_pulses()`: The three pulses (pi/2, pi, pi/2) with the wave passing, for the pulse-sequence engine: each leaves the laser at GW_PULSES[k] and crosses the baseline at the light travel time the wave sets as it fires, so it reaches height z at GW_PULSES[k] + gw_arrival_lags(z)[k].
 - `arrival_note(point, lag)`: Names an arrival early or late against the quiet baseline's own L/c.
 
 ### `aion.tools.gw_plot`

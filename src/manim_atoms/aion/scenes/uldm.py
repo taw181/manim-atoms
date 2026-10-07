@@ -39,24 +39,23 @@ from manim_atoms.interferometry.scenes.gradiometer import (
     RunsContinuously,
 )
 from manim_atoms.interferometry.tools.gradiometer import (
+    cloud_sequence,
+    corners,
     GR_DIAL_RADIUS,
     GR_DIALS,
     GR_LAG,
+    gr_launch_time,
     GR_LOWER_Z,
+    GR_PULSES,
     GR_SIGNAL,
+    gr_sweep_pulse,
     GR_T,
     GR_T0,
     GR_TERMS_WIDTH,
     GR_UPPER_Z,
     gradiometer_frame,
-    vertices,
 )
-from manim_atoms.interferometry.tools.pulses import (
-    fire_vertical_pulse,
-    launch_time,
-    strobe_pulse,
-    sweep_pulse,
-)
+from manim_atoms.interferometry.tools.pulses import fire_vertical_pulse, strobe_pulse
 from manim_atoms.core.primitives import (
     draw_legs,
     make_atom,
@@ -447,8 +446,8 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerBase):
             dot.set_color(color)
         self.play(FadeIn(trace[0]), Create(trace[1]), FadeIn(trace[2]), run_time=1.2)
 
-        low = vertices(GR_LOWER_Z, 0.0)
-        up = vertices(GR_UPPER_Z, GR_LAG)
+        seqs = {c: cloud_sequence(GR_PULSES, self.nominal(c)) for c in ("low", "up")}
+        low, up = corners(seqs["low"]), corners(seqs["up"])
         phase = {
             cloud: (ValueTracker(0.0), ValueTracker(0.0))
             for cloud in ("low", "up")
@@ -488,7 +487,7 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerBase):
             r"L/c\ \text{later}", font_size=FONT_LEGEND, color=LASER_COLOR
         ).next_to(up[0], UP, buff=0.3)
 
-        self.low, self.up = low, up
+        self.low, self.up, self.seqs = low, up, seqs
         self.rate, self.phase = clock_rate(GR_T), phase
         self.atoms, self.seeds, self.dots = atoms, seeds, dots
         self.hands, self.big = [], VGroup()
@@ -540,7 +539,7 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerBase):
         low, up, phase = self.low, self.up, self.phase
 
         # Lab time starts as the first pulse leaves the laser.
-        clock = self.clock = ValueTracker(launch_time(GR_T0))
+        clock = self.clock = ValueTracker(gr_launch_time(GR_T0))
         self.add(clock, field_marker(
             clock, DG_TRACE_Z, DG_TRACE_AMPLITUDE, DG_TRACE_X, DG_T0
         ))
@@ -584,7 +583,7 @@ class DarkMatterGradiometer(RunsContinuously, GradiometerBase):
     def shoot(self, k, near, far, fade=(), on_near=None, on_far=None,
               z_near=GR_LOWER_Z, z_far=GR_UPPER_Z):
         """One pulse, at the quiet baseline's L/c: nothing here moves the light."""
-        return sweep_pulse(
+        return gr_sweep_pulse(
             self, self.clock, GR_T0 + k * GR_T, near=near, far=far,
             lag=GR_LAG, note=self.pulse_note(k), fade=fade,
             z_near=z_near, z_far=z_far, on_near=on_near, on_far=on_far,
