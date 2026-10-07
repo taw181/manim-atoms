@@ -106,8 +106,10 @@ every position from them so the shape can be retuned in one place, and reuse the
 than building atoms or pulses by hand — that is what keeps the
 animations looking like one set of figures. Pull anything visual from the
 style modules; if you need a new colour or width, add it to the topic's
-`style.py` (or the core one, if more than one topic uses it) rather than
-inline. A helper goes at the level of the most general thing it draws: in
+`style.py` (the core one only if it is generic and generically named; a
+species' line colours go with the species) rather than inline. Reusing a
+value another topic happens to use? Define your own constant with that
+value: alias one constant to another only where they mean the same thing. A helper goes at the level of the most general thing it draws: in
 `core/` if it is generic physics or drawing (a Bloch sphere, a cavity, a
 plot axis), even if only your scene uses it so far; in
 `<topic>/tools/<module>.py` if it is the topic's own; and only the scene and

@@ -35,7 +35,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **Defaults bind at definition time.** Tools take their geometry from module constants as default arguments, e.g. `interferometry.tools.clock`: `draw_ports` defaults to `CP_SLOPE`. A new scene passes its own values; it does not rebind the constants.
 - **Colours** come from the style modules, never from inline values:
   - `style`: `ATOM_COLOR` is |g, p>, `KICKED_COLOR` is |e, p + ħk>, `LASER_COLOR` is the beams and their annotations.
-  - What one topic alone uses is in that topic's style module: `interferometry.style`, `trapping.style`, `aion.style`. What topics share is in `style`.
+  - `style` holds only what is generic; a topic's own palette is in its style module (`interferometry.style`, `trapping.style`, `aion.style`), and a species' line colours are with the species (`species.strontium`: `TRANSITION_461_COLOR`, ...).
   - Every constant is listed under its section in [reference.md](reference.md).
 - **Slide stops** are no-op hooks a scene calls where a presenter would stop: `beat()`, `stage_break()`, `hold()`. See [Making a scene a slide](#making-a-scene-a-slide).
 
