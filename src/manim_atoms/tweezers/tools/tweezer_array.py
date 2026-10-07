@@ -134,6 +134,12 @@ class TweezerArray(VGroup):
                 atom.move_to(self.view.point(xy[i]))
                 parts.append(atom)
                 self.atoms.append(atom)
+        # A scene lists what a play moves when the play begins and paints that
+        # list on every frame, so the pieces drawn last time are emptied, not
+        # just dropped: left with their points, they would be painted again,
+        # frozen, for the rest of the play.
+        for piece in self.family_members_with_points():
+            piece.points = np.zeros((0, piece.dim))
         self.submobjects = parts
         return self
 

@@ -545,6 +545,20 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `step_caption(text, under)`: The step being shown, in grey under the heading ``under``.
 - `next_step(old, text, under)`: (the new caption, the animation that swaps ``old`` for it): out, then in, so the two are never crossed.
 
+### `tweezers.scenes.rearrangement`
+
+`src/manim_atoms/tweezers/scenes/rearrangement.py` — Rearranging a tweezer array by updating its hologram, seen from above.
+
+- Scene `TweezerRearrangement(Scene)`: A tweezer array seen from above: it loads at random, is imaged, loses its empty and spare traps, and the rest slide into a defect-free block. One beat() per step.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `.build()`: Lay out the array, the heading and the first caption, unadded.
+  - `.say(text)`: The animation that swaps the caption for ``text``.
+  - `.cycle(seed)`: Load the array as ``seed`` has it, image it, and rearrange it.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/rearrangement.py TweezerRearrangement`
+- Scene `TweezerRearrangementLoop(TweezerRearrangement)`: TweezerRearrangement run over several loadings, each released at the end: it begins and ends on the empty array, so the clip loops.
+  - `.release()`: Let the atoms go and bring the whole array back on, empty.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/rearrangement.py TweezerRearrangementLoop`
+
 ## aion
 
 ### `aion.style`

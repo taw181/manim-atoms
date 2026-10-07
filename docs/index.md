@@ -280,6 +280,7 @@ Copy from these when building something similar.
 - **A tilted beam and camera images.** `interferometry.scenes.phase_shear`: `PhaseShearReadout`.
 - **A staged sequence with a moving camera.** `trapping.scenes.cooling`: `CoolingSequence`. Also `trapping.scenes.dipole`: `DipoleTrapLoading`; and `trapping.scenes.slicing`: `VelocitySlicing`.
 - **Video on the scene's clock.** `trapping.scenes.sequence`: `ExperimentSequence`, `ExperimentSequenceSimple`.
+- **A tweezer array loaded, imaged and rearranged**, from above; and the same as a clip that loops. `tweezers.scenes.rearrangement`: `TweezerRearrangement`, `TweezerRearrangementLoop`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

@@ -82,3 +82,21 @@ def test_far_traps_are_painted_first_in_a_tilted_view():
     array.redraw()
     heights = [trap.get_center()[1] for trap in array.submobjects]
     assert heights == sorted(heights, reverse=True)
+
+
+def test_a_redraw_leaves_nothing_of_the_last_drawing_behind():
+    # A scene lists what an animation moves when it begins, and paints that
+    # list on every frame: whatever the array had drawn then and has since
+    # replaced would be painted again, frozen, over the new drawing.
+    array = make().load(LOADED)
+    array.on.set_value(1)
+    array.filled.set_value(1)
+    array.redraw()
+    listed_by_the_scene = array.family_members_with_points()
+    assert listed_by_the_scene
+    array.rearrange(plan_rearrangement(SITES, LOADED, TARGETS))
+    array.moved.set_value(0.5)
+    array.redraw()
+    current = {id(m) for m in array.get_family()}
+    left_behind = [m for m in listed_by_the_scene if id(m) not in current and m.has_points()]
+    assert left_behind == []
