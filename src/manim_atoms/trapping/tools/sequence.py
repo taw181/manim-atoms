@@ -1,12 +1,15 @@
-"""One shot of the experiment: the stages, the Sr levels they drive, the timeline.
+"""One shot of an experiment: its stages, the lines they drive, the timeline.
 
-The sequence goes from a blue MOT through two red MOTs, a pair of dipole
-traps and state preparation, to the differential interferometer and its
-readout. Each stage is tagged with the transition it drives (if any), the
-stretch of the imaging video that shows it (if any) and the paper it is
-written up in (if any), and the helpers below turn that table into a Sr
-level diagram whose arrows light up, a timeline whose blocks do, and a
-reference list whose entries do.
+Stage tags a stage with the transition it drives (if any), the stretch of
+the imaging video that shows it (if any) and the paper it is written up in
+(if any); Imaging describes such a video. The helpers turn a table of stages
+into a timeline whose blocks light up, a reference list whose entries do,
+and a heading naming the transition (of a species, species.scheme) a stage
+drives.
+
+STAGES, REFERENCES and SR_IMAGING are the Sr experiment's: a blue MOT through
+two red MOTs, a pair of dipole traps and state preparation, to the
+differential interferometer and its readout.
 """
 
 from dataclasses import dataclass
@@ -15,7 +18,6 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import TRANSITIONS
 
 
 # --- the papers each part of the sequence is written up in ----------------
@@ -42,27 +44,45 @@ IMAGING_T0_MS = 10.0
 IMAGING_DT_MS = (599.0 - IMAGING_T0_MS) / 47
 
 
-def snapshot_index(t_ms):
-    """Which snapshot shows the cloud at ``t_ms``: the last one taken by then."""
-    return int(np.floor((t_ms - IMAGING_T0_MS) / IMAGING_DT_MS + 1e-9))
+@dataclass(frozen=True)
+class Imaging:
+    """An imaging video of the cloud through a shot: the file (as
+    resources.data_path takes it), how many video frames each snapshot is
+    held for, the crop (top, bottom, left, right in pixels), and when the
+    first snapshot was taken and the time between them, in ms."""
+
+    video: tuple
+    frames_per_snapshot: int
+    crop: tuple
+    t0_ms: float
+    dt_ms: float
+
+    def snapshot_index(self, t_ms):
+        """Which snapshot shows the cloud at ``t_ms``: the last one taken by then."""
+        return int(np.floor((t_ms - self.t0_ms) / self.dt_ms + 1e-9))
+
+    def snapshot_ms(self, t_ms):
+        """When the snapshot showing the cloud at ``t_ms`` was taken."""
+        return self.t0_ms + max(self.snapshot_index(t_ms), 0) * self.dt_ms
 
 
-def snapshot_ms(t_ms):
-    """When the snapshot showing the cloud at ``t_ms`` was taken."""
-    return IMAGING_T0_MS + max(snapshot_index(t_ms), 0) * IMAGING_DT_MS
+SR_IMAGING = Imaging(IMAGING_VIDEO, IMAGING_FRAMES_PER_SNAPSHOT, IMAGING_CROP,
+                     IMAGING_T0_MS, IMAGING_DT_MS)
 
 
 # --- the stages -----------------------------------------------------------
 @dataclass(frozen=True)
 class Stage:
-    """One stage of the sequence: its colour key, its label, and, where it has them, the
-    transition it drives, the stretch of imaging video that shows it and the paper
-    that covers it."""
-    key: str  # into SEQUENCE_STAGE_COLORS
+    """One stage of a sequence: its key, its label, and, where it has them, the
+    transition it drives, the stretch of imaging video that shows it, the paper
+    that covers it, and its own (fill, edge) colours on the timeline (default:
+    SEQUENCE_STAGE_COLORS[key])."""
+    key: str
     label: str  # Tex; "\\" breaks the line
-    transition: str | None = None  # into TRANSITIONS
+    transition: str | None = None  # a key into the species' transitions
     video_ms: tuple[float, float] | None = None  # the stretch of the imaging it spans
-    reference: int | None = None  # into REFERENCES
+    reference: int | None = None  # into the scene's references
+    colors: tuple | None = None  # (fill, edge)
 
 
 # The video boundaries are read off the snapshots: the blue MOT loads until
@@ -101,23 +121,24 @@ def _block_opacity(j, active):
 
 
 class Timeline(VGroup):
-    """A row of coloured blocks, one per stage, with the label under each.
+    """A row of coloured blocks, one per stage, with the label under each,
+    and a wider gap after block ``break_after`` (if any).
 
     ``activate(i)`` animates stage i to lit and ringed, everything before it
     to half lit and everything after it to faint.
     """
 
-    def __init__(self, stages=STAGES, **kwargs):
+    def __init__(self, stages, break_after=None, **kwargs):
         super().__init__(**kwargs)
         self.blocks = VGroup()
         x = 0.0
         for j, stage in enumerate(stages):
-            fill, edge = SEQUENCE_STAGE_COLORS[stage.key]
+            fill, edge = stage.colors or SEQUENCE_STAGE_COLORS[stage.key]
             block = Rectangle(width=TL_BLOCK_WIDTH, height=TL_BLOCK_HEIGHT,
                               fill_color=fill, stroke_color=edge, stroke_width=3)
             block.move_to([x + TL_BLOCK_WIDTH / 2, 0, 0])
             self.blocks.add(block)
-            x += TL_BLOCK_WIDTH + TL_SPACING + (TL_BREAK if j == TIMELINE_BREAK_AFTER else 0)
+            x += TL_BLOCK_WIDTH + TL_SPACING + (TL_BREAK if j == break_after else 0)
         self.labels = VGroup(*[
             Tex(s.label, font_size=FONT_TIMELINE, color=PLOT_FOREGROUND)
             .next_to(b, DOWN, buff=TL_LABEL_BUFF)
@@ -153,8 +174,11 @@ class References(VGroup):
     numbered list of papers below. The one covering the running stage is lit.
     """
 
-    def __init__(self, timeline, stages=STAGES, refs=REFERENCES, **kwargs):
+    def __init__(self, timeline, stages, refs, **kwargs):
         super().__init__(**kwargs)
+        self.marks, self.entries = VGroup(), VGroup()
+        if not refs:  # nothing to cite
+            return
         floor = timeline.labels.get_bottom()[1]
         self.marks = VGroup()
         for n in range(len(refs)):
@@ -185,15 +209,18 @@ class References(VGroup):
                 for k in range(len(self.entries))]
 
 
-def stage_heading(stage):
-    """The running stage's name, and the transition it drives, in big type."""
+def stage_heading(stage, species):
+    """The running stage's name, and the transition of ``species`` it drives,
+    in big type."""
     name = Tex(stage.label, font_size=FONT_TITLE + 8)
     if stage.transition is None:
         return VGroup(name)
-    spec = TRANSITIONS[stage.transition]
+    spec = species.transitions[stage.transition]
+    lower = species.levels[spec.lower].term
+    upper = species.upper_term(spec.key)
     line = MathTex(
-        rf"{stage.transition}\,\mathrm{{nm}}:\ {{}}^1S_0 \rightarrow {spec['upper']}",
-        font_size=FONT_ANNOTATION, color=spec["color"],
+        rf"{stage.transition}\,\mathrm{{nm}}:\ {lower} \rightarrow {upper}",
+        font_size=FONT_ANNOTATION, color=spec.color,
     )
     return VGroup(name, line).arrange(DOWN, buff=0.3)
 

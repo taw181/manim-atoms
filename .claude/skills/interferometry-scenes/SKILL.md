@@ -80,8 +80,10 @@ block.
   −ħk, an |e⟩ atom +ħk).
 - **Gravity, a passing wave.** Bow the legs with a displacement (recipe 5).
   Pulses stay vertical: the laser hasn't moved.
-- **Another species.** Its levels and line colours go in a new `species/`
-  module, never in a topic's style.
+- **Another species.** It is a `species.scheme.Species` in its own
+  `species/` module (as `ytterbium` is), with its own line colours, never
+  in a topic's style. Ask it for the clock line by its job:
+  `species.transition("clock")`.
 
 ## Recipes
 

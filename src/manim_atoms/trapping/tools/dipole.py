@@ -7,13 +7,14 @@ histogram over the ground state's m_F sublevels shows the optical pumping
 that follows, and a pointer marks where the MOT's field zero is.
 """
 
+from fractions import Fraction
+
 import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_spot
 from manim_atoms.trapping.tools.cooling import MOT_AXES, chevron
-from manim_atoms.species.strontium import TRANSITION_689_COLOR
 
 
 SPIN_HIST_WIDTH = 2.2
@@ -54,10 +55,11 @@ DT_HOLD = 1.5  # the pause after each stage, where a slide stops instead
 
 # --- the MOT, next to the traps ------------------------------------------
 # The MOT beams are far wider than the traps, so on this scale they are not
-# beams but a wash of red light over the whole figure, with the usual
+# beams but a wash of the MOT's light over the whole figure, with the usual
 # arrowheads round its edge pointing in along the MOT's three axes.
-def make_mot_glow(center, radius, color=TRANSITION_689_COLOR):
-    """A MOT as a soft glow at ``center``, with a chevron at the end of each beam pointing in."""
+def make_mot_glow(center, radius, color):
+    """A MOT as a soft glow of its light's ``color`` at ``center``, with a
+    chevron at the end of each beam pointing in."""
     center = np.array(center, dtype=float)
     heads = VGroup(*[
         chevron(-d, center + d * radius * 0.85, color)
@@ -107,14 +109,15 @@ class LoadingAtoms(VGroup):
     0 to 1. The rest stay in the MOT until it is released: they drop to the
     lower trap as ``fall`` goes 0 to 1, are gathered up by the MOT round it as
     ``recapture`` does, and settle into that trap with ``load_lower``.
-    ``glow_upper`` and ``glow_lower`` (0 to 1) light each group in the 689 nm
-    red while it scatters MOT light; dark, an atom takes the ground-state
-    colour it has in every interferometer figure.
+    ``glow_upper`` and ``glow_lower`` (0 to 1) light each group in the MOT
+    light's ``color`` while it scatters it; dark, an atom takes the
+    ground-state colour it has in every interferometer figure.
     """
 
-    def __init__(self, n, upper, lower, seed=2, **kwargs):
+    def __init__(self, n, upper, lower, color, seed=2, **kwargs):
         super().__init__(**kwargs)
         rng = np.random.default_rng(seed)
+        self.color = color
         self.upper = np.array(upper[:2], dtype=float)
         self.lower = np.array(lower[:2], dtype=float)
         self.is_upper = rng.random(n) < LOAD_UPPER_SHARE
@@ -157,43 +160,54 @@ class LoadingAtoms(VGroup):
 
         xy = np.where(self.is_upper[:, None], upper, lower)
         colors = {
-            True: interpolate_color(ATOM_COLOR, TRANSITION_689_COLOR, self.glow_upper.get_value()),
-            False: interpolate_color(ATOM_COLOR, TRANSITION_689_COLOR, self.glow_lower.get_value()),
+            True: interpolate_color(ATOM_COLOR, self.color, self.glow_upper.get_value()),
+            False: interpolate_color(ATOM_COLOR, self.color, self.glow_lower.get_value()),
         }
         for dot, p, up in zip(self.submobjects, xy, self.is_upper):
             dot.move_to([p[0], p[1], 0]).set_fill(colors[bool(up)], opacity=1)
 
 
 # --- optical pumping ------------------------------------------------------
-# The ground state of 87Sr has F = 9/2 and so ten m_F sublevels, which the
-# atoms start out spread evenly over. Circularly polarised 689 nm light walks
-# them up the ladder until they pile up in the stretched state m_F = +9/2.
+# A ground state of spin F has 2F + 1 m_F sublevels, which the atoms start out
+# spread evenly over (87Sr's F = 9/2: ten). Circularly polarised light walks
+# them up the ladder until they pile up in the stretched state m_F = +F.
 # Drawn as a histogram whose populations go as exp(beta m_F), beta climbing
 # from zero: a smooth tilt of the whole distribution toward the top rung.
-SPIN_M = np.arange(-4.5, 5.0)
 SPIN_PUMP_BETA = 7.0  # beta at the end of the pumping
 SPIN_BAR_FILL = 0.7  # of each bar's slot
 
 
-class SpinHistogram(VGroup):
-    """How the atoms are spread over m_F, pumped into +9/2 as ``pump`` goes 0 to 1."""
+def _m_tex(m):
+    """An m_F value as TeX: an integer, or a half-integer as a fraction."""
+    m = Fraction(m).limit_denominator(2)
+    sign = "+" if m > 0 else "-" if m < 0 else ""
+    if m.denominator == 1:
+        return f"{sign}{abs(m.numerator)}"
+    return rf"{sign}\tfrac{{{abs(m.numerator)}}}{{{m.denominator}}}"
 
-    def __init__(self, width=SPIN_HIST_WIDTH, height=SPIN_HIST_HEIGHT, **kwargs):
+
+class SpinHistogram(VGroup):
+    """How the atoms are spread over the m_F of a ground state of spin
+    ``spin`` (F), pumped into m_F = +F as ``pump`` goes 0 to 1."""
+
+    def __init__(self, spin, width=SPIN_HIST_WIDTH, height=SPIN_HIST_HEIGHT, **kwargs):
         super().__init__(**kwargs)
+        f = float(spin)
+        self.m = np.arange(-f, f + 0.5)
         self.full_height = height
-        slot = width / len(SPIN_M)
+        slot = width / len(self.m)
         self.baseline = Line(LEFT * width / 2, RIGHT * width / 2,
                              stroke_width=2, color=lighten(GUIDE_COLOR))
         self.bars = VGroup(*[
             Rectangle(width=slot * SPIN_BAR_FILL, height=height, stroke_width=0,
                       fill_color=ATOM_COLOR, fill_opacity=1)
             .move_to([-width / 2 + slot * (k + 0.5), 0, 0], aligned_edge=DOWN)
-            for k in range(len(SPIN_M))
+            for k in range(len(self.m))
         ])
         ends = VGroup(
-            MathTex(r"-\tfrac{9}{2}", font_size=FONT_TICK, color=PLOT_FOREGROUND)
+            MathTex(_m_tex(-spin), font_size=FONT_TICK, color=PLOT_FOREGROUND)
             .next_to(self.bars[0], DOWN, buff=0.12),
-            MathTex(r"+\tfrac{9}{2}", font_size=FONT_TICK, color=PLOT_FOREGROUND)
+            MathTex(_m_tex(spin), font_size=FONT_TICK, color=PLOT_FOREGROUND)
             .next_to(self.bars[-1], DOWN, buff=0.12),
         )
         ends.align_to(self.baseline, UP).shift(DOWN * 0.12)
@@ -205,7 +219,7 @@ class SpinHistogram(VGroup):
         self._fill(self)
 
     def _fill(self, m):
-        weights = np.exp(SPIN_PUMP_BETA * self.pump.get_value() * SPIN_M)
+        weights = np.exp(SPIN_PUMP_BETA * self.pump.get_value() * self.m)
         shares = weights / weights.sum()
         floor = self.baseline.get_center()
         for bar, share in zip(self.bars, shares):

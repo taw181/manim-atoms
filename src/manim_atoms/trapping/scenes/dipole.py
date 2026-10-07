@@ -22,7 +22,7 @@ from manim import *
 
 from manim_atoms.trapping.style import *
 from manim_atoms.core.optics import gaussian_band, gaussian_spot
-from manim_atoms.species.strontium import SrLevels, TRANSITION_488_COLOR
+from manim_atoms.species.strontium import SrLevels, STRONTIUM
 from manim_atoms.trapping.tools.cooling import SweepFan
 from manim_atoms.trapping.tools.dipole import (
     DT_FALL_TIME,
@@ -68,13 +68,15 @@ class DipoleTrapLoading(Scene):
     """The red MOT shared out into two crossed dipole traps, then the atoms spin-polarised
     into m_F = +9/2, with the levels and the timeline beside them. One
     stage_break() per stage."""
+
+    SPECIES = STRONTIUM  # the narrow line, the transparency beam and the spin; the story is Sr's own
     def stage_break(self):
         """The pause after each stage. A slide wrapper stops here instead."""
         self.wait(DT_HOLD)
 
     def construct(self):
         levels = SrLevels(repump=True, transparency=True)
-        fan = SweepFan()
+        fan = SweepFan(self.SPECIES)
         levels.add(fan)  # in the diagram's own coordinates, so before scaling
         levels.scale(DT_LEVELS_SCALE).move_to(DT_LEVELS_CENTER)
         stages = STAGES[3:6]
@@ -108,30 +110,32 @@ class DipoleTrapLoading(Scene):
             .next_to(vertical, RIGHT, buff=0.15)
             .set_y(-3.5),
         )
+        transparency_color = self.SPECIES.path("transparency").color
         transparency = gaussian_spot(
             DT_UPPER,
             DT_TRANSPARENCY_RADIUS,
-            TRANSITION_488_COLOR,
+            transparency_color,
             opacity=TRANSPARENCY_OPACITY,
         )
         transparency_label = Tex(
-            "488 nm", font_size=FONT_LEGEND, color=TRANSITION_488_COLOR
+            "488 nm", font_size=FONT_LEGEND, color=transparency_color
         )
         transparency_label.next_to(transparency, UL, buff=0.0).shift(LEFT * 0.1)
         traps = VGroup(vertical, horizontal, trap_labels)
 
         mot_center = (DT_UPPER + DT_LOWER) / 2
-        mot = make_mot_glow(mot_center, DT_MOT_RADIUS)
+        mot = make_mot_glow(mot_center, DT_MOT_RADIUS, self.SPECIES.transition("narrow").color)
         zero = make_field_zero(DT_UPPER_Y, DT_ZERO_X)
-        atoms = LoadingAtoms(DT_N_ATOMS, DT_UPPER, DT_LOWER)
-        histogram = SpinHistogram().move_to(DT_HISTOGRAM_CENTER)
+        atoms = LoadingAtoms(DT_N_ATOMS, DT_UPPER, DT_LOWER,
+                             self.SPECIES.transition("narrow").color)
+        histogram = SpinHistogram(self.SPECIES.spin).move_to(DT_HISTOGRAM_CENTER)
 
         # where CoolingSequence left off: a small red MOT, all the light but the 689 off
         self.add(mot, levels, atoms)
         self.play(FadeIn(timeline), FadeIn(zero), *levels.drive("689"))
 
         # --- the upper trap ---
-        heading = stage_heading(stages[0]).move_to(DT_HEADING_CORNER, aligned_edge=UL)
+        heading = stage_heading(stages[0], self.SPECIES).move_to(DT_HEADING_CORNER, aligned_edge=UL)
         step = caption(r"traps, transparency beam and repumps on", heading)
         self.play(
             *timeline.activate(0),
@@ -224,7 +228,7 @@ class DipoleTrapLoading(Scene):
     def next_stage(self, timeline, i, heading, step, text):
         """Move the timeline, heading and caption on to stage ``i`` of this
         scene's three; returns the new heading and caption."""
-        new_heading = stage_heading(STAGES[3 + i]).move_to(
+        new_heading = stage_heading(STAGES[3 + i], self.SPECIES).move_to(
             DT_HEADING_CORNER, aligned_edge=UL
         )
         new_step = caption(text, new_heading)

@@ -19,17 +19,11 @@ import numpy as np
 from manim import *
 
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import TRANSITION_698_COLOR
 
 
 # --- the physics, in units of the Rabi frequency --------------------------
-# The thermal width is what sets how much narrower the slice is. Before
-# slicing the clock line is Doppler broadened to 60 kHz FWHM, which at 698 nm
-# is a 3 uK cloud of 87Sr. A 200 us slicing pulse has Omega = 2 pi x 2.5 kHz,
-# and in those units the 3 uK cloud has sigma = 9.7, while the pulse's core
-# (FWHM 1.6, sigma ~0.68) is some fourteen times narrower: a velocity spread
-# that corresponds to ~10 nK.
-SLICE_THERMAL_SIGMA = 9.7
+# The thermal width (sigma, in units of the pulse's Rabi frequency) is what
+# sets how much narrower the slice is; a scene passes its own.
 SLICE_U_RANGE = (-27.0, 27.0)
 SLICE_SAMPLES = 1081
 
@@ -40,7 +34,7 @@ def excitation(u):
     return np.sin(PI / 2 * np.sqrt(s)) ** 2 / s
 
 
-def thermal(u, sigma=SLICE_THERMAL_SIGMA):
+def thermal(u, sigma):
     """The velocity distribution before the pulse, peak normalised to one."""
     return np.exp(-(np.asarray(u, dtype=float) ** 2) / (2 * sigma**2))
 
@@ -61,7 +55,8 @@ class VelocityPlot(VGroup):
     thermal curve dashed, for comparing the slice against at the end.
     """
 
-    def __init__(self, center=ORIGIN, width=PLOT_WIDTH, height=PLOT_HEIGHT, **kwargs):
+    def __init__(self, sigma, color, center=ORIGIN, width=PLOT_WIDTH, height=PLOT_HEIGHT,
+                 **kwargs):
         super().__init__(**kwargs)
         # placed before anything is drawn from it: the curves that come and go
         # are built in the axes' coordinates and aren't part of this group. The
@@ -92,7 +87,7 @@ class VelocityPlot(VGroup):
         self.frame = VGroup(self.axes, tick, zero_label, x_label, y_label)
 
         self.u = np.linspace(*SLICE_U_RANGE, SLICE_SAMPLES)
-        self.g = thermal(self.u)
+        self.g = thermal(self.u, sigma)
         self.p = excitation(self.u)
         self.excite = ValueTracker(0.0)
         self.push = ValueTracker(0.0)
@@ -114,7 +109,7 @@ class VelocityPlot(VGroup):
         self._fill()
 
         self.line_shape = self._curve(
-            self.p, stroke_color=TRANSITION_698_COLOR, stroke_width=SLICE_PROFILE_WIDTH
+            self.p, stroke_color=color, stroke_width=SLICE_PROFILE_WIDTH
         )
         self.outline = DashedVMobject(
             self._curve(
@@ -170,7 +165,7 @@ PUSH_DISTANCE = 3.0  # how far a pushed atom goes, across the beam
 class SlicingCloud(VGroup):
     """``excite`` and ``push`` as on VelocityPlot; the drift runs by itself."""
 
-    def __init__(self, center, seed=3, **kwargs):
+    def __init__(self, center, sigma, seed=3, **kwargs):
         super().__init__(**kwargs)
         rng = np.random.default_rng(seed)
         self.center = np.array(center[:2], dtype=float)
@@ -180,7 +175,7 @@ class SlicingCloud(VGroup):
                 rng.normal(scale=CLOUD_HEIGHT / 4, size=CLOUD_N),
             ]
         )
-        self.v = rng.normal(scale=SLICE_THERMAL_SIGMA, size=CLOUD_N)
+        self.v = rng.normal(scale=sigma, size=CLOUD_N)
         self.is_slow = rng.random(CLOUD_N) < excitation(self.v)
         self.push_rate = rng.uniform(
             0.8, 1.2, CLOUD_N

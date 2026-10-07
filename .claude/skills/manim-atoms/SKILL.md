@@ -37,7 +37,8 @@ conventions for its kind of figure.
    - **`<topic>/tools/<module>.py`** — what is the topic's own;
    - **`<topic>/scenes/<module>.py`** — the Scene classes and the layout
      nothing else uses;
-   - **`species/`** — a species' levels and its line colours.
+   - **`species/`** — a species as data (`species.scheme.Species`): its
+     levels, lines, line colours and which line does which job.
 
    Never import from another scene module except to subclass its scene.
 3. **Write the geometry block.** Named module constants, one prefix per

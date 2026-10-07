@@ -158,12 +158,31 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ## species
 
+### `species.scheme`
+
+`src/manim_atoms/species/scheme.py` — A species as data, and the level diagram drawn from it.
+
+- class `Level()`: One level: its term (TeX), height and horizontal extent on the diagram, colour, and where its term goes (side and gap).
+- class `Manifold()`: A fine-structure stack (3P_J): one level per J at ``ys[J]``, sharing ``xs``, each labelled with its J. ``colors`` overrides a J's colour (default OPTIC_COLOR); the term goes at ``name_side``, or at ``name_side_with[extra]`` = (side, buff) while that Extra is drawn.
+- class `Transition()`: A driven line: an arrow from ``start`` to ``end`` (diagram coordinates), double-headed if ``double``, labelled at ``side`` with its wavelength (``key``, in nm) and natural linewidth (TeX). ``lower`` and ``upper`` are its levels' keys, ``upper_j`` the J in a Manifold. ``fan_at`` is where the sawtooth goes when the line is swept (SweepFan).
+- class `Path()`: A repump or a decay, as a list of straight legs (pairs of points). A decay is dashed: the atom's doing, not a beam's. A label, if any, goes at ``label_at``, aligned by ``align``.
+- class `Extra()`: Levels and paths drawn only when a figure asks for them by name.
+- class `Species()`: An atom as a figure needs it.
+  - `.ground()`: The ground level.
+  - `.transition(role)`: The transition that does ``role``.
+  - `.path(role)`: The repump or decay path that does ``role``, or the path ``role`` names, wherever its Extra is.
+  - `.level_y(key, j=None)`: A level's height, or a J's in a Manifold.
+  - `.upper_term(key)`: A transition's upper term, with its J if it ends in a Manifold: {}^3P_J and J = 1 give {}^3P_1.
+- `transition_arrow(spec, color, width)`: A transition's arrow and its label, the wavelength over the linewidth, in ``color`` at stroke ``width``.
+- `path_arrows(spec, color, width)`: A repump's arrows, or a spontaneous decay drawn dashed along its path, with its label if it has one.
+- class `LevelScheme(VGroup)`: A species' level diagram, with ``extras`` (names of its Extras) drawn too.
+  - `.drive(*keys)`: Animations lighting the transitions and paths ``keys`` and putting out the rest.
+
 ### `species.strontium`
 
-`src/manim_atoms/species/strontium.py` — Strontium's levels and the lines a Sr experiment drives.
+`src/manim_atoms/species/strontium.py` — Strontium as a species (species.scheme): its levels and the lines a Sr experiment drives.
 
-- class `SrLevels(VGroup)`: The Sr levels the sequence uses, with its three transitions.
-  - `.drive(*keys)`: Animations lighting the transitions ``keys`` and putting out the rest.
+- class `SrLevels(LevelScheme)`: The Sr levels the sequence uses, with its three transitions: the level scheme of STRONTIUM.
 
 ### `species.two_level`
 
@@ -171,6 +190,12 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - `make_level_diagram(center=SP_LEVELS)`: The Sr clock transition as a two-level system, with the gap labelled.
 - `transition_glow(upward=True, center=SP_LEVELS)`: The transition lit up in the laser's colour while a pulse drives it.
+
+### `species.ytterbium`
+
+`src/manim_atoms/species/ytterbium.py` — Ytterbium as a species (species.scheme): its levels and the lines a Yb experiment drives.
+
+- class `YbLevels(LevelScheme)`: The Yb levels, with its three transitions: the level scheme of YTTERBIUM.
 
 ## interferometry
 
@@ -395,6 +420,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/tools/cooling.py` — A magneto-optical trap drawn as a cartoon: its beams, coils and atom cloud.
 
+- class `CoolingStage()`: One stage of a cooling sequence, as CoolingSequence plays it.
 - `project(v)`: A 3D direction (x right, y up, z out of the page) on the page.
 - `oblique_ring(center, radius, color=GUIDE_COLOR)`: A circle in the plane across the push axis (y up, z out of the page), in the oblique view: the depth cue for beams that leave the page.
 - `chevron(direction, tip, color, size=MOT_BEAM_WIDTH * 0.45)`: An open arrowhead: two strokes meeting at ``tip``, pointing along ``direction``.
@@ -404,7 +430,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - class `Coils(VGroup)`: An anti-Helmholtz pair above and below the trap, with the current running opposite ways round them. How heavily they are drawn stands for the field gradient: ``set_gradient(COIL_STRONG_WIDTH)`` or ``COIL_WEAK_WIDTH``.
   - `.set_gradient(width)`
 - `make_sawtooth(color, width=0.9, height=0.3, teeth=3)`: The shape of the red MOT's frequency modulation.
-- class `SweepFan(VGroup)`: The 689 nm light swept in a sawtooth, drawn as a fan of arrows.
+- class `SweepFan(VGroup)`: A species' ``role`` line (its narrow line, by default) swept in a sawtooth, drawn as a fan of arrows, with the sawtooth at the transition's ``fan_at``.
 - class `AtomCloud(VGroup)`: A cloud of ``n`` atoms in a trap at ``center``.
 - class `Oven(VGroup)`: A crucible with a nozzle on top, open at ``nozzle`` (the point the atoms come out of). Drawn warm inside, because it is hot.
 - `make_push_beam(color, start, end)`: The push beam: narrow and bright like the up beam, running from ``start`` to ``end`` with its arrowheads pointing the way it pushes.
@@ -415,10 +441,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/trapping/tools/dipole.py` — Two crossed dipole traps loaded from the red MOT, drawn as a cartoon.
 
-- `make_mot_glow(center, radius, color=TRANSITION_689_COLOR)`: A MOT as a soft glow at ``center``, with a chevron at the end of each beam pointing in.
+- `make_mot_glow(center, radius, color)`: A MOT as a soft glow of its light's ``color`` at ``center``, with a chevron at the end of each beam pointing in.
 - `make_field_zero(y, x, color=lighten(GUIDE_COLOR))`: A pointer at the height of the quadrupole field's zero, from the side of the figure rather than on the traps, where it would hide the atoms.
 - class `LoadingAtoms(VGroup)`: The red MOT's atoms, shared out between two dipole traps.
-- class `SpinHistogram(VGroup)`: How the atoms are spread over m_F, pumped into +9/2 as ``pump`` goes 0 to 1.
+- class `SpinHistogram(VGroup)`: How the atoms are spread over the m_F of a ground state of spin ``spin`` (F), pumped into m_F = +F as ``pump`` goes 0 to 1.
 
 ### `trapping.tools.hifais`
 
@@ -437,16 +463,17 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `trapping.tools.sequence`
 
-`src/manim_atoms/trapping/tools/sequence.py` — One shot of the experiment: the stages, the Sr levels they drive, the timeline.
+`src/manim_atoms/trapping/tools/sequence.py` — One shot of an experiment: its stages, the lines they drive, the timeline.
 
-- `snapshot_index(t_ms)`: Which snapshot shows the cloud at ``t_ms``: the last one taken by then.
-- `snapshot_ms(t_ms)`: When the snapshot showing the cloud at ``t_ms`` was taken.
-- class `Stage()`: One stage of the sequence: its colour key, its label, and, where it has them, the transition it drives, the stretch of imaging video that shows it and the paper that covers it.
-- class `Timeline(VGroup)`: A row of coloured blocks, one per stage, with the label under each.
+- class `Imaging()`: An imaging video of the cloud through a shot: the file (as resources.data_path takes it), how many video frames each snapshot is held for, the crop (top, bottom, left, right in pixels), and when the first snapshot was taken and the time between them, in ms.
+  - `.snapshot_index(t_ms)`: Which snapshot shows the cloud at ``t_ms``: the last one taken by then.
+  - `.snapshot_ms(t_ms)`: When the snapshot showing the cloud at ``t_ms`` was taken.
+- class `Stage()`: One stage of a sequence: its key, its label, and, where it has them, the transition it drives, the stretch of imaging video that shows it, the paper that covers it, and its own (fill, edge) colours on the timeline (default: SEQUENCE_STAGE_COLORS[key]).
+- class `Timeline(VGroup)`: A row of coloured blocks, one per stage, with the label under each, and a wider gap after block ``break_after`` (if any).
   - `.activate(i)`
 - class `References(VGroup)`: A brace under each run of stages a paper covers, numbered, and the numbered list of papers below. The one covering the running stage is lit.
   - `.cite(n)`: Animations lighting reference ``n`` (None for none) and dimming the rest.
-- `stage_heading(stage)`: The running stage's name, and the transition it drives, in big type.
+- `stage_heading(stage, species)`: The running stage's name, and the transition of ``species`` it drives, in big type.
 - `caption(text, heading)`: A grey caption under ``heading``, left-aligned with it.
 
 ### `trapping.tools.slicing`
@@ -454,24 +481,25 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/trapping/tools/slicing.py` — Velocity slicing: a long clock pulse picks the slowest atoms out of a cloud.
 
 - `excitation(u)`: The pi pulse's excitation probability at Doppler detuning u (in Omega).
-- `thermal(u, sigma=SLICE_THERMAL_SIGMA)`: The velocity distribution before the pulse, peak normalised to one.
+- `thermal(u, sigma)`: The velocity distribution before the pulse, peak normalised to one.
 - class `VelocityPlot(VGroup)`: The velocity distribution, stacked by internal state, with the pulse's excitation probability over it on the same scale.
   - `.c2p(u, y)`
 - class `SlicingCloud(VGroup)`: ``excite`` and ``push`` as on VelocityPlot; the drift runs by itself.
 
 ### `trapping.scenes.cooling`
 
-`src/manim_atoms/trapping/scenes/cooling.py` — Cooling Sr: the three MOT stages that open every shot, as a cartoon.
+`src/manim_atoms/trapping/scenes/cooling.py` — Laser cooling, stage by stage, as a cartoon: Sr's three MOTs, or any species' sequence written as configuration.
 
-- `temperature_tag(key)`: The cloud's temperature at stage ``key``, as MathTex in its corner.
-- `gradient_tag(key, coils)`: The field gradient, beside the upper coil it is drawn with.
-- `duration_tag(key, block)`: How long a stage runs, over its block of the timeline.
-- Scene `CoolingSequence(MovingCameraScene)`: The blue MOT, the modulated red MOT and the narrowband red MOT: the light, the field gradient and the cloud at each, with the Sr levels and the timeline beside them. One stage_break() per stage.
+- `temperature_tag(stage)`: The cloud's temperature at a CoolingStage, as MathTex in its corner.
+- `gradient_tag(stage, coils)`: A CoolingStage's field gradient, beside the upper coil it is drawn with.
+- `duration_tag(stage, block)`: How long a CoolingStage runs, over its block of the timeline.
+- Scene `CoolingSequence(MovingCameraScene)`: A species' cooling stages as a cartoon: the light, the field gradient and the cloud at each, with its level scheme and the timeline beside them. One stage_break() per stage.
+  - settings: `SPECIES`, `STAGES`, `EXTRAS`
   - `.stage_break()`: The pause after each stage. A slide wrapper stops here instead.
   - `.upstream(levels)`: The oven filling the 2D MOT, then the push beam switching on and the stream setting off for the 3D MOT; returns that stream.
-  - `.heading(i)`: Stage ``i``'s heading, in the upper left; the modulated red MOT's carries the depth of its sweep under the transition it drives.
+  - `.heading(i)`: Stage ``i``'s heading, in the upper left; a swept stage's carries the depth of its sweep under the transition it drives.
   - `.next_stage(timeline, i, heading, anims)`: Move the timeline and heading on to stage ``i``, alongside ``anims``, and put up its duration; returns the new heading.
-  - `.cool(cloud, key, tag, *anims, run_time)`: Shrink and cool the cloud to where stage ``key`` leaves it, the temperature tag changing over halfway; returns the new tag.
+  - `.cool(cloud, stage, tag, *anims, run_time)`: Shrink and cool the cloud to where ``stage`` leaves it, the temperature tag changing over halfway; returns the new tag.
   - `uv run manim -ql src/manim_atoms/trapping/scenes/cooling.py CoolingSequence`
 
 ### `trapping.scenes.dipole`
@@ -479,6 +507,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/trapping/scenes/dipole.py` — Loading the two dipole traps from the red MOT, then spin-polarising them.
 
 - Scene `DipoleTrapLoading(Scene)`: The red MOT shared out into two crossed dipole traps, then the atoms spin-polarised into m_F = +9/2, with the levels and the timeline beside them. One stage_break() per stage.
+  - settings: `SPECIES`
   - `.stage_break()`: The pause after each stage. A slide wrapper stops here instead.
   - `.recaption(step, text, heading)`
   - `.next_stage(timeline, i, heading, step, text)`: Move the timeline, heading and caption on to stage ``i`` of this scene's three; returns the new heading and caption.
@@ -495,10 +524,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 ### `trapping.scenes.sequence`
 
-`src/manim_atoms/trapping/scenes/sequence.py` — One shot of the experiment, stage by stage, beside the imaging of it.
+`src/manim_atoms/trapping/scenes/sequence.py` — One shot of an experiment, stage by stage, beside the imaging of it.
 
-- Scene `ExperimentSequence(Scene)`: One shot, stage by stage: the timeline, the Sr levels each stage drives, the papers that cover them, and the imaging video of the cloud run on the same clock.
-  - settings: `STAGES`, `REFERENCES`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`
+- Scene `ExperimentSequence(Scene)`: One shot, stage by stage: the timeline, the levels each stage drives, the papers that cover them, and the imaging video of the cloud run on the same clock.
+  - settings: `SPECIES`, `STAGES`, `REFERENCES`, `IMAGING`, `BREAK_AFTER`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`
   - `uv run manim -ql src/manim_atoms/trapping/scenes/sequence.py ExperimentSequence`
 - Scene `ExperimentSequenceSimple(ExperimentSequence)`: The sequence up to loading the lower dipole trap, beside the video alone: no level scheme, and only the papers those stages cite.
   - settings: `STAGES`, `REFERENCES`, `LEVELS`, `VIDEO_SIZE`, `VIDEO_CENTER`, `HEADING_CENTER`
@@ -511,6 +540,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `readout(when, values, color, plot)`: 'Before slicing T ~ ... pi-pulse fidelity ~ ...', over the plot's left end.
 - `recaption(step, text, heading)`: The next caption, and the animation swapping it in -- played alongside whatever the new step does, so the caption never holds the scene still.
 - Scene `VelocitySlicing(Scene)`: A long clock pulse excites the slowest atoms, a push beam clears the rest: the velocity distribution and the cloud side by side. One stage_break() per step.
+  - settings: `SPECIES`
   - `.stage_break()`: The pause after each step. A slide wrapper stops here instead.
   - `uv run manim -ql src/manim_atoms/trapping/scenes/slicing.py VelocitySlicing`
 

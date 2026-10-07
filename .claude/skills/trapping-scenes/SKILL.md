@@ -14,11 +14,16 @@ with three things beside it:
 
 ## Conventions
 
-**Light takes the colour of the transition it drives.** The species owns
-those colours: `species.strontium`'s `TRANSITION_461_COLOR`,
-`TRANSITION_689_COLOR`, `TRANSITION_698_COLOR` and `TRANSITION_488_COLOR`,
-and `REPUMP_COLOR`. That way the cartoon and the level scheme agree on
-which light is on. Import them by name; they are not in any style module.
+**Light takes the colour of the transition it drives.**
+- The species owns those colours. Ask it for a line by its job, so the
+  cartoon and the level scheme agree on which light is on:
+  `sr.transition("narrow").color`, `.key` (its wavelength, as printed).
+- The jobs: "cooling" (the broad line), "narrow", "clock", "push",
+  "imaging", "transparency" (a path: `sr.path("transparency")`) and
+  "repump".
+- Species: `species.strontium.STRONTIUM` and
+  `species.ytterbium.YTTERBIUM`. Both are `species.scheme.Species`.
+- The colours are not in any style module.
 
 **Far-detuned light drives no transition**, so it takes no transition
 colour. The dipole traps' beams are `TRAP_BEAM_COLOR`, a pale warm white.
@@ -28,7 +33,8 @@ colour. The dipole traps' beams are `TRAP_BEAM_COLOR`, a pale warm white.
 
 **Drawing weight carries a quantity, never a number on the screen:**
 - how heavy the coils are drawn is the field gradient
-  (`COIL_STRONG_WIDTH` for the blue MOT, `COIL_WEAK_WIDTH` for the red);
+  (`COIL_STRONG_WIDTH` for a broad-line MOT, `COIL_WEAK_WIDTH` for a
+  narrow-line one);
 - a beam's opacity is its intensity;
 - a cloud's size and jitter are its temperature.
 
@@ -45,11 +51,21 @@ about them (a temperature, a gradient, a duration). Otherwise only the
 wavelengths are named.
 
 **To depart:**
-- **A species other than Sr** gets its own `species/` module, with its
-  levels, transitions and line colours. Don't reuse Sr's colours for its
-  lines.
-- **A stage table other than the group's sequence** is a new list of
-  `Stage`, with `SEQUENCE_STAGE_COLORS` entries in the trapping style.
+- **A species other than Sr or Yb** gets its own `species/` module, as
+  `ytterbium` has. It holds a `Species`: levels (a fine-structure stack is
+  one `Manifold`), transitions, extras such as a repump loop, roles, and
+  the ground state's spin, with its own line colours. Don't reuse another
+  species' colours for its lines.
+- **A different experiment** is configuration, not code (recipe 5):
+  - `CoolingSequence` takes `SPECIES`, `STAGES` (a list of `CoolingStage`)
+    and `EXTRAS`;
+  - `ExperimentSequence` takes `SPECIES`, `STAGES` (a list of `Stage`),
+    `REFERENCES`, `IMAGING` and `BREAK_AFTER`.
+  - A `Stage` that isn't Sr's carries its own timeline colours,
+    `colors=(fill, edge)`.
+- **`DipoleTrapLoading` and `VelocitySlicing`** read their lines from
+  `SPECIES`, but their story (the 488 nm transparency beam, 87Sr's
+  F = 9/2) is Sr's own.
 
 ## Recipes
 
@@ -60,7 +76,7 @@ Worked examples: `CoolingSequence` (with a camera pan from the 2D MOT) and
 
 ```python
 from manim_atoms.trapping.style import *
-from manim_atoms.species.strontium import SrLevels, TRANSITION_461_COLOR, TRANSITION_689_COLOR
+from manim_atoms.species.strontium import STRONTIUM, SrLevels
 from manim_atoms.trapping.tools.cooling import AtomCloud, Coils, MotBeams
 from manim_atoms.trapping.tools.sequence import STAGES, Timeline, stage_heading
 
@@ -70,23 +86,25 @@ class StagedMOT(Scene):
         self.wait(1.0)
 
     def construct(self):
+        sr = STRONTIUM
+        broad, narrow = sr.transition("cooling"), sr.transition("narrow")
         levels = SrLevels(repump=True).scale(0.7).move_to(M_LEVELS)
         timeline = Timeline(STAGES[:2]).move_to(M_TIMELINE)
-        coils, blue = Coils(M_CENTER), MotBeams(TRANSITION_461_COLOR, M_CENTER)
-        red = MotBeams(TRANSITION_689_COLOR, M_CENTER)
-        cloud = AtomCloud(80, M_CENTER, palette=(TRANSITION_461_COLOR, TRANSITION_689_COLOR),
+        coils, blue = Coils(M_CENTER), MotBeams(broad.color, M_CENTER)
+        red = MotBeams(narrow.color, M_CENTER)
+        cloud = AtomCloud(80, M_CENTER, palette=(broad.color, narrow.color),
                           radius=1.0, temperature=1.0)
         cloud.arrived.set_value(0)
-        heading = stage_heading(STAGES[0]).move_to(M_HEADING, aligned_edge=UL)
+        heading = stage_heading(STAGES[0], sr).move_to(M_HEADING, aligned_edge=UL)
 
         self.play(FadeIn(levels), FadeIn(timeline), Create(coils), FadeIn(blue))
-        self.play(*timeline.activate(0), *levels.drive("461"), FadeIn(heading))
+        self.play(*timeline.activate(0), *levels.drive(broad.key), FadeIn(heading))
         self.add(cloud)
         self.play(cloud.arrived.animate.set_value(1), rate_func=linear, run_time=2)
         self.stage_break()
 
-        new = stage_heading(STAGES[1]).move_to(M_HEADING, aligned_edge=UL)
-        self.play(*timeline.activate(1), *levels.drive("689"),     # everything moves on at once
+        new = stage_heading(STAGES[1], sr).move_to(M_HEADING, aligned_edge=UL)
+        self.play(*timeline.activate(1), *levels.drive(narrow.key),   # everything moves on at once
                   FadeOut(blue), FadeIn(red), coils.animate.set_gradient(COIL_WEAK_WIDTH),
                   cloud.glow.animate.set_value(1),
                   Succession(FadeOut(heading), FadeIn(new)))      # out, then in: never crossed
@@ -102,12 +120,15 @@ class StagedMOT(Scene):
   into a cigar (`stretch=(sx, sy)`).
 - **`MotBeams.set_intensity`** dims a beam; **`Coils.set_gradient`**
   changes how heavily the coils are drawn.
-- **`SweepFan`**, added to the levels, shows the red MOT's frequency
-  sweep (`shown` 0 to 1).
-- **`levels.drive(*keys)`** lights the named lines and puts out the rest:
-  `"461"`, `"689"`, `"698"`, `"679"`, `"707"`, `"return"`, `"leak"`,
-  `"488"`. Call `SrLevels(repump=True, transparency=True)` to have the
-  repump and 488 nm lines at all.
+- **`SweepFan(species)`**, added to the levels, shows a narrow-line
+  MOT's frequency sweep (`shown` 0 to 1).
+- **`levels.drive(*keys)`** lights the named lines and puts out the rest.
+  The keys are the species' transitions and paths. Sr's are `"461"`,
+  `"689"`, `"698"`, `"679"`, `"707"`, `"return"`, `"leak"` and `"488"`.
+- **Extras are drawn only on request:**
+  `LevelScheme(species, ("repump", "transparency"))`, or for Sr
+  `SrLevels(repump=True, transparency=True)`. Without them, the repump
+  and 488 nm lines aren't there at all.
 - **`timeline.activate(i)`** lights block i and dims the one before it.
 
 ### 2. Beams and traps
@@ -118,7 +139,7 @@ from manim_atoms.trapping.tools.dipole import LoadingAtoms
 
 beams = VGroup(*[gaussian_band([x0, y, 0], [x1, y, 0], 0.16, TRAP_BEAM_COLOR)
                  for y in (UPPER_Y, LOWER_Y)])
-atoms = LoadingAtoms(120, upper_trap, lower_trap)
+atoms = LoadingAtoms(120, upper_trap, lower_trap, sr.transition("narrow").color)
 self.play(atoms.glow_upper.animate.set_value(1))      # lit while it scatters MOT light
 self.play(atoms.load_upper.animate.set_value(1))      # settles into the upper trap
 self.play(atoms.fall.animate.set_value(1))            # the rest drop when the MOT lets go
@@ -133,9 +154,10 @@ self.play(atoms.fall.animate.set_value(1))            # the rest drop when the M
 - `make_up_beam`, `make_push_beam` and `make_baffle` are the narrow
   beams and the wall.
 - Upstream of the trap: `Oven` and `AtomBeam` (`flow` turns the stream on).
-- Optical pumping: `SpinHistogram` (`pump` 0 to 1).
-- Velocity slicing: `VelocityPlot` and `SlicingCloud`, both driven by
-  `excite` and `push`.
+- Optical pumping: `SpinHistogram(species.spin)` (`pump` 0 to 1).
+- Velocity slicing: `VelocityPlot(sigma, clock.color)` and
+  `SlicingCloud(center, sigma)`, both driven by `excite` and `push`;
+  `sigma` is the thermal width in units of the pulse's Rabi frequency.
 
 ### 3. The imaging video on the scene's clock
 
@@ -144,14 +166,14 @@ Worked examples: `ExperimentSequence`, `ExperimentSequenceSimple`.
 ```python
 from manim_atoms.core.video import VideoFrame, load_video_frames
 from manim_atoms.resources import data_path
-from manim_atoms.trapping.tools.sequence import (IMAGING_CROP, IMAGING_FRAMES_PER_SNAPSHOT,
-                                                 IMAGING_T0_MS, IMAGING_VIDEO, snapshot_index)
+from manim_atoms.trapping.tools.sequence import SR_IMAGING
 
-frames = load_video_frames(data_path(*IMAGING_VIDEO), every=IMAGING_FRAMES_PER_SNAPSHOT,
-                           crop=IMAGING_CROP)
+imaging = SR_IMAGING                                          # an Imaging: the file, crop, timing
+frames = load_video_frames(data_path(*imaging.video), every=imaging.frames_per_snapshot,
+                           crop=imaging.crop)
 video = VideoFrame(frames).set(height=4).to_edge(LEFT)
-t_ms = ValueTracker(IMAGING_T0_MS)                            # experiment time, in ms
-video.add_updater(lambda m: m.show(snapshot_index(t_ms.get_value())))
+t_ms = ValueTracker(imaging.t0_ms)                            # experiment time, in ms
+video.add_updater(lambda m: m.show(imaging.snapshot_index(t_ms.get_value())))
 self.add(video, SurroundingRectangle(video, buff=0, **IMAGE_BORDER_STYLE))
 self.play(t_ms.animate.set_value(200), rate_func=linear, run_time=3)
 ```
@@ -168,6 +190,70 @@ Worked example: `HighFluxLoading`.
   point given in the render's own pixels, so it stays put whatever size
   the image is drawn at.
 - `dimension(start, end, text, side)` draws a dimension across it.
+
+### 5. Another species, as configuration
+
+`CoolingSequence` and `ExperimentSequence` are written once and configured
+by class attributes. A different atom or experiment is a subclass with
+different data.
+
+This is Yb's sequence, rendered and checked. It shows:
+- the oven feeding a 399 nm 2D MOT;
+- a blue MOT, a broadened green MOT with its sweep, and a green MOT;
+- the whole shot's timeline, with no video and no references.
+
+```python
+from manim_atoms.species.ytterbium import YTTERBIUM
+from manim_atoms.trapping.scenes.cooling import CoolingSequence
+from manim_atoms.trapping.scenes.sequence import ExperimentSequence
+from manim_atoms.trapping.tools.cooling import CoolingStage
+from manim_atoms.trapping.tools.sequence import Stage
+
+YB_STAGES = [                    # Yb's own keys, so each brings its timeline colours
+    Stage("yb_blue_mot", r"Blue MOT", "399", colors=("#c9b3ff", "#7a44ff")),
+    Stage("yb_broad_green_mot", r"Broadened\\green MOT", "556", colors=("#a8e8b4", "#2fa043")),
+    Stage("yb_green_mot", r"Green MOT", "556", colors=("#d9f5de", "#3fcf5a")),
+    Stage("yb_lattice", r"Optical\\lattice", colors=("#afe9dd", "#37c8ab")),
+    Stage("yb_spin_polarization", r"Spin\\polarization", "556", colors=("#d7f4d7", "#37c837")),
+    Stage("yb_clock", r"Clock\\spectroscopy", "578", colors=("#fff0a8", "#d4aa00")),
+    Stage("yb_readout", r"State\\readout", "399", colors=("#c9b3ff", "#7a44ff")),
+]
+YB_COOLING = [                   # illustrative numbers: take yours from your experiment
+    CoolingStage(YB_STAGES[0], "cooling", ("399",), r"T \sim 1\,\mathrm{mK}",
+                 r"3\,\mathrm{mT/cm}", r"1\,\mathrm{s}", COIL_STRONG_WIDTH, (1.0, 1.0)),
+    CoolingStage(YB_STAGES[1], "narrow", (), r"T \sim 30\,\mu\mathrm{K}",
+                 r"0.8\,\mathrm{mT/cm}", r"100\,\mathrm{ms}", COIL_WEAK_WIDTH, (0.55, 0.15),
+                 sweep=r"4\,\mathrm{MHz\ modulation}", glow=True),
+    CoolingStage(YB_STAGES[2], "narrow", ("556",), r"T \sim 10\,\mu\mathrm{K}",
+                 r"0.8\,\mathrm{mT/cm}", r"50\,\mathrm{ms}", COIL_WEAK_WIDTH, (0.25, 0.02),
+                 glow=True, intensity=0.85),
+]
+
+class YbCooling(CoolingSequence):
+    SPECIES = YTTERBIUM
+    STAGES = YB_COOLING
+    EXTRAS = ()                  # no repump loop: Yb's blue MOT barely leaks
+
+class YbSequence(ExperimentSequence):
+    SPECIES = YTTERBIUM
+    STAGES = YB_STAGES
+    REFERENCES = []              # nothing to cite: no braces, no list
+    IMAGING = None               # no video panel
+    BREAK_AFTER = 4              # preparing the atoms, then using them
+```
+
+A `CoolingStage` describes one stage:
+- `beams`: the job of its MOT light (a new job swaps the beam set);
+- `drive`: the lines it lights (none while a `sweep` stands in for the
+  line);
+- `temperature`, `gradient`, `duration` and `coil_width`;
+- `cloud`: (radius, temperature) at its end;
+- flags: `glow`, `up_beam` (a beam from below, as Sr's narrowband MOT has),
+  `intensity` (ramp the beams);
+- `leak`: (leak keys, repump keys), for Sr's dark-state story.
+
+The first stage loads the trap; each later one takes over from the one
+before, changing only what differs.
 
 ## Before you finish
 

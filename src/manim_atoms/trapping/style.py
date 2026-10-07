@@ -11,8 +11,8 @@ from manim import BLUE_D, WHITE, ManimColor
 from manim_atoms.style import *
 
 # --- the experimental sequence --------------------------------------------
-# One shot of the experiment laid out as a timeline, with the Sr level scheme
-# beside it showing which transition each stage drives. The timeline keeps
+# One shot of the experiment laid out as a timeline, with the species' level
+# scheme beside it showing which transition each stage drives. The timeline keeps
 # the colours of the group's own sequence figure (fill, edge), so it reads as
 # the same diagram the audience may already have seen.
 SEQUENCE_STAGE_COLORS = {
@@ -46,7 +46,7 @@ FONT_VIDEO_CLOCK = 24
 # of light that holds atoms rather than addressing them.
 TRAP_BEAM_COLOR = ManimColor("#f3e3c8")
 TRANSPARENCY_OPACITY = 0.35
-MOT_GLOW_OPACITY = 0.22  # the red MOT's light, at its centre, beside the traps
+MOT_GLOW_OPACITY = 0.22  # a narrow-line MOT's light, at its centre, beside the traps
 MOT_GLOW_LAYERS = 8
 FONT_CAPTION = FONT_LEGEND  # the step within a stage, under its heading
 
@@ -62,8 +62,8 @@ MOT_BEAM_OPACITY = 0.2  # fill, at full intensity
 MOT_BEAM_EDGE_OPACITY = 0.8  # the arrowhead chevrons, at full intensity
 MOT_BEAM_EDGE_WIDTH = 3
 COIL_COLOR = OPTIC_COLOR
-COIL_STRONG_WIDTH = 7  # the blue MOT's gradient
-COIL_WEAK_WIDTH = 3  # the red MOTs', some ten times weaker
+COIL_STRONG_WIDTH = 7  # a broad-line MOT's gradient
+COIL_WEAK_WIDTH = 3  # a narrow-line MOT's, some ten times weaker
 # An atom in a MOT glows in the colour of the light it scatters; one that has
 # fallen into a state no beam addresses is dark.
 CLOUD_DOT_RADIUS = 0.045
@@ -75,7 +75,7 @@ FONT_TEMPERATURE = FONT_ANNOTATION
 # the baffle are hardware, so they take the optics grey; the oven gets a warm
 # orange wash inside, because what it does is get hot.
 # An atom straight out of the oven has met no light yet and is drawn grey,
-# turning the 461 blue as it is caught.
+# turning the cooling light's colour as it is caught.
 OVEN_COLOR = OPTIC_COLOR
 OVEN_HEAT_COLOR = ManimColor("#ffb26b")
 OVEN_HEAT_OPACITY = 0.3
@@ -89,8 +89,9 @@ HOT_ATOM_COLOR = GUIDE_COLOR
 # is about is temperature, so the bands are coloured hot and cold: red for the
 # thermal cloud left in |g>, blue for the cold slice the pulse moves to |e>.
 # Translucent, so the pulse's line shape shows through them. The line shape is
-# the clock laser's, so it takes the 698 nm red; the hot red is a deeper one,
-# so the two stay apart where the line shape crosses the band.
+# the clock laser's, so it takes the clock line's colour (Sr's 698 nm red);
+# the hot red is a deeper one, so the two stay apart where the line shape
+# crosses the band.
 SLICE_HOT_COLOR = ManimColor("#d8322a")
 SLICE_COLD_COLOR = BLUE_D
 SLICE_FILL_OPACITY = 0.55
