@@ -131,3 +131,35 @@ def bloch_vector(state, molecule):
     density = rows @ rows.conj().T
     return np.array([2 * density[0, 1].real, 2 * density[1, 0].imag,
                      (density[0, 0] - density[1, 1]).real])
+
+
+def atom_bloch_vector(state):
+    """The atom's own |g> / |r> qubit in a gate_state, as a Bloch vector
+    (x, y, z) with |g> at +z and |r> at -z.
+
+    Both molecules in |0>: it turns once round the x axis, g to r and back,
+    its length staying 1. Otherwise the exchange takes some of the atom's
+    amplitude out of |g> and |r> into |R>, entangled with a molecule, so the
+    vector shortens."""
+    rows = np.moveaxis(state, 1, 0).reshape(3, 9)[[0, 2]]
+    density = rows @ rows.conj().T
+    return np.array([2 * density[0, 1].real, -2 * density[1, 0].imag,
+                     (density[0, 0] - density[1, 1]).real])
+
+
+def overlap(first, second, t, duration=GATE_TIME, coupling=V_DD):
+    """The whole system's overlap with its starting state a time ``t`` into
+    the pulse (molecules in the qubit states ``first`` and ``second``, the
+    atom in |g>): a complex number, whose length is how much of the start is
+    left and whose phase is the phase the system has acquired.
+
+    From |00> it goes from 1 through 0, at the pulse's middle, to -1: the
+    sign change. From any other basis state it stays near 1 and returns to
+    it. Between them, on superpositions, it is the weighted sum of those."""
+    total = 0j
+    for a in (0, 1):
+        for b in (0, 1):
+            times, amplitudes = gate_run(a + b, duration, coupling)
+            total += abs(first[a]) ** 2 * abs(second[b]) ** 2 * np.interp(
+                t, times, amplitudes[:, 0])
+    return complex(total)

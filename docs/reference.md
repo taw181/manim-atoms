@@ -558,6 +558,8 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `gate_state(first, second, t, duration=GATE_TIME, coupling=V_DD)`: The three particles' joint state a time ``t`` into the pulse, with the molecules starting in the qubit states ``first`` and ``second`` (each its amplitudes in |0> and |1>) and the atom in |g>.
 - `gate_populations(state)`: Each particle's populations in a gate_state, as (molecule, atom, molecule): a molecule's are in (|0>, |1>, |2>), the atom's in (|g>, |R>, |r>), bottom to top.
 - `bloch_vector(state, molecule)`: What a gate_state leaves of one molecule's own qubit (``molecule`` is 0 or 1), as a Bloch vector (x, y, z): |0> is +z, |0> + |1> is +x.
+- `atom_bloch_vector(state)`: The atom's own |g> / |r> qubit in a gate_state, as a Bloch vector (x, y, z) with |g> at +z and |r> at -z.
+- `overlap(first, second, t, duration=GATE_TIME, coupling=V_DD)`: The whole system's overlap with its starting state a time ``t`` into the pulse (molecules in the qubit states ``first`` and ``second``, the atom in |g>): a complex number, whose length is how much of the start is left and whose phase is the phase the system has acquired.
 
 ### `tweezers.physics.rearrangement`
 
@@ -657,6 +659,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.refresh_particles(_=None)`: Put each particle on its trap, in its state's colours.
   - `.refresh_levels(_=None)`: Redraw the level scheme from the same numbers.
   - `.refresh_qubits(_=None)`: Point each molecule's Bloch vector where its qubit is, in the molecule's colour. The sphere is seen with the qubit's x axis to the right, so |0> + |1> points right and |0> - |1> left.
+  - `.refresh_basis(_=None)`: Point the atom's Bloch vector where its qubit is, and the dial's hand at the whole system's overlap with its start.
   - `.refresh_light(_=None)`: The laser's beam as bright as its Rabi frequency, and the marker on its envelope.
   - `.prepare(text, first=None, second=None)`: Microwave pulses taking each molecule's qubit to the angle given (None leaves it alone), under the caption ``text``.
   - `.pulse(before, after, rows=(), leaves=None)`: Run the gate's pulse on the molecules as they are: the atom's trap off under the caption ``before``, the pulse, then the trap back on and the table's ``rows`` filled in under ``after``.

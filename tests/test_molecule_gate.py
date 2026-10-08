@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from manim_atoms.tweezers.physics.molecule_gate import (
-    GATE_TIME, V_DD, bloch_vector, gate_hamiltonian, gate_phase, gate_populations,
+    GATE_TIME, atom_bloch_vector, overlap, V_DD, bloch_vector, gate_hamiltonian, gate_phase, gate_populations,
     gate_run, gate_state, qubit, rabi_frequency,
 )
 
@@ -123,3 +123,23 @@ def test_both_in_a_superposition_end_up_entangled():
     for molecule in (0, 1):
         assert np.linalg.norm(bloch_vector(state, molecule)) < 0.05
     assert gate_populations(state)[1][0] > 0.99  # and the atom is back out of it
+
+
+def test_both_in_zero_the_atoms_vector_goes_once_round_and_the_system_flips_sign():
+    state = lambda t: gate_state(qubit(0), qubit(0), t)
+    assert np.allclose(atom_bloch_vector(state(0)), [0, 0, 1])
+    assert atom_bloch_vector(state(GATE_TIME / 2))[2] == pytest.approx(-1, abs=1e-6)
+    assert np.allclose(atom_bloch_vector(state(GATE_TIME)), [0, 0, 1], atol=1e-3)
+    for t in np.linspace(0, GATE_TIME, 9):
+        assert np.linalg.norm(atom_bloch_vector(state(t))) == pytest.approx(1)
+    assert overlap(qubit(0), qubit(0), 0) == pytest.approx(1)
+    assert overlap(qubit(0), qubit(0), GATE_TIME) == pytest.approx(-1, abs=1e-6)
+
+
+@pytest.mark.parametrize("angles", [(0, np.pi), (np.pi, 0), (np.pi, np.pi)])
+def test_with_a_molecule_in_one_the_system_comes_back_unchanged_and_the_atom_never_turns_over(angles):
+    first, second = qubit(angles[0]), qubit(angles[1])
+    assert overlap(first, second, GATE_TIME) == pytest.approx(1, abs=0.01)
+    for t in np.linspace(0, GATE_TIME, 21):
+        assert abs(overlap(first, second, t)) > 0.9
+        assert atom_bloch_vector(gate_state(first, second, t))[2] > 0.8

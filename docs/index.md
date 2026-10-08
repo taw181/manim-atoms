@@ -201,7 +201,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A gate between two molecules through a Rydberg atom**, in numbers. `tweezers.physics.molecule_gate`:
   - the pulse and each basis input: `rabi_frequency`, `gate_hamiltonian`, `gate_run`, `gate_phase`;
   - any input: `qubit` is a molecule's superposition, `gate_state` the three particles' joint state through the pulse;
-  - what to draw from it: `gate_populations` is every particle's populations, `bloch_vector` what is left of a molecule's own qubit (nothing, once it is entangled).
+  - what to draw from it: `gate_populations` is every particle's populations, `bloch_vector` what is left of a molecule's own qubit (nothing, once it is entangled);
+  - the gate's point: `atom_bloch_vector` is the atom's |g>/|r> qubit (once round with both molecules in |0>, hardly moving otherwise), `overlap` the whole system's overlap with its start, whose phase flips by pi only from |00>.
 - **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
@@ -302,7 +303,7 @@ Copy from these when building something similar.
 - **A table of pictures, then a quantity taken away term by term.** `tweezers.scenes.holography`: `ZernikeCorrection`.
 - **An optical train side on, with light traced through its lenses** and face-on pictures above it. `tweezers.scenes.holography`: `OpticalTrain`.
 - **Two views of one thing kept in step** (the SLM's mask and the array it makes). `tweezers.scenes.rearrangement_hologram`: `RearrangementHologram`.
-- **Particles of your own on an array's traps, beside a level scheme and Bloch spheres, all drawn from one computed state** (a two-qubit gate run on basis states, then on superpositions until the qubits are entangled). `tweezers.scenes.molecule_gate`: `MoleculeRydbergGate`.
+- **Particles of your own on an array's traps, beside a level scheme and Bloch spheres, all drawn from one computed state** (a two-qubit gate run on basis states, the atom's 2 pi turn and the whole system's phase beside it, then on superpositions until the qubits are entangled). `tweezers.scenes.molecule_gate`: `MoleculeRydbergGate`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

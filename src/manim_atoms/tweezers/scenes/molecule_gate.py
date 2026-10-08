@@ -11,9 +11,16 @@ molecules in |0> the atom goes to |r> and back and the state changes sign;
 with either in |1> the exchange keeps the atom out of |r>, and nothing
 changes. That is a controlled-Z gate.
 
-The scene shows it in two halves. First how it works, on |00> and |01>,
-where all there is to see is the atom excited or not, and a table of what
-comes back. Then what it does, which a sign on a whole state cannot show:
+The scene shows it in two halves. First how it works, on |00> and |01>.
+With both molecules in |0> the laser turns the atom through a full 2 pi
+rotation, |g> to |r> and back, drawn as the atom's own Bloch vector going
+once round; and a 2 pi rotation of a two-level system multiplies its state
+by -1, so the whole system comes back with its phase shifted by pi. That is
+drawn as a dial of the whole state's overlap with where it started: its
+hand shrinks to nothing at the pulse's middle and comes back pointing at
+-1. With a molecule in |1> the exchange stops the atom making the
+rotation, its vector hardly leaves |g>, and the hand stays at +1: no phase
+shift. Then what that does, which a sign on a whole state cannot show:
 each molecule's qubit is drawn as a Bloch vector, and the pulse is run with
 the second molecule in |0> + |1>. With the first in |0> the second's vector
 is turned over, to |0> - |1>; with the first in |1> it is left alone; and
@@ -36,8 +43,9 @@ of it, though not to the atom's. The levels are schematic
 the molecules would not notice it.
 
 - MoleculeRydbergGate: a beat() once the traps are laid out, then after
-  the move, the levels, the field, the two runs on basis states, the second
-  molecule put in a superposition, the three runs that follow, and on the
+  the move, the levels, the field, a beat() for the atom's qubit and the
+  phase dial, the two runs on basis states, the second molecule put in a
+  superposition, the three runs that follow, and on the
   last caption.
 """
 
@@ -58,8 +66,10 @@ from manim_atoms.species.molecule_rydberg import (
 from manim_atoms.tweezers.physics.molecule_gate import (
     GATE_TIME,
     bloch_vector,
+    atom_bloch_vector,
     gate_populations,
     gate_state,
+    overlap,
     qubit,
     rabi_frequency,
 )
@@ -102,6 +112,10 @@ MG_TABLE = np.array([0.55, -1.95, 0.0])  # the arrow of the table's top row, und
 MG_TABLE_ROW = 0.5  # between its rows
 MG_SPHERE_DROP = 2.45  # a molecule's Bloch sphere, below its trap
 MG_SPHERE_RADIUS = 0.6
+# The phase dial of the whole state, left of the molecule spheres' column and
+# under the field's arrow; the atom's own sphere goes under its trap.
+MG_DIAL = np.array([-5.95, -1.75, 0.0])
+MG_DIAL_RADIUS = 0.5
 MG_SIGN_BUFF = 0.12  # the + and - at the ends of a sphere's equator, off its outline
 MG_PULSE_TIME = 4.0  # seconds a gate pulse takes on screen
 MG_PREPARE_TIME = 1.4  # a microwave pulse on a qubit
@@ -191,6 +205,31 @@ class MoleculeRydbergGate(Scene):
             self.vectors.append(BlochVector(view))
         self.qubits = VGroup(self.spheres, *self.vectors)
 
+        # the atom's own qubit, |g> up and |r> down, seen so that its turn about
+        # x goes round in the picture's plane
+        atom_view = BlochView(self.view.point([0, 0]) + DOWN * MG_SPHERE_DROP, MG_SPHERE_RADIUS)
+        atom_sphere = bloch_sphere(
+            atom_view, *[state_label(tex, RYDBERG_ATOM_COLORS[k], FONT_LEGEND)
+                         for tex, k in ((r"|g\rangle", 0), (r"|r\rangle", 2))])
+        self.atom_vector = BlochVector(atom_view)
+
+        # the whole state's phase: a hand from the dial's centre to its overlap
+        # with the start, so a shrinking hand is the state turning away from it
+        ring = Circle(radius=MG_DIAL_RADIUS, **BLOCH_STYLE).move_to(MG_DIAL)
+        cross = VGroup(*[Line(MG_DIAL + d * MG_DIAL_RADIUS, MG_DIAL - d * MG_DIAL_RADIUS,
+                              stroke_width=1, color=GUIDE_COLOR, stroke_opacity=0.5)
+                         for d in (RIGHT, UP)])
+        ends = VGroup(*[MathTex(tex, font_size=FONT_LEGEND, color=PLOT_FOREGROUND)
+                        .next_to(MG_DIAL + way * MG_DIAL_RADIUS, way, buff=0.08)
+                        for tex, way in (("+1", RIGHT), ("-1", LEFT))])
+        label = Tex(r"phase of the\\whole system", font_size=FONT_AXIS,
+                    color=PLOT_FOREGROUND).next_to(ring, DOWN, buff=0.45)
+        self.dial_hand = Arrow(MG_DIAL, MG_DIAL + RIGHT * MG_DIAL_RADIUS, buff=0,
+                               color=PLOT_FOREGROUND, stroke_width=4,
+                               max_tip_length_to_length_ratio=0.35)
+        self.basis = VGroup(atom_sphere, self.atom_vector, ring, cross, ends, label,
+                            self.dial_hand)
+
         arrow = Arrow(MG_FIELD + DOWN * MG_FIELD_LENGTH / 2, MG_FIELD + UP * MG_FIELD_LENGTH / 2,
                       **STATIC_FIELD_ARROW_STYLE)
         self.field_arrow = VGroup(arrow, MathTex(r"\vec{E}", font_size=FONT_ANNOTATION,
@@ -277,6 +316,22 @@ class MoleculeRydbergGate(Scene):
         for k, (vector, populations) in enumerate(zip(self.vectors, (first, second))):
             x, y, z = bloch_vector(state, k)
             vector.point_to([-y, x, z], state_mix(MOLECULE_COLORS, populations))
+
+    def refresh_basis(self, _=None):
+        """Point the atom's Bloch vector where its qubit is, and the dial's
+        hand at the whole system's overlap with its start."""
+        state = self.state()
+        _, atom, _ = gate_populations(state)
+        self.atom_vector.point_to(
+            atom_bloch_vector(state),
+            state_mix((RYDBERG_ATOM_COLORS[0], RYDBERG_ATOM_COLORS[2]), (atom[0], atom[2])))
+        z = overlap(qubit(self.first.get_value()), qubit(self.second.get_value()),
+                    self.clock.get_value())
+        # a hand that has shrunk to nothing stays a short stub, not a broken arrow
+        end = MG_DIAL + MG_DIAL_RADIUS * np.array([z.real, z.imag, 0.0])
+        if np.linalg.norm(end - MG_DIAL) < 0.08:
+            end = MG_DIAL + RIGHT * 0.08 * (1 if z.real >= 0 else -1)
+        self.dial_hand.put_start_and_end_on(MG_DIAL, end)
 
     def refresh_light(self, _=None):
         """The laser's beam as bright as its Rabi frequency, and the marker
@@ -366,22 +421,29 @@ class MoleculeRydbergGate(Scene):
         self.add(self.beam, self.beam_name)
         self.add(self.links, self.particles)  # the particles over the light
         self.beam.add_updater(self.refresh_light)
-        self.play(FadeIn(self.plot), FadeIn(self.plot_marker))
-        self.pulse(r"both in $|0\rangle$: a $2\pi$ laser pulse takes the atom to "
-                   r"$|r\rangle$ and back",
-                   r"the state comes back with its sign changed", rows=[0], leaves=(0, 0))
+        self.refresh_basis()
+        self.play(FadeIn(self.plot), FadeIn(self.plot_marker), FadeIn(self.basis),
+                  self.say(r"the atom's qubit, and the phase of the whole system, now $+1$"))
+        self.basis.add_updater(self.refresh_basis)
+        self.wait(MG_SETTLE)
+        self.beat()
+        self.pulse(r"both in $|0\rangle$: the laser turns the atom through a "
+                   r"$2\pi$ rotation",
+                   r"a $2\pi$ rotation gives $-1$: the whole system is phase-shifted by $\pi$",
+                   rows=[0], leaves=(0, 0))
 
         self.prepare(r"microwaves put one molecule in $|1\rangle$", second=PI)
-        self.pulse(r"it exchanges an excitation with the atom, which keeps the atom "
-                   r"out of $|r\rangle$",
-                   r"the state comes back as it was: so it does with either in "
-                   r"$|1\rangle$, or both", rows=[1, 2, 3], leaves=(0, PI))
+        self.pulse(r"a molecule in $|1\rangle$ exchanges with the atom: no rotation",
+                   r"no rotation, no phase shift: likewise for $|10\rangle$ and $|11\rangle$",
+                   rows=[1, 2, 3], leaves=(0, PI))
 
         # what it does: a sign shows only in a superposition
         self.refresh_qubits()
-        self.play(self.say(r"a sign shows only in a superposition, "
-                           r"$|0\rangle + |1\rangle$ or $|0\rangle - |1\rangle$"),
-                  self.kets_shown.animate.set_value(0), FadeIn(self.qubits))
+        self.basis.remove_updater(self.refresh_basis)
+        self.play(self.say(r"the phase shows only against a superposition, "
+                           r"$|0\rangle \pm |1\rangle$"),
+                  self.kets_shown.animate.set_value(0), FadeOut(self.basis),
+                  FadeIn(self.qubits))
         self.qubits.add_updater(self.refresh_qubits)
         self.prepare(r"microwaves put the second molecule in $|0\rangle + |1\rangle$",
                      second=PI / 2)
