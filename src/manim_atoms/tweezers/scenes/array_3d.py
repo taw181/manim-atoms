@@ -1,7 +1,7 @@
 """A tweezer array seen from an angle: each trap a focused beam.
 
-Starts on a loaded array seen from above, at TweezerRearrangement's spacing
-but with fewer than half its traps and drawn larger, and tilts the view over. Each spot turns
+Starts on a loaded array seen from above, with fewer than half
+TweezerRearrangement's traps at twice its spacing, and tilts the view over. Each spot turns
 out to be the waist of a beam: it narrows to its focus in the plane of the
 array, where its atom sits, and spreads again beyond. The beam is drawn as
 a solid, cut off square a little way either side of the atom, and a nearer
@@ -40,7 +40,6 @@ from manim_atoms.tweezers.tools.beams import (
 )
 from manim_atoms.tweezers.tools.tweezer_array import (
     TW_FILL,
-    TW_PITCH,
     TweezerArray,
     heading,
     next_step,
@@ -49,17 +48,22 @@ from manim_atoms.tweezers.tools.tweezer_array import (
 
 # --- tilted-array geometry ---------------------------------------------------
 # Seen from the side every beam stands in front of the rows behind it, and
-# the top-down scenes' eighty-one are too many to follow. So this array is
-# smaller, 6 x 6 at the same spacing, and drawn larger. It loads nineteen
-# atoms, enough for the 4 x 4 block at its centre with three to spare; an
-# even block in an even array sits on the array's own sites. It sits below
-# the middle of the frame and to the right, clear of the heading and the
-# step caption in the upper left corner.
+# the top-down scenes' eighty-one, a quarter of a spacing wide, are too many
+# and too close to follow. So this array is smaller, 6 x 6, at twice the
+# spacing: a beam's flared end is well under half the gap to the next
+# column, and each atom shows at its own waist. It loads nineteen atoms,
+# enough for the 4 x 4 block at its centre with three to spare; an even
+# block in an even array sits on the array's own sites. The scale is what
+# fits the array in the frame from above, where it is tallest: its top row
+# has to stay under the step caption, which runs out over it, and its bottom
+# row inside the frame. So it sits below the middle, and to the right, where
+# the tilted array has room to spare.
 T3_ROWS, T3_COLS = 6, 6
 T3_TARGET = (4, 4)  # rows and columns of the block wanted
+T3_PITCH = 1.0  # between neighbouring traps
 T3_SEED = 3  # of the loading shown: scattered, with no row or column full
-T3_CENTER = np.array([0.8, -0.4, 0.0])  # of the array
-T3_SCALE = 1.8  # scene units per unit of the array's own
+T3_CENTER = np.array([1.0, -0.5, 0.0])  # of the array
+T3_SCALE = 1.15  # scene units per unit of the array's own
 T3_HEADING = np.array([-6.6, 3.6, 0.0])  # the heading's upper left corner
 T3_PLANE_MARGIN = 0.5  # of the focal plane's outline beyond the outermost traps
 T3_TILT_TIME = 3.0
@@ -78,8 +82,8 @@ class TweezerArray3D(Scene):
 
     def build(self):
         """Lay out the loaded array in a view that starts top-down, unadded."""
-        sites = square_sites(T3_ROWS, T3_COLS, TW_PITCH)
-        targets = square_sites(*T3_TARGET, TW_PITCH)
+        sites = square_sites(T3_ROWS, T3_COLS, T3_PITCH)
+        targets = square_sites(*T3_TARGET, T3_PITCH)
         loaded = load_sites(len(sites), TW_FILL, np.random.default_rng(T3_SEED))
         self.plan = plan_rearrangement(sites, loaded, targets)
         self.elevation, self.azimuth = ValueTracker(PI / 2), ValueTracker(0)
@@ -89,7 +93,7 @@ class TweezerArray3D(Scene):
         self.array.on.set_value(1)
         self.array.filled.set_value(1)
         self.array.redraw()
-        half = (T3_COLS - 1) / 2 * TW_PITCH + T3_PLANE_MARGIN
+        half = (T3_COLS - 1) / 2 * T3_PITCH + T3_PLANE_MARGIN
         self.plane = focal_plane(view, half, half, self.plane_shown)
         self.title = heading("A tweezer array").move_to(T3_HEADING, aligned_edge=UL)
         self.note = step_caption("from above: each trap a spot", self.title)

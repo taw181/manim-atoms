@@ -96,7 +96,7 @@ of its focus, and a nearer beam hides the ones behind it; the atoms are
 drawn over all the light. A beam that fades out, or adds to the ones behind
 it, turns a full array into haze. Seen from the side there is room for
 fewer traps than from above: `TweezerArray3D` is 6 x 6 against the
-top-down scenes' 9 x 9, at the same pitch and drawn larger. To change how
+top-down scenes' 9 x 9, at twice the pitch. To change how
 a beam looks, change `TW_RAYLEIGH` (how fast it flares) and `TW_REACH` (how
 far it is drawn), keep its flared end narrower than the gap to the next
 column, and compare candidates side by side in one still, with every trap
