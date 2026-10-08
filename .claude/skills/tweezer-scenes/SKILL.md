@@ -1,13 +1,14 @@
 ---
 name: tweezer-scenes
-description: Build or change a tweezer-array or SLM hologram scene in manim-atoms — an array of optical tweezers loaded, imaged and rearranged, seen from above or from an angle with each trap a focused beam; a phase mask beside the focal plane it makes; gratings, lens phases, Gerchberg-Saxton iteration, Zernike modes and aberration correction; the optical train from an SLM to the atoms. Use it whenever the scene is about single atoms in tweezers or about shaping light with a phase mask. Use it with the base manim-atoms skill.
+description: Build or change a tweezer-array or SLM hologram scene in manim-atoms — an array of optical tweezers loaded, imaged and rearranged, seen from above or from an angle with each trap a focused beam; a phase mask beside the focal plane it makes; gratings, lens phases, Gerchberg-Saxton iteration, Zernike modes and aberration correction; the optical train from an SLM to the atoms; molecules and Rydberg atoms in neighbouring traps and a gate between them, beside their level scheme. Use it whenever the scene is about single atoms or molecules in tweezers or about shaping light with a phase mask. Use it with the base manim-atoms skill.
 ---
 
 # Tweezer scenes
 
-Read the base `manim-atoms` skill first. Tweezer scenes are of two kinds:
-the array (traps, atoms, moves) and the light that makes it (masks, focal
-planes, the optical train).
+Read the base `manim-atoms` skill first. Tweezer scenes are of three kinds:
+the array (traps, atoms, moves), the light that makes it (masks, focal
+planes, the optical train), and what is done with the particles once they
+are in place (a gate).
 
 ## Conventions
 
@@ -150,6 +151,43 @@ band between two rays traced through thin lenses (`trace_ray`). Put the
 SLM a focal length before the first relay lens and the objective a focal
 length after the second, and a tilt at the SLM becomes a shift of the
 focus. Worked example: `OpticalTrain`.
+
+### 6. Particles of your own on the traps, and a gate between them
+
+Worked example: `MoleculeRydbergGate`.
+
+`TweezerArray` draws one kind of atom. For anything else (molecules, an
+atom that changes state) leave the array unloaded and ride your own
+mobjects on its traps, in an updater added after the array:
+
+```python
+from manim_atoms.core.primitives import make_molecule, state_mix
+from manim_atoms.species.molecule_rydberg import MOLECULE_COLORS, GateLevels
+from manim_atoms.tweezers.physics.molecule_gate import GATE_TIME, gate_populations
+from manim_atoms.tweezers.physics.rearrangement import Plan
+
+array = TweezerArray(sites, view, draw_trap=hourglass_trap)
+plan = Plan(kept=np.array([0, 2]), start=sites[[0, 2]], end=ends,
+            dropped=np.array([], dtype=int))           # a move written by hand
+array.rearrange(plan)                                  # `off` now switches trap 1 alone
+molecule = make_molecule(MOLECULE_COLORS[0])
+
+def ride(m):
+    first, atom, second = gate_populations(q1.get_value(), q2.get_value(), clock.get_value())
+    color = state_mix(MOLECULE_COLORS, first)
+    m.set_fill(color).set_stroke(lighten(color)).move_to(view.point(array.trap_positions()[0]))
+
+self.play(FadeIn(molecule), array.on.animate.set_value(1))
+molecule.add_updater(ride)                             # after the fade, never before
+self.play(clock.animate.set_value(GATE_TIME), rate_func=linear, run_time=4)
+```
+
+The traps the plan keeps move with `moved`; the ones it does not stay put
+and go out with `off`, which is how one trap is switched off for a pulse
+and back on after it. `GateLevels` is redrawn from the same numbers
+(`tune`, `show`, `light`), so the level scheme and the particles cannot
+disagree. A population is a disc's area: a tenth of the population is a
+dot, which is the point when an excitation is blocked.
 
 ## Before you finish
 

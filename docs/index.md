@@ -42,6 +42,8 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Atoms and clouds
 
 - **An atom** (a disc you recolour through `atom[0]`), recoloured on a state change. `core.primitives`: `make_atom`, `state_colors`.
+- **A diatomic molecule** (two unlike discs bound together, recoloured through both). `core.primitives`: `make_molecule`.
+- **The colour of an atom shared among several states**, mixed by their populations. `core.primitives`: `state_mix`.
 - **A state's ket** in its colour. `core.primitives`: `state_label`, and `arm_ket` for |g, p> or |e, p + ħk> with an optional phase factor.
 - **The key to the two states**: an atom of each colour beside |g, p> and |e, p + ħk>. `core.primitives`: `state_legend`.
 - **A still cartoon cloud** (dots in a Gaussian heap). `core.primitives`: `make_cloud`.
@@ -144,6 +146,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 
 - **A two-level clock transition** beside a figure (it doubles as the key), lit up while a pulse drives it. `species.two_level`: `make_level_diagram`, `transition_glow`.
 - **Strontium's levels and lines**: 461, 689 and 698 nm, the repumps, 488 nm. `species.strontium`: `SrLevels`, and `SrLevels.drive` to light the running lines.
+- **A polar molecule's levels either side of a Rydberg atom's**, for a gate between the molecules through the atom: a disc on every level as large as its population, |R> tuned into resonance, and the laser, dipole-dipole exchange and microwave couplings lit from numbers. `species.molecule_rydberg`: `GateLevels`, with `GateLevels.tune`, `GateLevels.show` and `GateLevels.light`.
 - **A clock transition dragged by an oscillating field.** `aion.tools.uldm`: `make_modulated_levels`, `dm_upper`.
 - **The 689 nm line swept in a sawtooth.** `trapping.tools.cooling`: `SweepFan`, `make_sawtooth`.
 
@@ -193,6 +196,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A tweezer seen from the side**: a focused Gaussian beam through a tilted view, a hard-edged solid cut off either side of its focus that hides the beams behind it; and the outline of the focal plane. `tweezers.tools.beams`: `hourglass_trap`, `beam_half_width`, `focal_plane`.
 - **A hologram scene's pieces**: an array's spots in the hologram's units, its mask at each step of the iteration, the crop of the focal plane, a picture's frame and label, and a bar per trap or per mode. `tweezers.tools.holograms`: `grid_spots`, `spots_from_sites`, `starting_mask`, `iterate_hologram`, `focal_view`, `framed`, `panel_label`, `bar_chart`.
 - **Light traced through thin lenses**, as a ray or as the band between two. `tweezers.tools.holograms`: `trace_ray`, `beamlet`.
+- **A gate between two molecules through a Rydberg atom**, in numbers: the laser's 2π pulse, the Hamiltonian for each input, the amplitudes through the pulse, the phase each input comes back with, and every particle's populations. `tweezers.physics.molecule_gate`: `rabi_frequency`, `gate_hamiltonian`, `gate_run`, `gate_phase`, `gate_populations`.
 - **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
@@ -293,6 +297,7 @@ Copy from these when building something similar.
 - **A table of pictures, then a quantity taken away term by term.** `tweezers.scenes.holography`: `ZernikeCorrection`.
 - **An optical train side on, with light traced through its lenses** and face-on pictures above it. `tweezers.scenes.holography`: `OpticalTrain`.
 - **Two views of one thing kept in step** (the SLM's mask and the array it makes). `tweezers.scenes.rearrangement_hologram`: `RearrangementHologram`.
+- **Particles of your own on an array's traps, beside a level scheme, both drawn from one computed state** (a two-qubit gate run input by input). `tweezers.scenes.molecule_gate`: `MoleculeRydbergGate`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

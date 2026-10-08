@@ -1,11 +1,12 @@
 """Atoms, laser pulses and the recoil they hand over: the atom-interferometry
 building blocks every other scene is drawn with.
 
-- mobjects: make_atom, make_cloud, make_laser_pulse, make_guide, and the
-  recoil arrow momentum_arrow (brought on by grow) and the k marker
-  make_k_arrow;
-- states: state_colors recolours an atom, state_label and arm_ket write its
-  ket in the state's colour;
+- mobjects: make_atom, make_molecule, make_cloud, make_laser_pulse,
+  make_guide, and the recoil arrow momentum_arrow (brought on by grow) and
+  the k marker make_k_arrow;
+- states: state_colors recolours an atom, state_mix is the colour of one
+  shared among states, state_label and arm_ket write its ket in the state's
+  colour;
 - pulses: absorb and emit, played on an atom; both drive it from below, with
   the packet climbing along +y;
 - motion: draw_legs flies atoms along straight legs at V, drawing the
@@ -33,6 +34,18 @@ def make_atom(color=ATOM_COLOR, radius=ATOM_RADIUS, opacity=1.0):
         stroke_width=ATOM_STROKE_WIDTH,
     )
     return VGroup(body)
+
+
+def make_molecule(color, radius=ATOM_RADIUS, opacity=1.0):
+    """A diatomic molecule drawn as two unlike atoms bound together: a disc
+    of ``radius`` and a smaller one overlapping it, both in ``color``,
+    centred on the pair. Recolour it through both of its pieces."""
+    small = radius * MOLECULE_ATOM_RATIO
+    bond = radius * MOLECULE_BOND * (RIGHT * np.cos(MOLECULE_TILT) + UP * np.sin(MOLECULE_TILT))
+    style = dict(fill_color=color, fill_opacity=opacity, stroke_color=lighten(color),
+                 stroke_width=ATOM_STROKE_WIDTH)
+    return VGroup(Circle(radius=radius, **style),
+                  Circle(radius=small, **style).shift(bond)).move_to(ORIGIN)
 
 
 def make_cloud(center, color, n=CARTOON_CLOUD_N, radius=CARTOON_CLOUD_RADIUS, seed=0):
@@ -181,6 +194,14 @@ def draw_legs(scene, legs, fade=(), extra=()):
 def state_colors(atom, color):
     """Recolour an atom's body to match a new internal state, keeping the highlight."""
     return atom[0].animate.set_fill(color).set_stroke(lighten(color))
+
+
+def state_mix(colors, populations):
+    """The colour of an atom shared among several states: ``colors`` mixed
+    in the proportions ``populations``."""
+    weights = np.clip(np.asarray(populations, dtype=float), 0, None)
+    rgb = weights @ np.array([color_to_rgb(c) for c in colors]) / weights.sum()
+    return ManimColor.from_rgb(rgb)
 
 
 def state_label(tex, color, font_size=FONT_STATE):

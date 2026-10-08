@@ -57,6 +57,12 @@ FONT_K = 32  # the k-vector marker beside a beam
 ATOM_RADIUS = 0.18
 LEGEND_ATOM_RADIUS = 0.13
 ATOM_STROKE_WIDTH = 2
+# A molecule is two unlike atoms bound together: the smaller one this share
+# of the larger one's radius, their centres this many of those radii apart,
+# so the two discs overlap, along a bond tilted this far from the horizontal.
+MOLECULE_ATOM_RATIO = 0.62
+MOLECULE_BOND = 1.05
+MOLECULE_TILT = 0.6
 
 # --- laser pulses ---------------------------------------------------------
 PULSE_LENGTH = 2.2

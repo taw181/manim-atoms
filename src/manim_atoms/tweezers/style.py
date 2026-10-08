@@ -35,6 +35,24 @@ FOCAL_PLANE_STYLE = dict(stroke_width=2, stroke_opacity=0.35, color=GUIDE_COLOR)
 FONT_STEP = FONT_LEGEND
 STEP_COLOR = lighten(GUIDE_COLOR)
 
+# --- a gate in the array ---------------------------------------------------
+# A static electric field across the array: a control field but not light,
+# so an arrow near white rather than a laser's colour.
+STATIC_FIELD_COLOR = lighten(GUIDE_COLOR, 0.8)
+STATIC_FIELD_ARROW_STYLE = dict(buff=0, stroke_width=4, color=STATIC_FIELD_COLOR,
+                                max_tip_length_to_length_ratio=0.18)
+# A laser addressing one atom, seen side on: brighter than a trapping
+# figure's beams, since here it is the only one and comes and goes.
+ADDRESSING_BEAM_OPACITY = 0.75  # on its axis, at the pulse's peak
+# A Rydberg atom's electron cloud round the atom, at full excitation.
+RYDBERG_HALO_OPACITY = 0.55
+# Two particles coupled across the gap between their traps.
+COUPLING_LINK_STYLE = dict(stroke_width=5)
+# A pulse's envelope against time: the curve heavy, its baseline a reference.
+ENVELOPE_STROKE_WIDTH = 4
+ENVELOPE_AXIS_STYLE = dict(stroke_width=2, color=GUIDE_COLOR)
+ENVELOPE_MARKER_RADIUS = 0.08
+
 # --- holograms ------------------------------------------------------------
 # The focal plane as a camera would see it: the tweezer light's own colour.
 FOCAL_SPOT_COLOR = TWEEZER_COLOR

@@ -16,7 +16,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - *colour scheme*: `ATOM_COLOR`, `KICKED_COLOR`, `LASER_COLOR`, `GUIDE_COLOR`
 - *type*: `FONT_TITLE`, `FONT_STATE`, `FONT_ANNOTATION`, `FONT_LEGEND`, `FONT_K`
-- *atoms*: `ATOM_RADIUS`, `LEGEND_ATOM_RADIUS`, `ATOM_STROKE_WIDTH`
+- *atoms*: `ATOM_RADIUS`, `LEGEND_ATOM_RADIUS`, `ATOM_STROKE_WIDTH`, `MOLECULE_ATOM_RATIO`, `MOLECULE_BOND`, `MOLECULE_TILT`
 - *laser pulses*: `PULSE_LENGTH`, `PULSE_AMPLITUDE`, `PULSE_CYCLES`, `PULSE_STROKE_WIDTH`, `PULSE_TAPER`
 - *line styles*: `GUIDE_STYLE`, `TRAJECTORY_STYLE`, `RECOIL_ARROW_STYLE`, `K_ARROW_STYLE`, `FLASH_STYLE`
 - *pacing*: `V`, `PULSE_SPEED`
@@ -105,6 +105,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/core/primitives.py` — Atoms, laser pulses and the recoil they hand over: the atom-interferometry building blocks every other scene is drawn with.
 
 - `make_atom(color=ATOM_COLOR, radius=ATOM_RADIUS, opacity=1.0)`: An atom drawn as a flat filled disc.
+- `make_molecule(color, radius=ATOM_RADIUS, opacity=1.0)`: A diatomic molecule drawn as two unlike atoms bound together: a disc of ``radius`` and a smaller one overlapping it, both in ``color``, centred on the pair. Recolour it through both of its pieces.
 - `make_cloud(center, color, n=CARTOON_CLOUD_N, radius=CARTOON_CLOUD_RADIUS, seed=0)`: A still cartoon of an atom cloud: dots in a round Gaussian heap, pulled in to ``radius`` so the cloud has an edge.
 - `make_laser_pulse(x, y, length=PULSE_LENGTH, n_cycles=PULSE_CYCLES)`: A Gaussian-enveloped sine wavepacket propagating along +y, centred on (x, y).
 - `momentum_arrow(origin, direction, tex, label_dir=LEFT, length=1.1)`: A recoil arrow with its label, e.g. the hbar k an atom gains from a pulse.
@@ -115,6 +116,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `emit(scene, x, atom, extras=())`: Stimulated emission: one photon arrives and two leave.
 - `draw_legs(scene, legs, fade=(), extra=())`: Move atoms along straight legs, drawing each trajectory in step.
 - `state_colors(atom, color)`: Recolour an atom's body to match a new internal state, keeping the highlight.
+- `state_mix(colors, populations)`: The colour of an atom shared among several states: ``colors`` mixed in the proportions ``populations``.
 - `state_label(tex, color, font_size=FONT_STATE)`: A ket or other state name as MathTex, in the lightened shade of its state's colour.
 - `arm_ket(excited, phase=None, font_size=FONT_LEGEND, stacked=False)`: The state an arm is in: |g, p> or |e, p + hbar k>, in that state's colour.
 - `fluorescence(atoms)`: What fluoresce plays, unplayed: (halos, the animations lighting them).
@@ -173,6 +175,15 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `static_cloud(points, color, opacity)`: Every dot of a series as one still VMobject.
 
 ## species
+
+### `species.molecule_rydberg`
+
+`src/manim_atoms/species/molecule_rydberg.py` — A polar molecule's levels beside a Rydberg atom's: the level scheme of a gate between two molecules through an atom.
+
+- class `GateLevels(VGroup)`: A molecule's levels either side of a Rydberg atom's, about ``center``.
+  - `.tune(share)`: Put |R> ``share`` of the way from where it sits with no field (0) to resonance (1), with its ket, its disc and the atom's arc.
+  - `.show(first, atom, second)`: Size every level's disc to its population: ``first`` and ``second`` are the molecules' in (|0>, |1>, |2>), ``atom`` the atom's in (|g>, |R>, |r>).
+  - `.light(laser=0.0, exchange=(0.0, 0.0), microwave=(0.0, 0.0))`: Light the couplings, each from 0 to 1: the ``laser`` on |g> <-> |r>, each molecule's ``exchange`` with the atom, and the ``microwave`` on each molecule's qubit.
 
 ### `species.strontium`
 
@@ -524,7 +535,18 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/tweezers/style.py` — The tweezer scenes' style: the core house style plus the tweezer array, its beams and the holograms that make it.
 
 - *the tweezers*: `TWEEZER_COLOR`, `TWEEZER_OPACITY`, `TWEEZER_LAYERS`, `TWEEZER_SOLID_OPACITY`, `TWEEZER_EDGE_STYLE`, `TWEEZER_BACKING_COLOR`, `TWEEZER_SPEED`, `TARGET_RING_STYLE`, `FOCAL_PLANE_STYLE`, `FONT_STEP`, `STEP_COLOR`
+- *a gate in the array*: `STATIC_FIELD_COLOR`, `STATIC_FIELD_ARROW_STYLE`, `ADDRESSING_BEAM_OPACITY`, `RYDBERG_HALO_OPACITY`, `COUPLING_LINK_STYLE`, `ENVELOPE_STROKE_WIDTH`, `ENVELOPE_AXIS_STYLE`, `ENVELOPE_MARKER_RADIUS`
 - *holograms*: `FOCAL_SPOT_COLOR`, `BAR_COLOR`, `BAR_BASELINE_STYLE`, `FONT_READOUT`, `FONT_MODE`, `TRANSFORM_ARROW_STYLE`
+
+### `tweezers.physics.molecule_gate`
+
+`src/manim_atoms/tweezers/physics/molecule_gate.py` — The numbers of a gate between two molecules through a Rydberg atom.
+
+- `rabi_frequency(t, duration=GATE_TIME)`: The laser's Rabi frequency a time ``t`` into the pulse: Omega_max sin(pi t / T), with Omega_max = pi^2 / T so its area is 2 pi.
+- `gate_hamiltonian(ones, rabi, coupling=V_DD)`: The gate's Hamiltonian (the paper's Eq. 1) with ``ones`` of the two molecules in |1>, on the states (atom in |g>, atom in |r>, excitation exchanged): the laser joins the first two at ``rabi`` / 2, and the exchange joins the last two at sqrt(ones) ``coupling`` / 2, since two molecules in |1> couple to the atom together.
+- `gate_run(ones, duration=GATE_TIME, coupling=V_DD, steps=GATE_STEPS)`: (times, amplitudes) through the pulse, starting with the atom in |g>: ``amplitudes`` is (steps + 1, 3), on gate_hamiltonian's states. Each step takes the Hamiltonian at its middle as constant.
+- `gate_phase(ones, duration=GATE_TIME, coupling=V_DD)`: The phase the state comes back with after the pulse, in (-pi, pi]: pi with both molecules in |0>, near zero otherwise.
+- `gate_populations(first, second, t, duration=GATE_TIME, coupling=V_DD)`: Each particle's populations a time ``t`` into the pulse, as (molecule, atom, molecule): a molecule's are in (|0>, |1>, |2>), the atom's in (|g>, |R>, |r>), bottom to top.
 
 ### `tweezers.physics.rearrangement`
 
@@ -607,6 +629,24 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - Scene `OpticalTrain(Scene)`: The light's path from the SLM to the atoms, side on: a flat mask gives one focus, a grating steers it, and an array's mask fans the light out to a row of foci. A beat() on the bare train, after the steering, after the array and after the label.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/holography.py OpticalTrain`
+
+### `tweezers.scenes.molecule_gate`
+
+`src/manim_atoms/tweezers/scenes/molecule_gate.py` — A gate between two molecules in tweezers, through a Rydberg atom.
+
+- Scene `MoleculeRydbergGate(Scene)`: Two molecules are brought either side of an atom by their tweezers, a field tunes them into resonance, and a 2 pi laser pulse on the atom is run for |00>, |01> and |11>: a controlled-Z. One beat() per step.
+  - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `.populations()`: Each particle's populations now: (molecule, atom, molecule).
+  - `.drive()`: The laser's Rabi frequency now, as a share of its peak.
+  - `.coupled()`: How strongly each molecule exchanges with the atom: it has to be in |1>, and the field on.
+  - `.build()`: Lay everything out, unadded.
+  - `.table_row(qubits, sign, k)`: One row of the gate's table: the input, and what comes back, with a sign change in the laser's colour, since the laser's pulse made it.
+  - `.say(text)`: The animation that swaps the caption for ``text``.
+  - `.refresh_particles(_=None)`: Put each particle on its trap, in its state's colours.
+  - `.refresh_levels(_=None)`: Redraw the level scheme from the same numbers.
+  - `.refresh_light(_=None)`: The laser's beam as bright as its Rabi frequency, and the marker on its envelope.
+  - `.pulse(before, after, rows)`: Run the gate's pulse on the molecules as they are: the atom's trap off under the caption ``before``, the pulse, then the trap back on and the table's ``rows`` filled in under ``after``.
+  - `uv run manim -ql src/manim_atoms/tweezers/scenes/molecule_gate.py MoleculeRydbergGate`
 
 ### `tweezers.scenes.rearrangement`
 
