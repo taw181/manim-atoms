@@ -25,7 +25,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - *energy levels*: `LEVEL_STROKE_WIDTH`, `LEVEL_GAP_ARROW_STYLE`, `LEVEL_GLOW_ARROW_STYLE`, `TRANSITION_IDLE_STYLE`, `TRANSITION_ACTIVE_WIDTH`, `FONT_LINEWIDTH`
 - *fluorescence readout*: `IMAGING_COLOR`, `FLUORESCENCE_FLASH`, `FLUORESCENCE_HALO_OPACITY`
 - *optics*: `OPTIC_COLOR`, `BEAM_OPACITY`, `BEAM_LAYERS`, `PROBE_COLOR`, `CAVITY_MODE_OPACITY`, `MIRROR_STROKE_WIDTH`, `PROBE_STROKE_WIDTH`
-- *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`
+- *the Bloch sphere*: `BLOCH_STYLE`, `BLOCH_AXIS_STYLE`, `NOISE_BLOB_OPACITY`, `NOISE_BLOB_STROKE_WIDTH`, `BLOCH_EQUATOR_WIDTH`, `BLOCH_VECTOR_WIDTH`, `BLOCH_VECTOR_TIP_RADIUS`
 - *static slides*: `FONT_DECK_TITLE`, `FONT_DECK_BYLINE`, `FONT_CONTENTS`, `PHOTO_LABEL_COLOR`, `PHOTO_LABEL_OUTLINE`, `PHOTO_LABEL_STROKE_WIDTH`, `FONT_PHOTO_LABEL`, `CALLOUT_COLOR`, `CALLOUT_STROKE_WIDTH`, `CALLOUT_CORNER_RADIUS`, `IMAGE_BORDER_STYLE`, `CARTOON_CLOUD_N`, `CARTOON_CLOUD_RADIUS`, `CARTOON_CLOUD_DOT_RADIUS`, `PROGRESS_BAR_HEIGHT`, `PROGRESS_TRACK_COLOR`, `PROGRESS_FILL_COLOR`, `FONT_SLIDE_NUMBER`, `SLIDE_NUMBER_COLOR`, `FONT_CITATION`, `CITATION_COLOR`, `CITATION_EDGE_BUFF`, `CITATION_BOTTOM`, `CITATION_NUMBER_CLEARANCE`, `CITATION_MAX_WIDTH`, `CITATION_LINE_BUFF`, `CITATION_SEPARATOR`, `CITATION_OUTLINE`, `PLACEHOLDER_STYLE`
 - *phase*: `PHASE_COLORS`, `LENS_STYLE`, `SLM_STYLE`
 - `lighten(color, amount=0.35)`: The stroke and label shade that goes with a fill colour.
@@ -43,6 +43,9 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.ring(axis, height=0.0, n=160)`: The circle of directions v with v . axis = height.
   - `.outline()`
   - `.patch(center, e1, e2, a, b, n=90)`: The outline of a patch of the sphere round the direction ``center``: an ellipse of angular half-widths ``a`` along the tangent ``e1`` and ``b`` along ``e2``, wrapped onto the surface.
+- `bloch_sphere(view, north, south)`: The sphere's furniture on ``view``: VGroup(outline, the dashed axis through the poles, the equator, the poles' labels), with the mobjects ``north`` and ``south`` put over and under it as those labels.
+- class `BlochVector(VGroup)`: One state's Bloch vector on ``view``: a line from the sphere's centre to a dot at its tip. A pure state's tip is on the sphere; a mixed state's is inside it, down to the dot alone at the centre for a state with no direction left. point_to() redraws it, so a scene can drive it from numbers every frame.
+  - `.point_to(v, color=None)`: Put the tip at ``v``, in the view's coordinates and of length at most 1, in ``color`` if that is given.
 - `noise_patch(view, center, e1, e2, a, b, color)`: The collective spin's quantum noise, a filled patch on the sphere.
 
 ### `core.citations`
@@ -551,7 +554,10 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 - `gate_hamiltonian(ones, rabi, coupling=V_DD)`: The gate's Hamiltonian (the paper's Eq. 1) with ``ones`` of the two molecules in |1>, on the states (atom in |g>, atom in |r>, excitation exchanged): the laser joins the first two at ``rabi`` / 2, and the exchange joins the last two at sqrt(ones) ``coupling`` / 2, since two molecules in |1> couple to the atom together.
 - `gate_run(ones, duration=GATE_TIME, coupling=V_DD, steps=GATE_STEPS)`: (times, amplitudes) through the pulse, starting with the atom in |g>: ``amplitudes`` is (steps + 1, 3), on gate_hamiltonian's states. Each step takes the Hamiltonian at its middle as constant.
 - `gate_phase(ones, duration=GATE_TIME, coupling=V_DD)`: The phase the state comes back with after the pulse, in (-pi, pi]: pi with both molecules in |0>, near zero otherwise.
-- `gate_populations(first, second, t, duration=GATE_TIME, coupling=V_DD)`: Each particle's populations a time ``t`` into the pulse, as (molecule, atom, molecule): a molecule's are in (|0>, |1>, |2>), the atom's in (|g>, |R>, |r>), bottom to top.
+- `qubit(angle)`: A molecule's qubit after a microwave pulse of area ``angle`` from |0>, as its amplitudes in (|0>, |1>): cos(angle / 2)|0> + sin(angle / 2)|1>. 0 is |0>, pi is |1>, pi / 2 is |0> + |1> and -pi / 2 is |0> - |1>.
+- `gate_state(first, second, t, duration=GATE_TIME, coupling=V_DD)`: The three particles' joint state a time ``t`` into the pulse, with the molecules starting in the qubit states ``first`` and ``second`` (each its amplitudes in |0> and |1>) and the atom in |g>.
+- `gate_populations(state)`: Each particle's populations in a gate_state, as (molecule, atom, molecule): a molecule's are in (|0>, |1>, |2>), the atom's in (|g>, |R>, |r>), bottom to top.
+- `bloch_vector(state, molecule)`: What a gate_state leaves of one molecule's own qubit (``molecule`` is 0 or 1), as a Bloch vector (x, y, z): |0> is +z, |0> + |1> is +x.
 
 ### `tweezers.physics.rearrangement`
 
@@ -639,18 +645,21 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/tweezers/scenes/molecule_gate.py` — A gate between two molecules in tweezers, through a Rydberg atom.
 
-- Scene `MoleculeRydbergGate(Scene)`: Two molecules are brought either side of an atom by their tweezers, a field tunes them into resonance, and a 2 pi laser pulse on the atom is run for |00>, |01> and |11>: a controlled-Z. One beat() per step.
+- Scene `MoleculeRydbergGate(Scene)`: Two molecules are brought either side of an atom by their tweezers, a field tunes them into resonance, and a 2 pi laser pulse on the atom is run on basis states, to show how it works, and then on superpositions, to show the controlled-Z it is. One beat() per step.
   - `.beat()`: The pause after each step: nothing here, a click on the slide version.
+  - `.state()`: The three particles' joint state now.
   - `.populations()`: Each particle's populations now: (molecule, atom, molecule).
   - `.drive()`: The laser's Rabi frequency now, as a share of its peak.
-  - `.coupled()`: How strongly each molecule exchanges with the atom: it has to be in |1>, and the field on.
+  - `.coupled()`: How strongly each molecule exchanges with the atom: by its amplitude out of |0>, and as far as the field is on.
   - `.build()`: Lay everything out, unadded.
   - `.table_row(qubits, sign, k)`: One row of the gate's table: the input, and what comes back, with a sign change in the laser's colour, since the laser's pulse made it.
   - `.say(text)`: The animation that swaps the caption for ``text``.
   - `.refresh_particles(_=None)`: Put each particle on its trap, in its state's colours.
   - `.refresh_levels(_=None)`: Redraw the level scheme from the same numbers.
+  - `.refresh_qubits(_=None)`: Point each molecule's Bloch vector where its qubit is, in the molecule's colour. The sphere is seen with the qubit's x axis to the right, so |0> + |1> points right and |0> - |1> left.
   - `.refresh_light(_=None)`: The laser's beam as bright as its Rabi frequency, and the marker on its envelope.
-  - `.pulse(before, after, rows)`: Run the gate's pulse on the molecules as they are: the atom's trap off under the caption ``before``, the pulse, then the trap back on and the table's ``rows`` filled in under ``after``.
+  - `.prepare(text, first=None, second=None)`: Microwave pulses taking each molecule's qubit to the angle given (None leaves it alone), under the caption ``text``.
+  - `.pulse(before, after, rows=(), leaves=None)`: Run the gate's pulse on the molecules as they are: the atom's trap off under the caption ``before``, the pulse, then the trap back on and the table's ``rows`` filled in under ``after``.
   - `uv run manim -ql src/manim_atoms/tweezers/scenes/molecule_gate.py MoleculeRydbergGate`
 
 ### `tweezers.scenes.rearrangement`

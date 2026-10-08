@@ -154,6 +154,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Bloch sphere
 
 - **A Bloch sphere in perspective** on a flat scene. `core.bloch`: `BlochView`, with `BlochView.point`, `BlochView.ring`, `BlochView.curve`, `BlochView.patch` and `BlochView.outline`.
+- **The sphere's furniture** (outline, axis, equator, pole labels) and **one state's vector in it**, a line to a dot that shrinks inside the sphere as the state becomes mixed. `core.bloch`: `bloch_sphere`, `BlochVector`, with `BlochVector.point_to`.
 - **Quantum noise as a patch on the sphere** (a coherent or squeezed spin state). `core.bloch`: `noise_patch`.
 
 ## Optics: beams and cavities
@@ -197,7 +198,10 @@ as `manim.ValueTracker`, or leave them unticked. -->
 - **A tweezer seen from the side**: a focused Gaussian beam through a tilted view, a hard-edged solid cut off either side of its focus that hides the beams behind it; and the outline of the focal plane. `tweezers.tools.beams`: `hourglass_trap`, `beam_half_width`, `focal_plane`.
 - **A hologram scene's pieces**: an array's spots in the hologram's units, its mask at each step of the iteration, the crop of the focal plane, a picture's frame and label, and a bar per trap or per mode. `tweezers.tools.holograms`: `grid_spots`, `spots_from_sites`, `starting_mask`, `iterate_hologram`, `focal_view`, `framed`, `panel_label`, `bar_chart`.
 - **Light traced through thin lenses**, as a ray or as the band between two. `tweezers.tools.holograms`: `trace_ray`, `beamlet`.
-- **A gate between two molecules through a Rydberg atom**, in numbers: the laser's 2π pulse, the Hamiltonian for each input, the amplitudes through the pulse, the phase each input comes back with, and every particle's populations. `tweezers.physics.molecule_gate`: `rabi_frequency`, `gate_hamiltonian`, `gate_run`, `gate_phase`, `gate_populations`.
+- **A gate between two molecules through a Rydberg atom**, in numbers. `tweezers.physics.molecule_gate`:
+  - the pulse and each basis input: `rabi_frequency`, `gate_hamiltonian`, `gate_run`, `gate_phase`;
+  - any input: `qubit` is a molecule's superposition, `gate_state` the three particles' joint state through the pulse;
+  - what to draw from it: `gate_populations` is every particle's populations, `bloch_vector` what is left of a molecule's own qubit (nothing, once it is entangled).
 - **A tweezer scene's heading and the step under it.** `tweezers.tools.tweezer_array`: `heading`, `step_caption`, `next_step`.
 
 ## Timelines and staged sequences
@@ -298,7 +302,7 @@ Copy from these when building something similar.
 - **A table of pictures, then a quantity taken away term by term.** `tweezers.scenes.holography`: `ZernikeCorrection`.
 - **An optical train side on, with light traced through its lenses** and face-on pictures above it. `tweezers.scenes.holography`: `OpticalTrain`.
 - **Two views of one thing kept in step** (the SLM's mask and the array it makes). `tweezers.scenes.rearrangement_hologram`: `RearrangementHologram`.
-- **Particles of your own on an array's traps, beside a level scheme, both drawn from one computed state** (a two-qubit gate run input by input). `tweezers.scenes.molecule_gate`: `MoleculeRydbergGate`.
+- **Particles of your own on an array's traps, beside a level scheme and Bloch spheres, all drawn from one computed state** (a two-qubit gate run on basis states, then on superpositions until the qubits are entangled). `tweezers.scenes.molecule_gate`: `MoleculeRydbergGate`.
 - **A CAD render labelled, then data.** `trapping.scenes.hifais`: `HighFluxLoading`.
 - **3D: a sheet, a camera, a merger.** `aion.scenes.gravitational_waves`: `BlackHoleMerger`, `MergerOnSensitivityPlot`.
 - **An optical interferometer with beams that carry phase.** `aion.scenes.ligo`: `LIGOMichelson`.

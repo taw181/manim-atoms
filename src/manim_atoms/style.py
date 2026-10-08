@@ -171,6 +171,11 @@ BLOCH_AXIS_STYLE = dict(dash_length=0.08, stroke_width=1.5, stroke_opacity=0.5,
                         color=GUIDE_COLOR)
 NOISE_BLOB_OPACITY = 0.3
 NOISE_BLOB_STROKE_WIDTH = 3
+BLOCH_EQUATOR_WIDTH = 2
+# One state's Bloch vector: a heavy line from the centre to a dot at its
+# tip, not an arrow, since it has to shrink to nothing for a mixed state.
+BLOCH_VECTOR_WIDTH = 5
+BLOCH_VECTOR_TIP_RADIUS = 0.07
 
 # --- static slides --------------------------------------------------------
 # The slides between the animations: a title, a contents list, photographs

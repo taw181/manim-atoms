@@ -23,7 +23,7 @@ from manim import *
 from manim_atoms.interferometry.style import *
 from manim_atoms.core.layout import slide_title
 from manim_atoms.core.primitives import state_label
-from manim_atoms.core.bloch import BlochView, noise_patch
+from manim_atoms.core.bloch import BlochView, bloch_sphere, noise_patch
 from manim_atoms.core.optics import make_cavity, rabi_transmission
 from manim_atoms.interferometry.tools.squeezing import cavity_atoms
 
@@ -79,14 +79,9 @@ class SpinSqueezing(Scene):
         mean = np.array([np.cos(SQ_TIP_AZIMUTH), np.sin(SQ_TIP_AZIMUTH), 0.0])
         along = np.array([-np.sin(SQ_TIP_AZIMUTH), np.cos(SQ_TIP_AZIMUTH), 0.0])  # phase
 
-        outline = view.outline()
-        equator = view.curve(view.ring(up), lighten(GUIDE_COLOR), 2)
-        axis = DashedLine(view.point(-up), view.point(up), **BLOCH_AXIS_STYLE)
-        poles = VGroup(
-            state_label(r"|e\rangle", KICKED_COLOR, FONT_LEGEND).next_to(outline, UP, buff=0.1),
-            state_label(r"|g\rangle", ATOM_COLOR, FONT_LEGEND).next_to(outline, DOWN, buff=0.1),
-        )
-        sphere = VGroup(outline, axis, equator, poles)
+        sphere = bloch_sphere(view, state_label(r"|e\rangle", KICKED_COLOR, FONT_LEGEND),
+                              state_label(r"|g\rangle", ATOM_COLOR, FONT_LEGEND))
+        outline = sphere[0]
 
         # squeeze runs 0 to 1 from the coherent state to the squeezed one,
         # turn 0 to pi/2 as it is rotated about the mean spin

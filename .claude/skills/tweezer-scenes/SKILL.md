@@ -163,7 +163,8 @@ mobjects on its traps, in an updater added after the array:
 ```python
 from manim_atoms.core.primitives import make_molecule, state_mix
 from manim_atoms.species.molecule_rydberg import MOLECULE_COLORS, GateLevels
-from manim_atoms.tweezers.physics.molecule_gate import GATE_TIME, gate_populations
+from manim_atoms.tweezers.physics.molecule_gate import (
+    GATE_TIME, bloch_vector, gate_populations, gate_state, qubit)
 from manim_atoms.tweezers.physics.rearrangement import Plan
 
 array = TweezerArray(sites, view, draw_trap=hourglass_trap)
@@ -173,7 +174,8 @@ array.rearrange(plan)                                  # `off` now switches trap
 molecule = make_molecule(MOLECULE_COLORS[0])
 
 def ride(m):
-    first, atom, second = gate_populations(q1.get_value(), q2.get_value(), clock.get_value())
+    state = gate_state(qubit(a1.get_value()), qubit(a2.get_value()), clock.get_value())
+    first, atom, second = gate_populations(state)
     color = state_mix(MOLECULE_COLORS, first)
     m.set_fill(color).set_stroke(lighten(color)).move_to(view.point(array.trap_positions()[0]))
 
@@ -188,6 +190,15 @@ and back on after it. `GateLevels` is redrawn from the same numbers
 (`tune`, `show`, `light`), so the level scheme and the particles cannot
 disagree. A population is a disc's area: a tenth of the population is a
 dot, which is the point when an excitation is blocked.
+
+A gate's sign shows nothing on a basis state: the atom is excited or it
+is not, and the picture ends as it began. Run it on basis states to show
+how it works, then on a superposition to show what it does, with each
+qubit a `core.bloch.BlochVector` pointed at
+`bloch_vector(state, molecule)`: it turns over, or stays, or shrinks to
+the centre when the qubits are entangled. `BlochView` has x towards the
+viewer, so map the qubit's (x, y, z) to `[-y, x, z]` to put |0> + |1> on
+the right, where a flip to |0> - |1> crosses the picture.
 
 A Rydberg atom is `core.primitives.RydbergAtom`: the atom's disc with the
 electron's orbit round it, which is as visible as the atom is excited.

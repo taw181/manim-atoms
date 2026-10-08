@@ -9,14 +9,25 @@ molecule in |1> and the atom in |r> exchange an excitation. With the atom's
 trap off, a 2 pi laser pulse then drives the atom |g> <-> |r>. With both
 molecules in |0> the atom goes to |r> and back and the state changes sign;
 with either in |1> the exchange keeps the atom out of |r>, and nothing
-changes. That is a controlled-Z gate, and the scene runs it on |00>, |01>
-and |11>.
+changes. That is a controlled-Z gate.
+
+The scene shows it in two halves. First how it works, on |00> and |01>,
+where all there is to see is the atom excited or not, and a table of what
+comes back. Then what it does, which a sign on a whole state cannot show:
+each molecule's qubit is drawn as a Bloch vector, and the pulse is run with
+the second molecule in |0> + |1>. With the first in |0> the second's vector
+is turned over, to |0> - |1>; with the first in |1> it is left alone; and
+with both in |0> + |1> each one's sign depends on the other, so both
+vectors shrink to nothing: the molecules are entangled. A vector also
+shrinks in the middle of a pulse, while its molecule is entangled with the
+atom.
 
 The traps are on the left, seen from the side, and the three particles'
 levels on the right, a molecule either side of the atom as in the traps.
-Every population shown, as a disc on a level and as the particles' colours,
-is computed from the gate's Hamiltonian (physics.molecule_gate) with the
-paper's numbers for CaF and Rb, as is the pulse's envelope.
+Everything shown of the state (the discs on the levels, the particles'
+colours, the Rydberg orbit, the Bloch vectors) is computed from the gate's
+Hamiltonian (physics.molecule_gate) with the paper's numbers for CaF and
+Rb, as is the pulse's envelope.
 
 Not to scale: at a micrometre apart real tweezers overlap, and the atom's
 is one of them. The Rydberg electron's orbit is to the gap's scale, a third
@@ -25,14 +36,16 @@ of it, though not to the atom's. The levels are schematic
 the molecules would not notice it.
 
 - MoleculeRydbergGate: a beat() once the traps are laid out, then after
-  the move, the levels, the field, and each of the three runs of the gate,
-  and on the last caption.
+  the move, the levels, the field, the two runs on basis states, the second
+  molecule put in a superposition, the three runs that follow, and on the
+  last caption.
 """
 
 import numpy as np
 from manim import *
 
 from manim_atoms.tweezers.style import *
+from manim_atoms.core.bloch import BlochVector, BlochView, bloch_sphere
 from manim_atoms.core.optics import gaussian_band
 from manim_atoms.core.primitives import RydbergAtom, make_molecule, state_label, state_mix
 from manim_atoms.core.projection import TiltedView
@@ -44,7 +57,10 @@ from manim_atoms.species.molecule_rydberg import (
 )
 from manim_atoms.tweezers.physics.molecule_gate import (
     GATE_TIME,
+    bloch_vector,
     gate_populations,
+    gate_state,
+    qubit,
     rabi_frequency,
 )
 from manim_atoms.tweezers.physics.rearrangement import Plan, longest_move
@@ -57,10 +73,12 @@ from manim_atoms.tweezers.tools.tweezer_array import (
 )
 
 # --- molecule-gate geometry --------------------------------------------------
-# The traps take the left of the frame and the levels the right; the pulse's
-# envelope and the gate's table go under the traps, where the levels leave
-# room (only the atom's column reaches down to |g>). The traps are drawn
-# large, three of them, so the particles and what happens between them show.
+# The traps take the left of the frame and the levels the right. Under each
+# molecule's trap goes its qubit: a ket at first, then a Bloch sphere. The
+# gate's table and the pulse's envelope go under the molecules' columns of
+# the levels, which stop at |0>; only the atom's reaches down to |g>. The
+# traps are drawn large, three of them, so the particles and what happens
+# between them show.
 MG_CENTER = np.array([-3.9, 0.8, 0.0])  # the atom's trap
 MG_SCALE = 2.0  # scene units per unit of the array's own
 MG_APART = 1.15  # a molecule's trap from the atom's, at the start
@@ -78,12 +96,15 @@ MG_LASER_REACH = 1.25  # drawn this far either side of the atom
 MG_LASER_WIDTH = 0.22
 MG_LEVELS = np.array([2.9, -0.2, 0.0])  # the level scheme's centre
 MG_HEADING = np.array([-6.6, 3.6, 0.0])  # the heading's upper left corner
-MG_PLOT = np.array([-6.3, -3.1, 0.0])  # the envelope's origin
-MG_PLOT_SIZE = (2.4, 0.9)  # the pulse's length and its peak, as drawn
-MG_TABLE = np.array([-1.75, -1.75, 0.0])  # the middle of the table's top row
-MG_TABLE_ROW = 0.52  # between its rows
+MG_PLOT = np.array([4.3, -3.2, 0.0])  # the envelope's origin, under the second molecule's levels
+MG_PLOT_SIZE = (2.2, 0.8)  # the pulse's length and its peak, as drawn
+MG_TABLE = np.array([0.55, -1.95, 0.0])  # the arrow of the table's top row, under the first's
+MG_TABLE_ROW = 0.5  # between its rows
+MG_SPHERE_DROP = 2.45  # a molecule's Bloch sphere, below its trap
+MG_SPHERE_RADIUS = 0.6
+MG_SIGN_BUFF = 0.12  # the + and - at the ends of a sphere's equator, off its outline
 MG_PULSE_TIME = 4.0  # seconds a gate pulse takes on screen
-MG_PREPARE_TIME = 1.2  # a microwave pulse on a qubit
+MG_PREPARE_TIME = 1.4  # a microwave pulse on a qubit
 MG_TUNE_TIME = 1.5  # the field coming on
 MG_SWITCH_TIME = 0.5  # the atom's trap going off or on
 MG_SETTLE = 0.6  # the pause before a stop
@@ -92,32 +113,43 @@ MG_SETTLE = 0.6  # the pause before a stop
 class MoleculeRydbergGate(Scene):
     """Two molecules are brought either side of an atom by their tweezers,
     a field tunes them into resonance, and a 2 pi laser pulse on the atom
-    is run for |00>, |01> and |11>: a controlled-Z. One beat() per step."""
+    is run on basis states, to show how it works, and then on
+    superpositions, to show the controlled-Z it is. One beat() per step."""
 
     def beat(self):
         """The pause after each step: nothing here, a click on the slide version."""
 
     # --- what everything is drawn from ---------------------------------------
 
+    def state(self):
+        """The three particles' joint state now."""
+        return gate_state(qubit(self.first.get_value()), qubit(self.second.get_value()),
+                          self.clock.get_value())
+
     def populations(self):
         """Each particle's populations now: (molecule, atom, molecule)."""
-        return gate_populations(self.first.get_value(), self.second.get_value(),
-                                self.clock.get_value())
+        return gate_populations(self.state())
 
     def drive(self):
         """The laser's Rabi frequency now, as a share of its peak."""
         return float(rabi_frequency(self.clock.get_value()) / rabi_frequency(GATE_TIME / 2))
 
     def coupled(self):
-        """How strongly each molecule exchanges with the atom: it has to be
-        in |1>, and the field on."""
-        return [q.get_value() * self.field.get_value() for q in (self.first, self.second)]
+        """How strongly each molecule exchanges with the atom: by its
+        amplitude out of |0>, and as far as the field is on."""
+        first, _, second = self.populations()
+        return [np.sqrt(max(1 - molecule[0], 0.0)) * self.field.get_value()
+                for molecule in (first, second)]
 
     # --- the pieces ----------------------------------------------------------
 
     def build(self):
         """Lay everything out, unadded."""
-        self.first, self.second = ValueTracker(0), ValueTracker(0)  # each molecule: 0 or 1
+        # Each molecule's qubit before the pulse, as the area of the microwave
+        # pulse that makes it from |0>: 0 is |0>, pi is |1>, pi / 2 is |0> + |1>.
+        self.first, self.second = ValueTracker(0), ValueTracker(0)
+        self.microwaves = [ValueTracker(0), ValueTracker(0)]  # on each molecule, 0 to 1
+        self.kets_shown = ValueTracker(1)  # the kets under the traps, until the spheres
         self.clock = ValueTracker(0)  # how far into the pulse, in microseconds
         self.field = ValueTracker(0)  # the electric field: 1 is resonance
         sites = np.array([[-MG_APART, 0.0], [0.0, 0.0], [MG_APART, 0.0]])
@@ -144,6 +176,21 @@ class MoleculeRydbergGate(Scene):
 
         self.levels = GateLevels(MG_LEVELS)
 
+        self.spheres, self.vectors = VGroup(), []
+        for side in (-1, 1):
+            view = BlochView(self.view.point([side * MG_CLOSE, 0]) + DOWN * MG_SPHERE_DROP,
+                             MG_SPHERE_RADIUS)
+            sphere = bloch_sphere(
+                view, *[state_label(rf"|{k}\rangle", MOLECULE_COLORS[k], FONT_LEGEND)
+                        for k in (0, 1)])
+            # the equator's ends: |0> + |1> to the right, |0> - |1> to the left
+            signs = VGroup(*[MathTex(sign, font_size=FONT_LEGEND, color=STEP_COLOR)
+                             .next_to(sphere[0], way, buff=MG_SIGN_BUFF)
+                             for sign, way in (("+", RIGHT), ("-", LEFT))])
+            self.spheres.add(VGroup(sphere, signs))
+            self.vectors.append(BlochVector(view))
+        self.qubits = VGroup(self.spheres, *self.vectors)
+
         arrow = Arrow(MG_FIELD + DOWN * MG_FIELD_LENGTH / 2, MG_FIELD + UP * MG_FIELD_LENGTH / 2,
                       **STATIC_FIELD_ARROW_STYLE)
         self.field_arrow = VGroup(arrow, MathTex(r"\vec{E}", font_size=FONT_ANNOTATION,
@@ -167,7 +214,7 @@ class MoleculeRydbergGate(Scene):
         self.plot = VGroup(
             axis, curve,
             MathTex(r"\Omega_L(t)", font_size=FONT_AXIS, color=LASER_COLOR)
-            .next_to(MG_PLOT + UP * height, UL, buff=0.05).shift(RIGHT * 0.55),
+            .next_to(MG_PLOT + UP * height, UR, buff=0.05),
             Tex(r"$2\pi$ pulse, $1.25\,\mu$s", font_size=FONT_AXIS, color=PLOT_FOREGROUND)
             .next_to(axis, DOWN, buff=0.15))
         self.plot_marker = Dot(MG_PLOT, radius=ENVELOPE_MARKER_RADIUS, color=lighten(LASER_COLOR))
@@ -200,13 +247,13 @@ class MoleculeRydbergGate(Scene):
         """Put each particle on its trap, in its state's colours."""
         first, atom, second = self.populations()
         where = [self.view.point(xy) for xy in self.array.trap_positions()]
-        for molecule, kets, q, at, populations in zip(
-                self.molecules, self.kets, (self.first, self.second), where[::2],
-                (first, second)):
+        shown = self.kets_shown.get_value()
+        for molecule, kets, at, populations in zip(
+                self.molecules, self.kets, where[::2], (first, second)):
             color = state_mix(MOLECULE_COLORS, populations)
             molecule.set_fill(color).set_stroke(lighten(color)).move_to(at)
-            for ket, share in zip(kets, (1 - q.get_value(), q.get_value())):
-                ket.set_opacity(share).move_to(at + DOWN * MG_KET_DROP)
+            for ket, share in zip(kets, (populations[0], 1 - populations[0])):
+                ket.set_opacity(share * shown).move_to(at + DOWN * MG_KET_DROP)
         # The orbit is there as far as the atom is in either Rydberg state,
         # in the colour of whichever it is in.
         excited = atom[1] + atom[2]
@@ -217,9 +264,19 @@ class MoleculeRydbergGate(Scene):
 
     def refresh_levels(self, _=None):
         """Redraw the level scheme from the same numbers."""
-        microwave = [np.sin(PI * q.get_value()) for q in (self.first, self.second)]
         self.levels.tune(self.field.get_value()).show(*self.populations()).light(
-            laser=self.drive(), exchange=self.coupled(), microwave=microwave)
+            laser=self.drive(), exchange=self.coupled(),
+            microwave=[glow.get_value() for glow in self.microwaves])
+
+    def refresh_qubits(self, _=None):
+        """Point each molecule's Bloch vector where its qubit is, in the
+        molecule's colour. The sphere is seen with the qubit's x axis to the
+        right, so |0> + |1> points right and |0> - |1> left."""
+        state = self.state()
+        first, _, second = gate_populations(state)
+        for k, (vector, populations) in enumerate(zip(self.vectors, (first, second))):
+            x, y, z = bloch_vector(state, k)
+            vector.point_to([-y, x, z], state_mix(MOLECULE_COLORS, populations))
 
     def refresh_light(self, _=None):
         """The laser's beam as bright as its Rabi frequency, and the marker
@@ -233,10 +290,26 @@ class MoleculeRydbergGate(Scene):
 
     # --- the steps -----------------------------------------------------------
 
-    def pulse(self, before, after, rows):
+    def prepare(self, text, first=None, second=None):
+        """Microwave pulses taking each molecule's qubit to the angle given
+        (None leaves it alone), under the caption ``text``."""
+        moves = []
+        for tracker, glow, angle in zip((self.first, self.second), self.microwaves,
+                                        (first, second)):
+            if angle is not None:
+                moves += [tracker.animate(run_time=MG_PREPARE_TIME).set_value(angle),
+                          glow.animate(run_time=MG_PREPARE_TIME, rate_func=there_and_back)
+                          .set_value(1)]
+        self.play(self.say(text), *moves)
+
+    def pulse(self, before, after, rows=(), leaves=None):
         """Run the gate's pulse on the molecules as they are: the atom's trap
         off under the caption ``before``, the pulse, then the trap back on
-        and the table's ``rows`` filled in under ``after``."""
+        and the table's ``rows`` filled in under ``after``.
+
+        ``leaves`` is the pair of qubit angles the pulse leaves the molecules
+        at, when it leaves each a state of its own: the clock goes back to
+        nought on those, the same picture, ready for the next pulse."""
         self.play(self.say(before),
                   self.array.off.animate(run_time=MG_SWITCH_TIME).set_value(1))
         self.play(self.clock.animate.set_value(GATE_TIME), rate_func=linear,
@@ -246,13 +319,17 @@ class MoleculeRydbergGate(Scene):
                   *[FadeIn(self.rows[k], run_time=MG_SWITCH_TIME) for k in rows])
         self.wait(MG_SETTLE)
         self.beat()
-        self.clock.set_value(0)
-        self.update_mobjects(0)
+        if leaves is not None:
+            self.clock.set_value(0)
+            for tracker, angle in zip((self.first, self.second), leaves):
+                tracker.set_value(angle)
+            self.update_mobjects(0)
 
     def construct(self):
         self.build()
         array, levels = self.array, self.levels
-        self.add(self.first, self.second, self.clock, self.field, *array.trackers, array)
+        self.add(self.first, self.second, self.clock, self.field, *self.microwaves,
+                 self.kets_shown, *array.trackers, array)
         self.refresh_particles()
         self.links.set_stroke(opacity=0)
         self.play(FadeIn(self.title), FadeIn(self.note), FadeIn(self.particles),
@@ -284,6 +361,7 @@ class MoleculeRydbergGate(Scene):
         self.wait(MG_SETTLE)
         self.beat()
 
+        # how it works: on basis states, the atom is excited or it is not
         self.refresh_light()
         self.add(self.beam, self.beam_name)
         self.add(self.links, self.particles)  # the particles over the light
@@ -291,18 +369,38 @@ class MoleculeRydbergGate(Scene):
         self.play(FadeIn(self.plot), FadeIn(self.plot_marker))
         self.pulse(r"both in $|0\rangle$: a $2\pi$ laser pulse takes the atom to "
                    r"$|r\rangle$ and back",
-                   r"the state comes back with its sign changed", rows=[0])
+                   r"the state comes back with its sign changed", rows=[0], leaves=(0, 0))
 
-        self.play(self.say(r"microwaves put one molecule in $|1\rangle$"),
-                  self.second.animate(run_time=MG_PREPARE_TIME).set_value(1))
+        self.prepare(r"microwaves put one molecule in $|1\rangle$", second=PI)
         self.pulse(r"it exchanges an excitation with the atom, which keeps the atom "
                    r"out of $|r\rangle$",
-                   r"the state comes back as it was, whichever molecule it is", rows=[1, 2])
+                   r"the state comes back as it was: so it does with either in "
+                   r"$|1\rangle$, or both", rows=[1, 2, 3], leaves=(0, PI))
 
-        self.play(self.say(r"microwaves put the other in $|1\rangle$ too"),
-                  self.first.animate(run_time=MG_PREPARE_TIME).set_value(1))
-        self.pulse(r"the atom is kept out of $|r\rangle$ again",
-                   r"and the state comes back as it was", rows=[3])
+        # what it does: a sign shows only in a superposition
+        self.refresh_qubits()
+        self.play(self.say(r"a sign shows only in a superposition, "
+                           r"$|0\rangle + |1\rangle$ or $|0\rangle - |1\rangle$"),
+                  self.kets_shown.animate.set_value(0), FadeIn(self.qubits))
+        self.qubits.add_updater(self.refresh_qubits)
+        self.prepare(r"microwaves put the second molecule in $|0\rangle + |1\rangle$",
+                     second=PI / 2)
+        self.wait(MG_SETTLE)
+        self.beat()
+
+        self.pulse(r"the first in $|0\rangle$: the pulse changes the sign of the second's "
+                   r"$|0\rangle$",
+                   r"which turns its $|0\rangle + |1\rangle$ into $|0\rangle - |1\rangle$",
+                   leaves=(0, -PI / 2))
+
+        self.prepare(r"the first in $|1\rangle$, and the second in "
+                     r"$|0\rangle + |1\rangle$ again", first=PI, second=PI / 2)
+        self.pulse(r"now the atom is kept out of $|r\rangle$, whatever the second is in",
+                   r"and the second comes back as it was", leaves=(PI, PI / 2))
+
+        self.prepare(r"both in $|0\rangle + |1\rangle$", first=PI / 2)
+        self.pulse(r"each one's sign now depends on the other",
+                   r"neither is left a direction of its own: the two are entangled")
 
         self.play(self.say(r"a controlled-$Z$ gate between the molecules, "
                            r"in about a microsecond"))

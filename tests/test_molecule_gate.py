@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 from manim_atoms.tweezers.physics.molecule_gate import (
-    GATE_TIME, V_DD, gate_hamiltonian, gate_phase, gate_populations, gate_run,
-    rabi_frequency,
+    GATE_TIME, V_DD, bloch_vector, gate_hamiltonian, gate_phase, gate_populations,
+    gate_run, gate_state, qubit, rabi_frequency,
 )
 
 
@@ -60,20 +60,66 @@ def test_the_blocked_atom_follows_the_state_with_no_rydberg_r_in_it():
     assert abs(amplitudes[middle, 2]) ** 2 == pytest.approx(np.cos(theta) ** 2, abs=0.03)
 
 
-@pytest.mark.parametrize("first, second", [(0, 0), (0, 1), (1, 0), (1, 1), (0.3, 1)])
-@pytest.mark.parametrize("t", [0.0, 0.4, GATE_TIME / 2, GATE_TIME])
-def test_every_particle_s_populations_sum_to_one(first, second, t):
-    if t and (first % 1 or second % 1):
-        pytest.skip("a molecule is part-way to |1> only between pulses")
-    for populations in gate_populations(first, second, t):
+ZERO, ONE, PLUS, MINUS = qubit(0), qubit(np.pi), qubit(np.pi / 2), qubit(-np.pi / 2)
+TIMES = [0.0, 0.4, GATE_TIME / 2, 1.0, GATE_TIME]
+
+
+def test_a_microwave_pulse_s_area_sets_the_qubit():
+    assert np.allclose(ZERO, [1, 0]) and np.allclose(ONE, [0, 1])
+    assert np.allclose(PLUS, [1, 1] / np.sqrt(2)) and np.allclose(MINUS, [1, -1] / np.sqrt(2))
+
+
+@pytest.mark.parametrize("first, second", [(ZERO, ZERO), (ZERO, ONE), (ONE, ONE),
+                                           (ZERO, PLUS), (PLUS, PLUS), (MINUS, qubit(0.7))])
+@pytest.mark.parametrize("t", TIMES)
+def test_the_joint_state_stays_normalised_and_so_does_every_particle(first, second, t):
+    state = gate_state(first, second, t)
+    assert (np.abs(state) ** 2).sum() == pytest.approx(1)
+    for populations in gate_populations(state):
         assert sum(populations) == pytest.approx(1)
-        assert min(populations) >= -1e-12
+        assert min(populations) >= 0
 
 
 def test_the_exchange_is_shared_between_the_molecules_in_one():
     t = GATE_TIME / 2
-    lone, atom, other = gate_populations(0, 1, t)
-    assert lone == (1, 0, 0)
+    lone, atom, other = gate_populations(gate_state(ZERO, ONE, t))
+    assert lone == pytest.approx((1, 0, 0))
     assert other[2] == pytest.approx(atom[1])
-    left, atom, right = gate_populations(1, 1, t)
+    left, atom, right = gate_populations(gate_state(ONE, ONE, t))
     assert left[2] == pytest.approx(right[2]) == pytest.approx(atom[1] / 2)
+
+
+def test_a_basis_state_has_its_bloch_vector_at_a_pole_throughout():
+    for t in TIMES:
+        state = gate_state(ZERO, ZERO, t)
+        assert np.allclose(bloch_vector(state, 0), [0, 0, 1])
+        assert np.allclose(bloch_vector(state, 1), [0, 0, 1])
+
+
+def test_with_the_first_in_zero_the_second_s_superposition_changes_sign():
+    # |0>(|0> + |1>) -> -|0>(|0> - |1>): the vector goes from +x to -x, and
+    # through the middle of the sphere, the molecule entangled with the atom.
+    assert np.allclose(bloch_vector(gate_state(ZERO, PLUS, 0), 1), [1, 0, 0])
+    assert np.linalg.norm(bloch_vector(gate_state(ZERO, PLUS, GATE_TIME / 2), 1)) < 0.1
+    assert np.allclose(bloch_vector(gate_state(ZERO, PLUS, GATE_TIME), 1), [-1, 0, 0], atol=0.02)
+    assert np.allclose(bloch_vector(gate_state(ZERO, PLUS, GATE_TIME), 0), [0, 0, 1], atol=0.02)
+
+
+def test_with_the_first_in_one_the_second_s_superposition_is_left_alone():
+    for t in TIMES:
+        assert bloch_vector(gate_state(ONE, PLUS, t), 1)[0] > 0.9
+    assert np.allclose(bloch_vector(gate_state(ONE, PLUS, GATE_TIME), 1), [1, 0, 0], atol=0.02)
+
+
+def test_the_sign_change_leaves_the_state_a_pulse_from_zero_would():
+    # so a scene can go on from |0>(|0> - |1>) with the clock back at nought
+    after = gate_state(ZERO, PLUS, GATE_TIME)
+    again = gate_state(ZERO, MINUS, 0)
+    assert abs(np.vdot(again, after)) == pytest.approx(1, abs=0.01)
+
+
+def test_both_in_a_superposition_end_up_entangled():
+    state = gate_state(PLUS, PLUS, GATE_TIME)
+    for molecule in (0, 1):
+        assert np.linalg.norm(bloch_vector(state, molecule)) < 0.05
+    assert gate_populations(state)[1][0] > 0.99  # and the atom is back out of it

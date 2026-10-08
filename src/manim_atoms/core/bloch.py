@@ -4,8 +4,10 @@ BlochView draws the sphere in perspective on a flat scene, |e> up: any
 direction on it (point), the circle at a given height about any axis
 (ring), a patch round a direction (patch), and curves through them that
 come out solid in front and dashed and faint behind (curve).
-noise_patch fills a patch as a spin's quantum noise -- the disc of a
-coherent spin state, or the ellipse of a squeezed one.
+bloch_sphere is the sphere's furniture, and BlochVector one state's vector
+in it, shrinking inside the sphere as the state becomes mixed. noise_patch
+fills a patch as a spin's quantum noise -- the disc of a coherent spin
+state, or the ellipse of a squeezed one.
 """
 
 import numpy as np
@@ -85,6 +87,47 @@ class BlochView:
             normalize(center + np.tan(a) * np.cos(t) * e1 + np.tan(b) * np.sin(t) * e2)
             for t in np.linspace(0, TAU, n)
         ]
+
+
+def bloch_sphere(view, north, south):
+    """The sphere's furniture on ``view``: VGroup(outline, the dashed axis
+    through the poles, the equator, the poles' labels), with the mobjects
+    ``north`` and ``south`` put over and under it as those labels."""
+    up = np.array([0.0, 0.0, 1.0])
+    outline = view.outline()
+    equator = view.curve(view.ring(up), lighten(GUIDE_COLOR), BLOCH_EQUATOR_WIDTH)
+    axis = DashedLine(view.point(-up), view.point(up), **BLOCH_AXIS_STYLE)
+    poles = VGroup(north.next_to(outline, UP, buff=0.1),
+                   south.next_to(outline, DOWN, buff=0.1))
+    return VGroup(outline, axis, equator, poles)
+
+
+class BlochVector(VGroup):
+    """One state's Bloch vector on ``view``: a line from the sphere's centre
+    to a dot at its tip. A pure state's tip is on the sphere; a mixed
+    state's is inside it, down to the dot alone at the centre for a state
+    with no direction left. point_to() redraws it, so a scene can drive it
+    from numbers every frame."""
+
+    def __init__(self, view, v=(0.0, 0.0, 1.0), color=PLOT_FOREGROUND, **kwargs):
+        super().__init__(**kwargs)
+        self.view = view
+        self.shaft = VMobject(stroke_width=BLOCH_VECTOR_WIDTH)
+        self.tip = Dot(radius=BLOCH_VECTOR_TIP_RADIUS)
+        self.add(self.shaft, self.tip)
+        self.point_to(v, color)
+
+    def point_to(self, v, color=None):
+        """Put the tip at ``v``, in the view's coordinates and of length at
+        most 1, in ``color`` if that is given."""
+        end = self.view.point(v)
+        self.shaft.set_points_as_corners([self.view.center, end])
+        self.tip.move_to(end)
+        if color is not None:
+            color = ManimColor(color)
+            self.shaft.set_stroke(color)
+            self.tip.set_fill(lighten(color)).set_stroke(lighten(color))
+        return self
 
 
 def noise_patch(view, center, e1, e2, a, b, color):
