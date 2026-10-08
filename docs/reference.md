@@ -523,7 +523,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 `src/manim_atoms/tweezers/style.py` — The tweezer scenes' style: the core house style plus the tweezer array, its beams and the holograms that make it.
 
-- *the tweezers*: `TWEEZER_COLOR`, `TWEEZER_OPACITY`, `TWEEZER_LAYERS`, `TWEEZER_SPEED`, `TARGET_RING_STYLE`, `FOCAL_PLANE_STYLE`, `FONT_STEP`, `STEP_COLOR`
+- *the tweezers*: `TWEEZER_COLOR`, `TWEEZER_OPACITY`, `TWEEZER_LAYERS`, `TWEEZER_SOLID_OPACITY`, `TWEEZER_EDGE_STYLE`, `TWEEZER_BACKING_COLOR`, `TWEEZER_SPEED`, `TARGET_RING_STYLE`, `FOCAL_PLANE_STYLE`, `FONT_STEP`, `STEP_COLOR`
 - *holograms*: `FOCAL_SPOT_COLOR`, `BAR_COLOR`, `BAR_BASELINE_STYLE`, `FONT_READOUT`, `FONT_MODE`, `TRANSFORM_ARROW_STYLE`
 
 ### `tweezers.physics.rearrangement`
@@ -542,8 +542,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/tweezers/tools/beams.py` — A tweezer seen from the side: a focused Gaussian beam through a tilted view.
 
 - `beam_half_width(z, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH)`: A Gaussian beam's 1/e^2 radius a distance z from its focus: w0 sqrt(1 + (z / z_R)^2).
-- `axial_intensity(z, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: How brightly the beam is drawn a distance z from its focus: the on-axis intensity 1 / (1 + (z / z_R)^2), brought to nothing at ``reach`` so the beam fades out rather than ending.
-- `hourglass_trap(view, at, power, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: One trap seen through a tilted view: the half of the beam below the focal plane, the half above, and the spot in the plane, at world point ``at`` and as bright as ``power``.
+- `hourglass_trap(view, at, power, waist=TW_SPOT_RADIUS, rayleigh=TW_RAYLEIGH, reach=TW_REACH)`: One trap seen through a tilted view: the beam from ``reach`` below the focal plane to ``reach`` above it, as a solid with a hard edge, and the spot in the plane, at world point ``at`` and as bright as ``power``.
 - `focal_plane(view, half_width, half_height, shown)`: The outline of the focal plane, a rectangle about the view's origin, redrawn as the view moves and as visible as the tracker ``shown`` (0 to 1).
 
 ### `tweezers.tools.holograms`
@@ -574,7 +573,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
   - `.trap_positions()`: Where every trap is now, (N, 2).
   - `.trap_powers()`: Every trap's power now, 0 to 1.
   - `.atom_opacities()`: How solidly each trap's atom is drawn: 0 for a trap with none.
-  - `.redraw()`: Rebuild the drawing from the trackers: target rings, then each trap and its atom, far ones first.
+  - `.redraw()`: Rebuild the drawing from the trackers: target rings, then the traps, far ones first, then the atoms, far ones first, over all the light: a beam may hide the beam behind it, never an atom.
 - `heading(text)`: A scene's heading, for its upper left corner.
 - `step_caption(text, under)`: The step being shown, in grey under the heading ``under``.
 - `next_step(old, text, under)`: (the new caption, the animation that swaps ``old`` for it): out, then in, so the two are never crossed.

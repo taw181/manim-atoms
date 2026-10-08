@@ -91,10 +91,15 @@ self.play(elevation.animate.set_value(TW_ELEVATION),
 ```
 
 There is no perspective and no lighting: it is a projection on a flat
-scene. With every trap lit the back rows' beams overlap; the picture is
-clearest once the empty traps are off. To change how a beam looks, change
-`TW_RAYLEIGH` (how fast it flares) and `TW_REACH` (how far it is drawn),
-and compare candidates side by side in one still before choosing.
+scene. A beam is a solid with a hard edge, cut off `TW_REACH` either side
+of its focus, and a nearer beam hides the ones behind it; the atoms are
+drawn over all the light. A beam that fades out, or adds to the ones behind
+it, turns eighty-one traps into haze. Seen from the side the traps need
+more room than from above: `TweezerArray3D` has its own pitch, 0.7 against
+the top-down scenes' 0.5. To change how a beam looks, change `TW_RAYLEIGH`
+(how fast it flares) and `TW_REACH` (how far it is drawn), keep its flared
+end narrower than the gap to the next column, and compare candidates side
+by side in one still, with every trap lit, before choosing.
 
 ### 3. A mask beside the focal plane it makes
 
@@ -151,8 +156,8 @@ focus. Worked example: `OpticalTrain`.
 - Take a frame in the middle of every move, not only at the stops.
 - Top-down: neighbouring spots do not merge, and an atom is told apart
   from its spot.
-- Tilted: each beam fades to the background at both ends, and neighbours
-  are separate once the empty traps are off.
+- Tilted: with every trap lit, each beam's outline can be followed from
+  end to end, and every atom shows.
 - A loop's first and last frames are the same picture (`frames.py --final`
   is 0.3 s early: compare with the true last frame, or check the geometry).
 - A focal-plane picture and what it is a picture of move the same way.

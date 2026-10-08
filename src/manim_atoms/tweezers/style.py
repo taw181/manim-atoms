@@ -16,6 +16,14 @@ from manim_atoms.style import *
 TWEEZER_COLOR = ManimColor("#f3e3c8")
 TWEEZER_OPACITY = 0.7  # on the axis, at the focus, at full power
 TWEEZER_LAYERS = 4  # nested shapes across the beam, as a Gaussian profile
+# A beam seen from the side is a solid with a hard edge, not a glow: a flat
+# fill inside a thin outline of the same colour. Under the fill it is backed
+# in the background's colour, so a nearer beam hides the ones behind it
+# rather than adding to them, and a crowd of beams stays a set of separate
+# ones.
+TWEEZER_SOLID_OPACITY = 0.3  # the fill, at full power
+TWEEZER_EDGE_STYLE = dict(stroke_width=1.5, stroke_opacity=0.75)
+TWEEZER_BACKING_COLOR = PLOT_BACKGROUND
 # Traps move at one speed, so a longer move takes visibly longer.
 TWEEZER_SPEED = 0.9
 # A site an atom is wanted at: a reference, so a thin ring in the

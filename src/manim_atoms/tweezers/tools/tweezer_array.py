@@ -116,8 +116,9 @@ class TweezerArray(VGroup):
         return self.filled.get_value() * self.loaded * staying
 
     def redraw(self):
-        """Rebuild the drawing from the trackers: target rings, then each trap
-        and its atom, far ones first."""
+        """Rebuild the drawing from the trackers: target rings, then the traps,
+        far ones first, then the atoms, far ones first, over all the light: a
+        beam may hide the beam behind it, never an atom."""
         xy, powers, shown = self.trap_positions(), self.trap_powers(), self.atom_opacities()
         parts, self.atoms = [], []
         ringed = self.ringed.get_value()
@@ -125,15 +126,16 @@ class TweezerArray(VGroup):
             style = {**TARGET_RING_STYLE,
                      "stroke_opacity": TARGET_RING_STYLE["stroke_opacity"] * ringed}
             parts += [self.view.disc(end, TW_RING_RADIUS, **style) for end in self.plan.end]
-        for i in np.argsort([self.view.depth(p) for p in xy], kind="stable"):
-            if powers[i] > 1e-3:
-                parts.append(self.draw_trap(self.view, xy[i], powers[i]))
+        far_first = np.argsort([self.view.depth(p) for p in xy], kind="stable")
+        parts += [self.draw_trap(self.view, xy[i], powers[i]) for i in far_first
+                  if powers[i] > 1e-3]
+        for i in far_first:
             if shown[i] > 1e-3:
                 atom = make_atom(radius=self.atom_radius * self.view.scale, opacity=shown[i])
                 atom[0].set_stroke(opacity=shown[i])
                 atom.move_to(self.view.point(xy[i]))
-                parts.append(atom)
                 self.atoms.append(atom)
+        parts += self.atoms
         # A scene lists what a play moves when the play begins and paints that
         # list on every frame, so the pieces drawn last time are emptied, not
         # just dropped: left with their points, they would be painted again,

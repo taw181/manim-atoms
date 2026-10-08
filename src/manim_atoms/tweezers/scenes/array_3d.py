@@ -1,14 +1,18 @@
 """A tweezer array seen from an angle: each trap a focused beam.
 
-Starts on the loaded array seen from above, as TweezerRearrangement has it,
-and tilts the view over. Each spot turns out to be the waist of a beam: it
-narrows to its focus in the plane of the array, where its atom sits, and
-spreads again beyond, drawn as bright as the light on its axis so that it
-fades away from the atom. The array is then imaged and rearranged exactly
-as in the top-down scene, with the beams moving.
+Starts on the loaded array seen from above, as TweezerRearrangement has it
+but with the traps further apart, and tilts the view over. Each spot turns
+out to be the waist of a beam: it narrows to its focus in the plane of the
+array, where its atom sits, and spreads again beyond. The beam is drawn as
+a solid, cut off square a little way either side of the atom, and a nearer
+beam hides the ones behind it, so that eighty-one of them stay eighty-one
+separate beams; the atoms are drawn over all the light. The array is then
+imaged and rearranged exactly as in the top-down scene, with the beams
+moving.
 
 The view is an orthographic projection (core.projection), not a camera:
-there is no perspective. The beams are not to scale (tools.beams).
+there is no perspective. The beams are not to scale (tools.beams), and
+real ones neither end nor hide one another.
 
 - TweezerArray3D: a beat() on the top-down array, then after the tilt, the
   switching off and the move.
@@ -37,7 +41,6 @@ from manim_atoms.tweezers.tools.beams import (
 from manim_atoms.tweezers.tools.tweezer_array import (
     TW_COLS,
     TW_FILL,
-    TW_PITCH,
     TW_ROWS,
     TW_SEED,
     TW_TARGET,
@@ -48,11 +51,17 @@ from manim_atoms.tweezers.tools.tweezer_array import (
 )
 
 # --- tilted-array geometry ---------------------------------------------------
-# Tilted, the array is wider than it is tall and the beams stand above and
-# below it, so it sits a little below the middle of the frame, clear of the
-# heading in the upper left corner.
-T3_CENTER = np.array([0.4, -0.5, 0.0])  # of the array
-T3_SCALE = 1.3  # scene units per unit of the array's own
+# Seen from the side every beam stands in front of the rows behind it, so
+# the traps are further apart than in the top-down scenes: the spot is a
+# sixth of the spacing, not a quarter, and a beam's flared end still leaves
+# a gap to the next column. The scale is what fits that array in the frame
+# from above, where it is tallest: its top row has to stay under the step
+# caption, which runs out over it, and its bottom row inside the frame. So
+# it sits below the middle, and to the right, where the tilted array has
+# room to spare.
+T3_PITCH = 0.7  # between neighbouring traps
+T3_CENTER = np.array([1.0, -0.5, 0.0])  # of the array
+T3_SCALE = 1.05  # scene units per unit of the array's own
 T3_HEADING = np.array([-6.6, 3.6, 0.0])  # the heading's upper left corner
 T3_PLANE_MARGIN = 0.5  # of the focal plane's outline beyond the outermost traps
 T3_TILT_TIME = 3.0
@@ -71,8 +80,8 @@ class TweezerArray3D(Scene):
 
     def build(self):
         """Lay out the loaded array in a view that starts top-down, unadded."""
-        sites = square_sites(TW_ROWS, TW_COLS, TW_PITCH)
-        targets = square_sites(*TW_TARGET, TW_PITCH)
+        sites = square_sites(TW_ROWS, TW_COLS, T3_PITCH)
+        targets = square_sites(*TW_TARGET, T3_PITCH)
         loaded = load_sites(len(sites), TW_FILL, np.random.default_rng(TW_SEED))
         self.plan = plan_rearrangement(sites, loaded, targets)
         self.elevation, self.azimuth = ValueTracker(PI / 2), ValueTracker(0)
@@ -82,7 +91,7 @@ class TweezerArray3D(Scene):
         self.array.on.set_value(1)
         self.array.filled.set_value(1)
         self.array.redraw()
-        half = (TW_COLS - 1) / 2 * TW_PITCH + T3_PLANE_MARGIN
+        half = (TW_COLS - 1) / 2 * T3_PITCH + T3_PLANE_MARGIN
         self.plane = focal_plane(view, half, half, self.plane_shown)
         self.title = heading("A tweezer array").move_to(T3_HEADING, aligned_edge=UL)
         self.note = step_caption("from above: each trap a spot", self.title)
