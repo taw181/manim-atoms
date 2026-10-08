@@ -24,13 +24,12 @@ from manim_atoms.core.primitives import make_atom, make_molecule, state_label
 
 # --- the states' colours --------------------------------------------------
 # The qubit's two states take two hues the atom's leave free. The atom's
-# ground state is the house |g>; its Rydberg state |r> is a violet. The pair
-# of states the dipole-dipole exchange leads to, the molecule's |2> and the
-# atom's |R>, share the exchange's blue with the arcs that mark it: they are
-# only ever populated together, and by it.
+# ground state is the house |g>, and its Rydberg state |r> the house
+# Rydberg violet. The pair of states the dipole-dipole exchange leads to,
+# the molecule's |2> and the atom's |R>, share the exchange's blue with the
+# arcs that mark it: they are only ever populated together, and by it.
 QUBIT_0_COLOR = ManimColor("#7cc470")
 QUBIT_1_COLOR = ManimColor("#e6b450")
-RYDBERG_COLOR = ManimColor("#b07ce0")
 EXCHANGE_COLOR = ManimColor("#5b8cff")
 # Microwaves on the qubit transition: a single-qubit gate, not this gate's
 # business, so near white rather than another hue.

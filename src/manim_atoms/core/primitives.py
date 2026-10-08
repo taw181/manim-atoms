@@ -4,6 +4,8 @@ building blocks every other scene is drawn with.
 - mobjects: make_atom, make_molecule, make_cloud, make_laser_pulse,
   make_guide, and the recoil arrow momentum_arrow (brought on by grow) and
   the k marker make_k_arrow;
+- RydbergAtom: an atom with its Rydberg electron's orbit round it, which
+  fades in and out as the atom is excited;
 - states: state_colors recolours an atom, state_mix is the colour of one
   shared among states, state_label and arm_ket write its ket in the state's
   colour;
@@ -46,6 +48,74 @@ def make_molecule(color, radius=ATOM_RADIUS, opacity=1.0):
                  stroke_width=ATOM_STROKE_WIDTH)
     return VGroup(Circle(radius=radius, **style),
                   Circle(radius=small, **style).shift(bond)).move_to(ORIGIN)
+
+
+class RydbergAtom(VGroup):
+    """An atom that can be excited to a Rydberg state: the house disc
+    (``body``) and, round it, the Rydberg electron's orbit (``orbit``), a
+    disc of ``orbit_radius`` with a ring at its edge, as visible as the atom
+    is excited.
+
+    ``excitation`` runs from 0, the ground state, where the orbit is not
+    drawn and the body is ``color``, to 1, where the orbit is all there and
+    the body is ``rydberg_color``. excite(), relax() and flop() are the
+    animations between the two; set_excitation() sets it outright, for a
+    scene that draws the atom from numbers every frame.
+
+    The orbit is drawn under the body, so it is the group's first piece:
+    recolour the atom through ``body``, not ``atom[0]``. Not to scale: a
+    real orbit is thousands of times the size of the ground-state atom.
+    """
+
+    def __init__(self, radius=ATOM_RADIUS, orbit_radius=RYDBERG_ORBIT_RADIUS,
+                 color=ATOM_COLOR, rydberg_color=RYDBERG_COLOR, excitation=0.0, **kwargs):
+        super().__init__(**kwargs)
+        self.ground_color, self.rydberg_color = color, rydberg_color
+        self.orbit = Circle(radius=orbit_radius,
+                            stroke_width=RYDBERG_ORBIT_EDGE_STYLE["stroke_width"])
+        self.body = make_atom(color, radius)[0]
+        self.add(self.orbit, self.body)
+        self.set_excitation(excitation)
+
+    def set_excitation(self, share, rydberg_color=None):
+        """Draw the atom ``share`` of the way to the Rydberg state (0 to 1),
+        which is in ``rydberg_color`` from now on if that is given."""
+        if rydberg_color is not None:
+            self.rydberg_color = rydberg_color
+        self.excitation = share = float(np.clip(share, 0, 1))
+        color = state_mix((self.ground_color, self.rydberg_color), (1 - share, share))
+        self.body.set_fill(color).set_stroke(lighten(color))
+        self.orbit.set_fill(self.rydberg_color, opacity=RYDBERG_ORBIT_FILL * share)
+        self.orbit.set_stroke(lighten(self.rydberg_color),
+                              opacity=RYDBERG_ORBIT_EDGE_STYLE["stroke_opacity"] * share)
+        return self
+
+    def excite(self, to=1.0, **kwargs):
+        """The animation taking the excitation from where it is to ``to``:
+        the orbit fading in as the body changes colour."""
+        start = []
+
+        def step(atom, alpha):
+            if not start:  # where it is when the animation begins, not when it was made
+                start.append(atom.excitation)
+            atom.set_excitation(interpolate(start[0], to, alpha))
+
+        return UpdateFromAlphaFunc(self, step, **kwargs)
+
+    def relax(self, **kwargs):
+        """The animation taking the atom back to the ground state: the
+        orbit fading out."""
+        return self.excite(0.0, **kwargs)
+
+    def flop(self, cycles=1, **kwargs):
+        """The animation of a Rabi flop from the ground state: the
+        excitation goes as sin^2, to the Rydberg state and back ``cycles``
+        times (a half is a pi pulse, and leaves it there). Played evenly
+        unless given a rate_func, since the sin^2 is the easing."""
+        kwargs.setdefault("rate_func", linear)
+        return UpdateFromAlphaFunc(
+            self, lambda atom, alpha: atom.set_excitation(np.sin(PI * cycles * alpha) ** 2),
+            **kwargs)
 
 
 def make_cloud(center, color, n=CARTOON_CLOUD_N, radius=CARTOON_CLOUD_RADIUS, seed=0):

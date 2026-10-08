@@ -19,9 +19,10 @@ is computed from the gate's Hamiltonian (physics.molecule_gate) with the
 paper's numbers for CaF and Rb, as is the pulse's envelope.
 
 Not to scale: at a micrometre apart real tweezers overlap, and the atom's
-is one of them; the Rydberg electron's orbit is about a quarter of the gap,
-as drawn. The levels are schematic (species.molecule_rydberg). The laser is
-drawn on the atom alone, though the molecules would not notice it.
+is one of them. The Rydberg electron's orbit is to the gap's scale, a third
+of it, though not to the atom's. The levels are schematic
+(species.molecule_rydberg). The laser is drawn on the atom alone, though
+the molecules would not notice it.
 
 - MoleculeRydbergGate: a beat() once the traps are laid out, then after
   the move, the levels, the field, and each of the three runs of the gate,
@@ -32,14 +33,13 @@ import numpy as np
 from manim import *
 
 from manim_atoms.tweezers.style import *
-from manim_atoms.core.optics import gaussian_band, gaussian_spot
-from manim_atoms.core.primitives import make_atom, make_molecule, state_label, state_mix
+from manim_atoms.core.optics import gaussian_band
+from manim_atoms.core.primitives import RydbergAtom, make_molecule, state_label, state_mix
 from manim_atoms.core.projection import TiltedView
 from manim_atoms.species.molecule_rydberg import (
     EXCHANGE_COLOR,
     MOLECULE_COLORS,
     RYDBERG_ATOM_COLORS,
-    RYDBERG_COLOR,
     GateLevels,
 )
 from manim_atoms.tweezers.physics.molecule_gate import (
@@ -66,7 +66,9 @@ MG_SCALE = 2.0  # scene units per unit of the array's own
 MG_APART = 1.15  # a molecule's trap from the atom's, at the start
 MG_CLOSE = 0.6  # and brought together: "1 um" in the paper's example
 MG_PARTICLE_RADIUS = 0.15
-MG_RYDBERG_RADIUS = 0.3  # the Rydberg orbit: a quarter of the gap, n = 59 at 1 um
+# The Rydberg orbit's outer edge, 2 n*^2 a_0: 0.33 um for the paper's 59s,
+# against the 1 um to a molecule.
+MG_RYDBERG_RADIUS = MG_CLOSE * MG_SCALE / 3
 MG_KET_DROP = 1.5  # a molecule's qubit state, below its trap's beam
 MG_FIELD = MG_CENTER + LEFT * 2.5  # the field's arrow, left of the traps, along their axis
 MG_FIELD_LENGTH = 1.3
@@ -129,12 +131,10 @@ class MoleculeRydbergGate(Scene):
 
         self.molecules = [make_molecule(MOLECULE_COLORS[0], MG_PARTICLE_RADIUS)
                           for _ in range(2)]
-        self.atom = make_atom(radius=MG_PARTICLE_RADIUS)
-        self.halo = gaussian_spot(MG_CENTER, MG_RYDBERG_RADIUS, RYDBERG_COLOR,
-                                  opacity=RYDBERG_HALO_OPACITY)
+        self.atom = RydbergAtom(MG_PARTICLE_RADIUS, MG_RYDBERG_RADIUS)
         self.kets = [[state_label(rf"|{k}\rangle", MOLECULE_COLORS[k]) for k in (0, 1)]
                      for _ in range(2)]
-        self.particles = VGroup(self.halo, *self.molecules, self.atom,
+        self.particles = VGroup(*self.molecules, self.atom,
                                 *[ket for pair in self.kets for ket in pair])
         self.links = VGroup(*[
             Line(self.view.point([side * MG_CLOSE, 0]) - side * RIGHT * 1.6 * MG_PARTICLE_RADIUS,
@@ -207,13 +207,11 @@ class MoleculeRydbergGate(Scene):
             molecule.set_fill(color).set_stroke(lighten(color)).move_to(at)
             for ket, share in zip(kets, (1 - q.get_value(), q.get_value())):
                 ket.set_opacity(share).move_to(at + DOWN * MG_KET_DROP)
-        color = state_mix(RYDBERG_ATOM_COLORS, atom)
-        self.atom[0].set_fill(color).set_stroke(lighten(color))
-        self.atom.move_to(where[1])
+        # The orbit is there as far as the atom is in either Rydberg state,
+        # in the colour of whichever it is in.
         excited = atom[1] + atom[2]
-        cloud = state_mix(RYDBERG_ATOM_COLORS[1:], atom[1:]) if excited > 1e-6 else RYDBERG_COLOR
-        for disc in self.halo:
-            disc.set_fill(cloud, opacity=RYDBERG_HALO_OPACITY / len(self.halo) * excited)
+        orbit = state_mix(RYDBERG_ATOM_COLORS[1:], atom[1:]) if excited > 1e-6 else None
+        self.atom.set_excitation(excited, orbit).move_to(where[1])
         for link, share in zip(self.links, self.coupled()):
             link.set_stroke(opacity=share)
 

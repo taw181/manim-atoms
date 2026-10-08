@@ -63,6 +63,15 @@ ATOM_STROKE_WIDTH = 2
 MOLECULE_ATOM_RATIO = 0.62
 MOLECULE_BOND = 1.05
 MOLECULE_TILT = 0.6
+# A Rydberg state: a violet, clear of the ground state's blue and the laser's
+# red. An atom in one is drawn with its electron's orbit round it, a disc
+# far larger than the atom: a faint flat fill, so what is behind still
+# shows, inside a ring that marks the radius. Both are given at full
+# excitation and fade with it.
+RYDBERG_COLOR = ManimColor("#b07ce0")
+RYDBERG_ORBIT_RADIUS = 0.45
+RYDBERG_ORBIT_FILL = 0.3
+RYDBERG_ORBIT_EDGE_STYLE = dict(stroke_width=2, stroke_opacity=0.9)
 
 # --- laser pulses ---------------------------------------------------------
 PULSE_LENGTH = 2.2

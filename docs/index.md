@@ -42,6 +42,7 @@ as `manim.ValueTracker`, or leave them unticked. -->
 ## Atoms and clouds
 
 - **An atom** (a disc you recolour through `atom[0]`), recoloured on a state change. `core.primitives`: `make_atom`, `state_colors`.
+- **A Rydberg atom**: the atom's disc with its Rydberg electron's orbit round it, a far larger disc with a ring at its edge that fades in and out as the atom is excited. `core.primitives`: `RydbergAtom`, with `RydbergAtom.excite`, `RydbergAtom.relax` and `RydbergAtom.flop` as the animations (to the Rydberg state, back, and a Rabi flop there and back), and `RydbergAtom.set_excitation` to draw it from a number every frame.
 - **A diatomic molecule** (two unlike discs bound together, recoloured through both). `core.primitives`: `make_molecule`.
 - **The colour of an atom shared among several states**, mixed by their populations. `core.primitives`: `state_mix`.
 - **A state's ket** in its colour. `core.primitives`: `state_label`, and `arm_ket` for |g, p> or |e, p + ħk> with an optional phase factor.

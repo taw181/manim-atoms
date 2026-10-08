@@ -189,6 +189,14 @@ and back on after it. `GateLevels` is redrawn from the same numbers
 disagree. A population is a disc's area: a tenth of the population is a
 dot, which is the point when an excitation is blocked.
 
+A Rydberg atom is `core.primitives.RydbergAtom`: the atom's disc with the
+electron's orbit round it, which is as visible as the atom is excited.
+Play `atom.excite()`, `atom.relax()` or `atom.flop()` (a Rabi cycle there
+and back) for a pulse told by hand, or call `atom.set_excitation(share)`
+in an updater when the excitation is computed. Give it an `orbit_radius`
+to the scale of the gap to its neighbours (a third of a micrometre for
+n = 59), and recolour it through `atom.body`: `atom[0]` is the orbit.
+
 ## Before you finish
 
 - At every stop, the caption says what the frame shows.

@@ -16,7 +16,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - *colour scheme*: `ATOM_COLOR`, `KICKED_COLOR`, `LASER_COLOR`, `GUIDE_COLOR`
 - *type*: `FONT_TITLE`, `FONT_STATE`, `FONT_ANNOTATION`, `FONT_LEGEND`, `FONT_K`
-- *atoms*: `ATOM_RADIUS`, `LEGEND_ATOM_RADIUS`, `ATOM_STROKE_WIDTH`, `MOLECULE_ATOM_RATIO`, `MOLECULE_BOND`, `MOLECULE_TILT`
+- *atoms*: `ATOM_RADIUS`, `LEGEND_ATOM_RADIUS`, `ATOM_STROKE_WIDTH`, `MOLECULE_ATOM_RATIO`, `MOLECULE_BOND`, `MOLECULE_TILT`, `RYDBERG_COLOR`, `RYDBERG_ORBIT_RADIUS`, `RYDBERG_ORBIT_FILL`, `RYDBERG_ORBIT_EDGE_STYLE`
 - *laser pulses*: `PULSE_LENGTH`, `PULSE_AMPLITUDE`, `PULSE_CYCLES`, `PULSE_STROKE_WIDTH`, `PULSE_TAPER`
 - *line styles*: `GUIDE_STYLE`, `TRAJECTORY_STYLE`, `RECOIL_ARROW_STYLE`, `K_ARROW_STYLE`, `FLASH_STYLE`
 - *pacing*: `V`, `PULSE_SPEED`
@@ -106,6 +106,11 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 
 - `make_atom(color=ATOM_COLOR, radius=ATOM_RADIUS, opacity=1.0)`: An atom drawn as a flat filled disc.
 - `make_molecule(color, radius=ATOM_RADIUS, opacity=1.0)`: A diatomic molecule drawn as two unlike atoms bound together: a disc of ``radius`` and a smaller one overlapping it, both in ``color``, centred on the pair. Recolour it through both of its pieces.
+- class `RydbergAtom(VGroup)`: An atom that can be excited to a Rydberg state: the house disc (``body``) and, round it, the Rydberg electron's orbit (``orbit``), a disc of ``orbit_radius`` with a ring at its edge, as visible as the atom is excited.
+  - `.set_excitation(share, rydberg_color=None)`: Draw the atom ``share`` of the way to the Rydberg state (0 to 1), which is in ``rydberg_color`` from now on if that is given.
+  - `.excite(to=1.0, **kwargs)`: The animation taking the excitation from where it is to ``to``: the orbit fading in as the body changes colour.
+  - `.relax(**kwargs)`: The animation taking the atom back to the ground state: the orbit fading out.
+  - `.flop(cycles=1, **kwargs)`: The animation of a Rabi flop from the ground state: the excitation goes as sin^2, to the Rydberg state and back ``cycles`` times (a half is a pi pulse, and leaves it there). Played evenly unless given a rate_func, since the sin^2 is the easing.
 - `make_cloud(center, color, n=CARTOON_CLOUD_N, radius=CARTOON_CLOUD_RADIUS, seed=0)`: A still cartoon of an atom cloud: dots in a round Gaussian heap, pulled in to ``radius`` so the cloud has an edge.
 - `make_laser_pulse(x, y, length=PULSE_LENGTH, n_cycles=PULSE_CYCLES)`: A Gaussian-enveloped sine wavepacket propagating along +y, centred on (x, y).
 - `momentum_arrow(origin, direction, tex, label_dir=LEFT, length=1.1)`: A recoil arrow with its label, e.g. the hbar k an atom gains from a pulse.
@@ -535,7 +540,7 @@ this page is for looking a name up. Paths are under `manim_atoms`.
 `src/manim_atoms/tweezers/style.py` — The tweezer scenes' style: the core house style plus the tweezer array, its beams and the holograms that make it.
 
 - *the tweezers*: `TWEEZER_COLOR`, `TWEEZER_OPACITY`, `TWEEZER_LAYERS`, `TWEEZER_SOLID_OPACITY`, `TWEEZER_EDGE_STYLE`, `TWEEZER_BACKING_COLOR`, `TWEEZER_SPEED`, `TARGET_RING_STYLE`, `FOCAL_PLANE_STYLE`, `FONT_STEP`, `STEP_COLOR`
-- *a gate in the array*: `STATIC_FIELD_COLOR`, `STATIC_FIELD_ARROW_STYLE`, `ADDRESSING_BEAM_OPACITY`, `RYDBERG_HALO_OPACITY`, `COUPLING_LINK_STYLE`, `ENVELOPE_STROKE_WIDTH`, `ENVELOPE_AXIS_STYLE`, `ENVELOPE_MARKER_RADIUS`
+- *a gate in the array*: `STATIC_FIELD_COLOR`, `STATIC_FIELD_ARROW_STYLE`, `ADDRESSING_BEAM_OPACITY`, `COUPLING_LINK_STYLE`, `ENVELOPE_STROKE_WIDTH`, `ENVELOPE_AXIS_STYLE`, `ENVELOPE_MARKER_RADIUS`
 - *holograms*: `FOCAL_SPOT_COLOR`, `BAR_COLOR`, `BAR_BASELINE_STYLE`, `FONT_READOUT`, `FONT_MODE`, `TRANSFORM_ARROW_STYLE`
 
 ### `tweezers.physics.molecule_gate`

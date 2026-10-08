@@ -44,8 +44,6 @@ STATIC_FIELD_ARROW_STYLE = dict(buff=0, stroke_width=4, color=STATIC_FIELD_COLOR
 # A laser addressing one atom, seen side on: brighter than a trapping
 # figure's beams, since here it is the only one and comes and goes.
 ADDRESSING_BEAM_OPACITY = 0.75  # on its axis, at the pulse's peak
-# A Rydberg atom's electron cloud round the atom, at full excitation.
-RYDBERG_HALO_OPACITY = 0.55
 # Two particles coupled across the gap between their traps.
 COUPLING_LINK_STYLE = dict(stroke_width=5)
 # A pulse's envelope against time: the curve heavy, its baseline a reference.
