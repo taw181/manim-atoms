@@ -28,6 +28,7 @@ A scene calls a no-op hook where a presenter would stop — `beat()`, the sequen
 
 ## Working rules
 
+- Building needs system packages that `uv sync` does not install: pango/cairo headers (`libpango1.0-dev libcairo2-dev pkg-config python3-dev build-essential`), `ffmpeg`, and LaTeX with `dvisvgm` (`texlive-latex-extra texlive-fonts-recommended texlive-science dvisvgm cm-super`). On a fresh Debian/Ubuntu box: `apt-get install -y` those, then `uv sync --all-extras`. Without them, `manimpango` fails to build or a render dies with `No such file or directory: 'latex'`.
 - `uv run manim -ql src/manim_atoms/<topic>/scenes/<module>.py <Scene>` — run from the repo root so `manim.cfg` applies; `-qh` for final renders. Output: `media/videos/<module>/<quality>/<Scene>.mp4` (gitignored).
 - After any change to a scene, render it at `-ql`, check the frames (the skill's `frames.py`), and for a pure refactor compare last frames (`-s`) against a render from before the change: they should be pixel-identical.
 - Imports are absolute (`from manim_atoms.core.primitives import make_atom`), never relative: manim loads a scene file by path under a module name built from that path, so relative imports break. Star-import only `manim` and a style module; import names from topic modules explicitly, since they share names (`strain`, `GW_PERIOD`, ...).
